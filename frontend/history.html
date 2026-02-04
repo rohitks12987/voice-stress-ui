@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Portal | Analysis History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003d82;
+            --bg-body: #f8f9fd;
+            --white: #ffffff;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; 
+        }
+        
+        body { 
+            background-color: var(--bg-body); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+
+        /* Navbar & Footer Same Color */
+        .navbar, .dashboard-footer {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar {
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { 
+            font-weight: 700; 
+            font-size: 1.2rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-links a { 
+            color: #e8dff5; 
+            text-decoration: none; 
+            margin-left: 20px; 
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active { 
+            color: white; 
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .nav-links a.logout {
+            color: #fca5a5;
+        }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 2rem auto; 
+            padding: 0 20px; 
+            flex: 1; 
+            width: 100%; 
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: none;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #dc2626;
+        }
+
+        .success-msg {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #16a34a;
+        }
+
+        .info-msg {
+            background: #dbeafe;
+            color: #0c4a6e;
+            border-color: #3b82f6;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-row h2 {
+            color: #111827;
+            font-size: 1.8rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-btn:hover:not(:disabled) {
+            background: #3a2d63;
+            box-shadow: 0 4px 12px rgba(76, 58, 127, 0.3);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Stats Cards */
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .h-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .h-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .h-card .label { 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .h-card .value { 
+            font-size: 2rem; 
+            font-weight: 700;
+        }
+
+        /* Table Design */
+        .table-container {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 3rem;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+
+        thead { 
+            background: var(--primary); 
+            color: white; 
+        }
+
+        th { 
+            padding: 16px 15px; 
+            text-align: left; 
+            font-size: 0.85rem; 
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f1f1f1;
+            transition: background 0.3s;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        td { 
+            padding: 18px 15px; 
+            font-size: 0.9rem; 
+            color: #374151; 
+        }
+
+        .time-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .badge-high { 
+            background: #fee2e2; 
+            color: #991b1b;
+        }
+
+        .badge-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-low { 
+            background: #dcfce7; 
+            color: #166534;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            border: none;
+            background: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: rgba(76, 58, 127, 0.1);
+        }
+
+        /* Empty State */
+        .empty-state { 
+            padding: 4rem 2rem; 
+            text-align: center; 
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .empty-state.show {
+            display: block;
+        }
+
+        .empty-state i { 
+            font-size: 3rem; 
+            color: #e5e7eb; 
+            margin-bottom: 1rem; 
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state .btn-primary {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .empty-state .btn-primary:hover {
+            background: #3a2d63;
+        }
+
+        /* Dark Footer */
+        .dashboard-footer {
+            padding: 1.25rem 0.5rem;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: auto;
+        }
+
+        /* Keep footer content aligned with main container */
+        .dashboard-footer .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-line { 
+            height: 1px; 
+            background: rgba(255,255,255,0.2); 
+            max-width: 900px; 
+            margin: 0 auto 1rem; 
+        }
+
+        .footer-content p { 
+            font-size: 0.9rem; 
+            margin-bottom: 0.25rem; 
+            opacity: 0.95; 
+        }
+
+        .copyright { 
+            margin-top: 0.8rem; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            letter-spacing: 1px; 
+            opacity: 0.8; 
+            text-transform: uppercase; 
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 1rem; padding: 1rem; }
+            .nav-links { flex-wrap: wrap; }
+            .header-row { flex-direction: column; align-items: flex-start; }
+            .filter-group { flex-wrap: wrap; }
+            table { font-size: 0.8rem; }
+            td, th { padding: 12px 10px; }
+        }
+        .news-ticker { background: #8888e6; color: var(--primary); padding: 8px 0; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; border-top: 2px solid #004080; border-bottom: 2px solid #004080; }
+        .scrolling-text { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    </style>
+</head>
+<body>
+
+<div style="width:100%; background:#003d82; color:white; padding:0.6rem 2rem; border-bottom:4px solid #d32f2f; text-align:center; font-size:0.8rem; font-weight:600;"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal</div>
+
+<nav class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i>Mental Stress Detection Using Voice Tone Analysis</div>
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="record.html">Record</a>
+        <a href="history.html" class="active">History</a>
+        <a href="#" onclick="logout(); return false;" class="logout">Logout</a>
+    </div>
+</nav>
+<div class="news-ticker">
+    <div class="scrolling-text">
+        <i class="fas fa-bell"></i> Inhale for 4s, hold for 4s, and exhale for 4s to reset your nervous system. | 
+        <i class="fas fa-bullhorn"></i> A quick 5-minute walk can reduce vocal tension. | 
+        <i class="fas fa-check-circle"></i> Hydration helps maintain a steady, stress-free tone.
+    </div>
+</div>
+<div class="container">
+    <div id="error-msg" class="message error-msg"></div>
+    <div id="success-msg" class="message success-msg"></div>
+    <div id="info-msg" class="message info-msg"></div>
+
+    <div class="header-row">
+        <h2><i class="fas fa-history"></i> Analysis History</h2>
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="filterData('all', this)">All Time</button>
+            <button class="filter-btn" onclick="filterData('7', this)">Last 7 Days</button>
+            <button class="filter-btn" onclick="filterData('30', this)">Last 30 Days</button>
+            <button class="refresh-btn" id="refresh-btn" onclick="loadHistory()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="history-stats">
+        <div class="h-card">
+            <span class="label">Total Analyses</span>
+            <span class="value" id="total-analyses" style="color: var(--primary);">
+                <span class="loading-spinner"></span>
+            </span>
+        </div>
+        <div class="h-card">
+            <span class="label">High Stress Count</span>
+            <span class="value" id="high-count" style="color: var(--danger);">0</span>
+        </div>
+        <div class="h-card">
+            <span class="label">Average Score</span>
+            <span class="value" id="avg-score" style="color: var(--primary);">--</span>
+        </div>
+        <div class="h-card">
+            <span class="label">Most Common Emotion</span>
+            <span class="value" id="common-emotion" style="color: var(--primary); font-size: 1.4rem;">--</span>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div id="loading-state" class="loading-state hidden">
+            <span class="loading-spinner"></span> Loading history...
+        </div>
+
+        <table id="history-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Duration</th>
+                    <th>Stress Level</th>
+                    <th>Emotion</th>
+                    <th>Score</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="history-table-body"></tbody>
+        </table>
+
+        <div id="empty-msg" class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No analysis history found. Start by recording your first voice sample!</p>
+            <a href="record.html" class="btn-primary">
+                <i class="fas fa-microphone"></i> Start Recording
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer class="dashboard-footer">
+    <div class="footer-line"></div>
+    <div class="footer-content">
+        <p><i class="fas fa-shield-alt"></i> Your voice data is processed securely and stored for analysis only.</p>
+        <p class="copyright">&copy; 2026 Stress Tone AI. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    const API_BASE = window.location.origin;
+    let allData = [];
+    let currentFilter = 'all';
+
+    function checkAuth() {
+        const activeUser = sessionStorage.getItem('activeUser');
+        if (!activeUser) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        return true;
+    }
+
+    function logout() {
+        sessionStorage.removeItem('activeUser');
+        window.location.href = 'index.html';
+    }
+
+    function showError(message) {
+        document.getElementById('error-msg').textContent = message;
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('success-msg').style.display = 'none';
+        document.getElementById('info-msg').style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        document.getElementById('success-msg').textContent = message;
+        document.getElementById('success-msg').style.display = 'block';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('info-msg').style.display = 'none';
+    }
+
+    function showInfo(message) {
+        document.getElementById('info-msg').textContent = message;
+        document.getElementById('info-msg').style.display = 'block';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function clearMessages() {
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'none';
+        document.getElementById('info-msg').style.display = 'none';
+    }
+
+    function getStressBadgeClass(stressText) {
+        const text = stressText.toLowerCase();
+        if (text.includes('high')) return 'badge-high';
+        if (text.includes('medium') || text.includes('moderate')) return 'badge-medium';
+        return 'badge-low';
+    }
+
+    function calculateStats(data) {
+        if (data.length === 0) {
+            return {
+                total: 0,
+                highCount: 0,
+                avgScore: '--',
+                commonEmotion: '--'
+            };
+        }
+
+        const highCount = data.filter(item => item.stress_level.toLowerCase().includes('high')).length;
+        const avgScore = (data.reduce((sum, item) => sum + (parseFloat(item.score) || 0), 0) / data.length).toFixed(1);
+        
+        const emotions = {};
+        data.forEach(item => {
+            const emotion = item.emotion || 'Neutral';
+            emotions[emotion] = (emotions[emotion] || 0) + 1;
+        });
+
+        const emotionKeys = Object.keys(emotions);
+        const commonEmotion = emotionKeys.length > 0 ? 
+            emotionKeys.reduce((a, b) => emotions[a] > emotions[b] ? a : b) : '--';
+
+        return {
+            total: data.length,
+            highCount,
+            avgScore: avgScore + '%',
+            commonEmotion
+        };
+    }
+
+    function filterByDate(data, days) {
+        if (days === 'all') return data;
+
+        const dayCount = parseInt(days);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - dayCount);
+
+        return data.filter(item => {
+            try {
+                const itemDate = new Date(item.date);
+                return itemDate >= cutoffDate;
+            } catch {
+                return true;
+            }
+        });
+    }
+
+    function updateTable(data) {
+        const tableBody = document.getElementById('history-table-body');
+        const table = document.getElementById('history-table');
+        const emptyMsg = document.getElementById('empty-msg');
+
+        if (data.length === 0) {
+            table.style.display = 'none';
+            emptyMsg.classList.add('show');
+            return;
+        }
+
+        table.style.display = 'table';
+        emptyMsg.classList.remove('show');
+
+        tableBody.innerHTML = data.map(item => {
+            const score = parseFloat(item.score) || 0;
+            return `
+                <tr>
+                    <td>
+                        <strong>${item.date}</strong>
+                        <div class="time-text">${item.time || 'N/A'}</div>
+                    </td>
+                    <td>${item.duration || 'N/A'}</td>
+                    <td>
+                        <span class="badge ${getStressBadgeClass(item.stress_level)}">
+                            ${item.stress_level}
+                        </span>
+                    </td>
+                    <td>${item.emotion || 'N/A'}</td>
+                    <td><strong>${score.toFixed(1)}%</strong></td>
+                    <td>
+                        <button class="action-btn" title="View details">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateStats(data) {
+        const stats = calculateStats(data);
+        document.getElementById('total-analyses').textContent = stats.total;
+        document.getElementById('high-count').textContent = stats.highCount;
+        document.getElementById('avg-score').textContent = stats.avgScore;
+        document.getElementById('common-emotion').textContent = stats.commonEmotion;
+    }
+
+    async function loadHistory() {
+        clearMessages();
+        const loadingState = document.getElementById('loading-state');
+        const table = document.getElementById('history-table');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        loadingState.classList.remove('hidden');
+        table.style.display = 'none';
+        refreshBtn.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE}/api/history`);
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            allData = await response.json();
+            loadingState.classList.add('hidden');
+            refreshBtn.disabled = false;
+
+            if (!Array.isArray(allData) || allData.length === 0) {
+                document.getElementById('empty-msg').classList.add('show');
+                updateStats([]);
+                showInfo('No analysis records yet. Start recording to see your stats!');
+                return;
+            }
+
+            filterData(currentFilter);
+            showSuccess('History loaded successfully!');
+
+        } catch (error) {
+            loadingState.classList.add('hidden');
+            refreshBtn.disabled = false;
+            console.error('History load error:', error);
+            showError('Failed to load history: ' + error.message);
+            document.getElementById('empty-msg').classList.add('show');
+            updateStats([]);
+        }
+    }
+
+    function filterData(filterType, buttonElement) {
+        currentFilter = filterType;
+        
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        if (buttonElement) {
+            buttonElement.classList.add('active');
+        }
+
+        const filteredData = filterByDate(allData, filterType);
+        updateTable(filteredData);
+        updateStats(filteredData);
+    }
+
+    // Load history on page load
+    window.addEventListener('load', () => {
+        if (checkAuth()) {
+            loadHistory();
+        }
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadHistory, 30000);
+</script>
+
+</body>
+</html>

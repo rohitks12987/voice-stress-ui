@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Portal | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003d82;
+            --primary-dark: #002852;
+            --accent: #d32f2f;
+            --bg-light: #f5f5f5;
+            --card-blue: #e8f4fd;
+            --text-dark: #202124;
+            --text-light: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { background-color: var(--bg-light); color: var(--text-dark); display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Official Header */
+        .official-header {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 0.6rem 2rem;
+            border-bottom: 4px solid var(--accent);
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--primary);
+            color: var(--text-light);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .logo { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; align-items: center; gap: 5px; }
+        .nav-links a { 
+            color: rgba(255,255,255,0.85); 
+            text-decoration: none; 
+            margin-left: 20px; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            transition: 0.2s;
+            padding: 6px 12px;
+            border-radius: 2px;
+        }
+        .nav-links a:hover, .nav-links a.active { color: white; background: rgba(255,255,255,0.2); }
+        .nav-links a.logout { color: #ffb3b3; }
+
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 20px; flex: 1; width: 100%; }
+
+        .welcome-section h1 { font-size: 1.8rem; font-weight: 700; color: #111827; }
+        .welcome-section p { color: #6b7280; margin-bottom: 2rem; }
+
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card {
+            background: white; padding: 1.5rem; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .stat-info .label { font-size: 0.8rem; color: #6b7280; font-weight: 500; }
+        .stat-info .value { font-size: 1.4rem; font-weight: 700; color: #111827; display: block; margin-top: 5px; }
+        .stat-icon { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        
+        .icon-purple { background: #f3efff; color: #8b5cf6; }
+        .icon-red { background: #fff1f2; color: #f43f5e; }
+        .icon-yellow { background: #fffbeb; color: #fbbf24; }
+        .icon-green { background: #f0fdf4; color: #22c55e; }
+
+        /* Info Cards */
+        .info-card { background: var(--card-blue); border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid #c3dafe; }
+        .info-header { font-weight: 700; font-size: 1.1rem; color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; width: fit-content; padding-bottom: 3px; }
+        .tips-content { display: flex; justify-content: space-between; gap: 20px; }
+        .tip-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.9rem; font-weight: 500; }
+        .tip-item i { color: white; background: #3b82f6; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 3px; font-size: 0.7rem; }
+
+        /* Chart */
+        .probability-card { background: var(--card-blue); border-radius: 12px; padding: 20px; margin-bottom: 2rem; border: 1px solid #c3dafe; }
+        .chart-container { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; margin-top: 20px; border-bottom: 2px solid white; padding-bottom: 10px; }
+        .bar-group { display: flex; flex-direction: column; align-items: center; width: 60px; }
+        .bar-value { font-size: 0.85rem; font-weight: 700; color: #1e40af; margin-bottom: 5px; }
+        .bar { width: 100%; border-radius: 4px 4px 0 0; transition: 1s ease-in-out; min-height: 5px; }
+        .bar.low { background: #22c55e; }
+        .bar.moderate { background: #eab308; }
+        .bar.high { background: #ef4444; }
+
+        /* Ticker */
+        .news-ticker { background: #8888e6; color: var(--primary); padding: 8px 0; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; border-top: 2px solid #004080; border-bottom: 2px solid #004080; }
+        .scrolling-text { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        /* Modals */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 10% auto; border-radius: 20px; width: 90%; max-width: 450px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); animation: modalAppear 0.3s; overflow: hidden; }
+        @keyframes modalAppear { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { background: #003d82; color: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Floating & Emergency Buttons */
+        .floating-btn { position: fixed; bottom: 100px; right: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 600; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .floating-btn:hover { transform: translateY(-5px) scale(1.05); }
+        
+        .panic-btn { position: fixed; bottom: 100px; left: 30px; background: #d32f2f; color: white; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(211,47,47,0.4); z-index: 1000; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .panic-btn:hover { background: #b71c1c; transform: scale(1.1); }
+
+        /* Chatbot */
+        /* Government Chat Styling */
+.chat-bubble {
+    background: var(--primary) !important;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    height: auto !important;
+    width: auto !important;
+    border-radius: 12px !important;
+    bottom: 20px !important;
+}
+
+.bubble-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-top: 4px;
+    text-transform: uppercase;
+}
+
+.govt-header {
+    background: var(--primary-dark) !important;
+    padding: 15px !important;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.assistant-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.service-status {
+    font-size: 0.65rem;
+    color: #4ade80; /* Light Green */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chat-disclaimer {
+    background: #f1f5f9;
+    font-size: 0.7rem;
+    color: #475569;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    line-height: 1.3;
+}
+
+/* Message Styling */
+.bot-msg.govt-style {
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+    border-radius: 0 12px 12px 12px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.user-msg {
+    background: var(--primary) !important;
+    border-radius: 12px 0 12px 12px !important;
+}
+
+.msg-time {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    display: block;
+    padding-left: 5px;
+}
+
+.govt-footer {
+    padding: 12px !important;
+    background: #fff;
+}
+
+.send-btn-govt {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+        /* Footer */
+        .dashboard-footer { background: var(--primary); color: white; padding: 1.5rem; text-align: center; margin-top: auto; border-top: 4px solid var(--accent); }
+    .modal-body {
+    padding: 1.5rem !important;
+}
+
+.instruction-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.instruction-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.instruction-item:hover {
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.icon-box {
+    background: var(--primary);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.step-content h4 {
+    font-size: 1rem;
+    color: var(--primary);
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.step-number {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.step-content p {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.4;
+    margin: 0;
+}
+:root {
+    --sidebar-width: 350px;
+    --govt-navy: #1e293b;
+}
+
+.sidebar-bot {
+    height: 100%;
+    width: 0; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    background-color: #fff;
+    overflow-x: hidden;
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header with Profile style */
+.sidebar-header {
+    background: var(--govt-navy);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.officer-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-indicator.online {
+    width: 10px;
+    height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #22c55e;
+}
+
+.sidebar-disclaimer {
+    background: #f8fafc;
+    padding: 10px 20px;
+    font-size: 0.75rem;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Chat Body area */
+#chat-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #fdfdfd;
+}
+
+/* Footer & Input */
+.sidebar-footer {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #eee;
+}
+
+.input-container {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 25px;
+    padding: 5px 15px;
+    align-items: center;
+}
+
+.input-container input {
+    border: none;
+    background: transparent;
+    padding: 10px;
+    flex: 1;
+    outline: none;
+}
+
+.send-icon-btn {
+    background: none;
+    border: none;
+    color: var(--govt-navy);
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+/* State when open */
+.sidebar-open {
+    width: var(--sidebar-width);
+}
+</style>
+    
+</head>
+<body>
+
+<div class="official-header"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness</div>
+
+<nav class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i> Mental Stress Detection</div>
+    <div class="nav-links">
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="record.html">Record</a>
+        <a href="history.html">History</a>
+        <a href="#" onclick="logout()" class="logout">Logout</a>
+    </div>
+</nav>
+
+<div class="news-ticker">
+    <div class="scrolling-text">
+        <i class="fas fa-bell"></i> Inhale for 4s, hold for 4s, and exhale for 4s to reset your nervous system. | 
+        <i class="fas fa-bullhorn"></i> A quick 5-minute walk can reduce vocal tension. | 
+        <i class="fas fa-check-circle"></i> Hydration helps maintain a steady, stress-free tone.
+    </div>
+</div>
+
+<div class="container">
+    <section class="welcome-section">
+        <h1>Welcome back, <span id="user-name">User</span>!</h1>
+        <p>Your mental wellness dashboard</p>
+    </section>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-info"><span class="label">Total Analyses</span><span class="value" id="total-count">--</span></div>
+            <div class="stat-icon icon-purple"><i class="fas fa-microphone"></i></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info"><span class="label">Avg. Stress</span><span class="value" id="avg-stress">--</span></div>
+            <div class="stat-icon icon-red"><i class="fas fa-heartbeat"></i></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info"><span class="label">Emotion</span><span class="value" id="dom-emotion">--</span></div>
+            <div class="stat-icon icon-yellow"><i class="fas fa-smile"></i></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info"><span class="label">Last Check</span><span class="value" id="last-check">--</span></div>
+            <div class="stat-icon icon-green"><i class="fas fa-calendar-check"></i></div>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-header"><i class="fas fa-lightbulb"></i> Wellness Tips</div>
+        <div class="tips-content">
+            <div><div class="tip-item"><i class="fas fa-check"></i> Deep breathing</div><div class="tip-item"><i class="fas fa-check"></i> Short breaks</div></div>
+            <div><div class="tip-item"><i class="fas fa-check"></i> Music therapy</div><div class="tip-item"><i class="fas fa-check"></i> Stay hydrated</div></div>
+            <div><div class="tip-item"><i class="fas fa-check"></i> Daily walks</div><div class="tip-item"><i class="fas fa-check"></i> Regular exercise</div></div>
+        </div>
+    </div>
+
+    <div class="probability-card">
+        <div class="info-header">Stress Level Distribution</div>
+        <div class="chart-container">
+            <div class="bar-group"><div class="bar-value" id="low-percent">--</div><div class="bar low" id="low-bar"></div><div class="bar-label">Low</div></div>
+            <div class="bar-group"><div class="bar-value" id="moderate-percent">--</div><div class="bar moderate" id="moderate-bar"></div><div class="bar-label">Mod</div></div>
+            <div class="bar-group"><div class="bar-value" id="high-percent">--</div><div class="bar high" id="high-bar"></div><div class="bar-label">High</div></div>
+        </div>
+    </div>
+</div>
+
+<button class="panic-btn" onclick="openModal('panic-modal')"><i class="fas fa-exclamation-triangle"></i> EMERGENCY</button>
+<button class="floating-btn" onclick="openModal('help-modal')"><i class="fas fa-question-circle"></i> How to Use</button>
+
+<div id="help-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Instructions</h3><span class="close-btn" onclick="closeModal('help-modal')">&times;</span></div>
+        <div class="modal-body">
+    <div class="instruction-grid">
+        <div class="instruction-item">
+            <div class="icon-box"><i class="fas fa-microphone-alt"></i></div>
+            <div class="step-content">
+                <span class="step-number">STEP 01</span>
+                <h4>Vocal Clarity</h4>
+                <p>Speak in your <strong>natural tone</strong> for 10-15 seconds. Avoid exaggerated pitches or monotone delivery.</p>
+            </div>
+        </div>
+
+        <div class="instruction-item">
+            <div class="icon-box"><i class="fas fa-volume-mute"></i></div>
+            <div class="step-content">
+                <span class="step-number">STEP 02</span>
+                <h4>Environmental Check</h4>
+                <p>Ensure a <strong>silent background</strong>. External noise like fans or music can interfere with spectral analysis.</p>
+            </div>
+        </div>
+
+        <div class="instruction-item">
+            <div class="icon-box"><i class="fas fa-wind"></i></div>
+            <div class="step-content">
+                <span class="step-number">STEP 03</span>
+                <h4>Steady Respiration</h4>
+                <p>Maintain <strong>steady breathing</strong>. Avoid whispering or shouting, as this distorts Jitter and Shimmer metrics.</p>
+            </div>
+        </div>
+
+        <div class="instruction-item">
+            <div class="icon-box"><i class="fas fa-file-waveform"></i></div>
+            <div class="step-content">
+                <span class="step-number">STEP 04</span>
+                <h4>Signal Verification</h4>
+                <p>Listen to your capture before submission to ensure the <strong>audio signal</strong> is clear and distortion-free.</p>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<div id="panic-modal" class="modal">
+    <div class="modal-content" style="border-top: 10px solid #d32f2f;">
+        <div class="modal-header" style="background: #fee2e2; color: #991b1b;"><h3>SOS Assistance</h3><span class="close-btn" onclick="closeModal('panic-modal')">&times;</span></div>
+        <div class="modal-body" style="text-align: center;">
+            <p>Send your location to emergency contacts?</p>
+            <button class="panic-btn" style="position:static; width:100%; margin-top:20px;" onclick="sendSOS()">SEND SOS ALERT</button>
+            <div id="sos-status" style="margin-top: 15px; font-weight: bold;"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="chat-sidebar" class="sidebar-bot">
+    <div class="sidebar-header">
+        <div class="officer-profile">
+            <div class="status-indicator online"></div>
+            <div>
+                <h3>Wellness Officer</h3>
+                <small>Official AI Assistant</small>
+            </div>
+        </div>
+        <button class="close-sidebar" onclick="toggleSidebar(false)">&times;</button>
+    </div>
+
+    <div class="sidebar-disclaimer">
+        <i class="fas fa-shield-alt"></i> Secure Government Session
+    </div>
+
+    <div class="chat-body" id="chat-body">
+        <div class="bot-msg-wrapper">
+            <div class="bot-msg">System initialized. How can I assist with your health records today?</div>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="input-container">
+            <input type="text" id="chat-input" placeholder="Type your query..." onkeypress="handleKey(event)">
+            <button onclick="sendMessage()" class="send-icon-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<button class="open-bot-link" onclick="toggleSidebar(true)">
+    <i class="fas fa-robot"></i> Open AI Assistant
+</button>
+</div>
+
+<footer class="dashboard-footer">
+    <p><strong>Mental Health Portal</strong> — Ministry of Health</p>
+    <p style="font-size:0.75rem; opacity:0.8; margin-top:10px;">&copy; 2026 | HIPAA Compliant | Emergency: 1-800-HEALTH-123</p>
+</footer>
+
+<script>
+    // --- Dashboard Data Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const data = { total: 42, avg: "Moderate", emotion: "Calm", last: "2h ago", low: 60, mod: 30, high: 10 };
+            document.getElementById('total-count').innerText = data.total;
+            document.getElementById('avg-stress').innerText = data.avg;
+            document.getElementById('dom-emotion').innerText = data.emotion;
+            document.getElementById('last-check').innerText = data.last;
+
+            document.getElementById('low-percent').innerText = data.low + "%";
+            document.getElementById('low-bar').style.height = (data.low * 1.5) + "px";
+            document.getElementById('moderate-percent').innerText = data.mod + "%";
+            document.getElementById('moderate-bar').style.height = (data.mod * 1.5) + "px";
+            document.getElementById('high-percent').innerText = data.high + "%";
+            document.getElementById('high-bar').style.height = (data.high * 1.5) + "px";
+        }, 1000);
+        
+        addBotMessage("Hi! I'm your wellness bot. How are you feeling today?");
+    });
+
+    // --- Modal Logic ---
+    function openModal(id) { document.getElementById(id).style.display = "block"; }
+    function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+    // --- SOS Logic ---
+    function sendSOS() {
+        const status = document.getElementById('sos-status');
+        status.innerText = "Accessing GPS...";
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                status.style.color = "green";
+                status.innerText = "SUCCESS: SOS sent with location coordinates!";
+                console.log(`SOS Sent: Lat ${pos.coords.latitude}, Lon ${pos.coords.longitude}`);
+            }, () => { status.innerText = "Alert sent without GPS data."; });
+        }
+    }
+
+    // --- Chatbot Logic ---
+    function toggleChat(show) {
+        document.getElementById('chat-window').style.display = show ? 'flex' : 'none';
+        document.getElementById('chat-bubble').style.display = show ? 'none' : 'flex';
+    }
+
+    function addBotMessage(text) {
+        const div = document.createElement('div');
+        div.className = "bot-msg";
+        div.innerText = text;
+        document.getElementById('chat-body').appendChild(div);
+    }
+
+    function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const body = document.getElementById('chat-body');
+    const query = input.value.trim().toLowerCase();
+
+    if (!query) return;
+
+    // Append User Message
+    body.innerHTML += `
+        <div style="align-self: flex-end; margin-bottom:15px;">
+            <div class="user-msg">${input.value}</div>
+        </div>
+    `;
+
+    input.value = "";
+    
+    // Auto-scroll
+    body.scrollTop = body.scrollHeight;
+
+    // Professional Response Logic (Simulating NLP)
+    setTimeout(() => {
+        let response = "I have recorded your query. Please refer to the 'Wellness Tips' section for immediate guidance or consult a medical professional.";
+        
+        if (query.includes("stress") || query.includes("anxious")) {
+            response = "Analysis indicates elevated stress markers. I recommend the 4-7-8 breathing technique located in our Instruction manual.";
+        } else if (query.includes("report") || query.includes("history")) {
+            response = "You can view your historical vocal analysis data in the 'History' tab located in the navigation menu.";
+        } else if (query.includes("help") || query.includes("emergency")) {
+            response = "If you are in immediate distress, please click the red EMERGENCY button on your dashboard.";
+        }
+
+        body.innerHTML += `
+            <div class="bot-msg-wrapper" style="margin-bottom:15px;">
+                <div class="bot-msg govt-style">${response}</div>
+                <span class="msg-time">Verified Automated Assistant</span>
+            </div>
+        `;
+        body.scrollTop = body.scrollHeight;
+    }, 1000);
+}
+
+// Allow "Enter" key to send message
+function handleKey(e) {
+    if (e.key === 'Enter') sendMessage();
+}
+
+    function logout() {
+        alert("Logging out safely...");
+        window.location.href = "index.html";
+    }
+</script>
+<script>function toggleSidebar(show) {
+    const sidebar = document.getElementById("chat-sidebar");
+    if (show) {
+        sidebar.classList.add("sidebar-open");
+    } else {
+        sidebar.classList.remove("sidebar-open");
+    }
+}
+
+// Update your sendMessage slightly to match the new ID
+// (Use the Gemini API logic from our previous step)</script>
+
+</body>
+</html>

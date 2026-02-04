@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Portal | Submit Recording</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003d82;
+            --bg: #f8f9fd;
+            --dark-card: #1a1f2c;
+            --text-light: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; 
+        }
+        
+        body { 
+            background-color: var(--bg); 
+            color: #1f2937; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+
+        /* Navbar & Footer Theme */
+        .navbar, .record-footer {
+            background: var(--primary);
+            color: var(--text-light);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar {
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-links a { 
+            color: #e8dff5; 
+            text-decoration: none; 
+            margin-left: 20px; 
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active { 
+            color: white; 
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .nav-links a.logout {
+            color: #fca5a5;
+        }
+
+        .container { 
+            max-width: 800px; 
+            margin: 2rem auto; 
+            padding: 0 20px; 
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: none;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #dc2626;
+        }
+
+        .success-msg {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #16a34a;
+        }
+
+        .info-msg {
+            background: #dbeafe;
+            color: #0c4a6e;
+            border-color: #3b82f6;
+        }
+
+        /* Recording Card */
+        .record-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .record-card h2 { 
+            font-size: 1.5rem; 
+            margin-bottom: 1.5rem; 
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Timer */
+        .timer {
+            font-size: 2.5rem;
+            font-family: 'Courier New', monospace;
+            color: var(--danger);
+            font-weight: 700;
+            text-align: center;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        /* Waveform Box */
+        .waveform-box {
+            background: var(--dark-card);
+            height: 180px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .waveform-box.active {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            color: var(--danger);
+        }
+
+        .waveform-box i { 
+            font-size: 2.5rem; 
+            margin-bottom: 10px;
+            animation: none;
+        }
+
+        .waveform-box.active i {
+            animation: pulse-icon 1s infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .waveform-box p {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Buttons Container */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(76, 58, 127, 0.3);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(76, 58, 127, 0.4);
+        }
+
+        .mic-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .mic-btn.recording { 
+            background: var(--danger);
+            animation: pulse-btn 1.5s infinite;
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes pulse-btn { 
+            0% { transform: scale(1); } 
+            50% { transform: scale(1.1); } 
+            100% { transform: scale(1); } 
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .control-btn.show {
+            display: inline-block;
+        }
+
+        .btn-analyze {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-analyze:hover:not(:disabled) {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-reset {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            background: #4b5563;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Upload Area */
+        .upload-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .upload-section h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .upload-area {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .upload-area:hover { 
+            border-color: var(--primary); 
+            background: #faf9ff;
+        }
+
+        .upload-area i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .upload-area p { 
+            font-size: 1rem; 
+            color: #374151; 
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .upload-area small {
+            color: #6b7280;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* Status Message */
+        #status-msg { 
+            margin-top: 20px; 
+            font-weight: 600;
+            text-align: center;
+            min-height: 24px;
+        }
+
+        .status-recording {
+            color: var(--danger);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .status-uploading {
+            color: var(--warning);
+        }
+
+        .status-success {
+            color: var(--success);
+        }
+
+        .status-error {
+            color: var(--danger);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .record-footer {
+            padding: 1.25rem 0.5rem;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: auto;
+        }
+
+        .record-footer .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-line { 
+            height: 1px; 
+            background: rgba(255,255,255,0.2); 
+            max-width: 900px; 
+            margin: 0 auto 1rem; 
+        }
+
+        .record-footer p { 
+            font-size: 0.9rem; 
+            margin-bottom: 0.25rem; 
+            opacity: 0.95; 
+        }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 1rem; }
+            .nav-links { flex-wrap: wrap; }
+            .button-group { flex-direction: column; }
+            .mic-btn { width: 70px; height: 70px; }
+        }
+        .news-ticker { background: #8888e6; color: var(--primary); padding: 8px 0; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; border-top: 2px solid #004080; border-bottom: 2px solid #004080; }
+        .scrolling-text { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    </style>
+</head>
+<body>
+
+<div style="width:100%; background:#003d82; color:white; padding:0.6rem 2rem; border-bottom:4px solid #d32f2f; text-align:center; font-size:0.8rem; font-weight:600;"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal</div>
+
+<nav class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i>Mental Stress Detection Using Voice Tone Analysis</div>
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="record.html" class="active">Record</a>
+        <a href="history.html">History</a>
+        <a href="#" onclick="logout(); return false;" class="logout">Logout</a>
+    </div>
+</nav>
+<div class="news-ticker">
+    <div class="scrolling-text">
+        <i class="fas fa-bell"></i> Inhale for 4s, hold for 4s, and exhale for 4s to reset your nervous system. | 
+        <i class="fas fa-bullhorn"></i> A quick 5-minute walk can reduce vocal tension. | 
+        <i class="fas fa-check-circle"></i> Hydration helps maintain a steady, stress-free tone.
+    </div>
+</div>
+
+<div class="container">
+    <div id="error-msg" class="message error-msg"></div>
+    <div id="success-msg" class="message success-msg"></div>
+    <div id="info-msg" class="message info-msg"></div>
+
+    <div class="record-card">
+        <h2><i class="fas fa-microphone"></i> Record Your Voice</h2>
+        
+        <div class="waveform-box" id="waveform-container">
+            <i class="fas fa-wave-square"></i>
+            <p id="wave-text">Ready to listen...</p>
+        </div>
+
+        <div class="timer" id="timer">00:00</div>
+
+        <div class="button-group">
+            <button class="mic-btn" id="record-btn" title="Click to start recording">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="control-btn btn-analyze" id="analyze-btn" onclick="submitAudio()">
+                <i class="fas fa-check"></i> Analyze
+            </button>
+            <button class="control-btn btn-reset" id="reset-btn" onclick="resetRecording()">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+
+        <p id="status-msg"></p>
+
+        <div class="upload-section">
+            <h3>Or upload an existing audio file</h3>
+            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Click to upload audio file</p>
+                <small>WAV, MP3, M4A (Max 10MB)</small>
+                <input type="file" id="file-input" class="hidden" accept="audio/*">
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="record-footer">
+    <div class="footer-line"></div>
+    <div class="footer-content">
+        <p><i class="fas fa-shield-alt"></i> Your voice data is processed securely and used only for analysis.</p>
+    </div>
+</footer>
+
+<script>
+    const API_BASE = window.location.origin;
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordingStartTime = null;
+    let timerInterval = null;
+    let currentAudioBlob = null;
+
+    const recordBtn = document.getElementById('record-btn');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const statusMsg = document.getElementById('status-msg');
+    const waveText = document.getElementById('wave-text');
+    const waveformContainer = document.getElementById('waveform-container');
+    const timerEl = document.getElementById('timer');
+
+    function checkAuth() {
+        const activeUser = sessionStorage.getItem('activeUser');
+        if (!activeUser) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        return true;
+    }
+
+    function logout() {
+        sessionStorage.removeItem('activeUser');
+        window.location.href = 'index.html';
+    }
+
+    function showError(message) {
+        document.getElementById('error-msg').textContent = message;
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('success-msg').style.display = 'none';
+        document.getElementById('info-msg').style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        document.getElementById('success-msg').textContent = message;
+        document.getElementById('success-msg').style.display = 'block';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('info-msg').style.display = 'none';
+    }
+
+    function showInfo(message) {
+        document.getElementById('info-msg').textContent = message;
+        document.getElementById('info-msg').style.display = 'block';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function clearMessages() {
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'none';
+        document.getElementById('info-msg').style.display = 'none';
+    }
+
+    function updateTimer() {
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        recordingStartTime = Date.now();
+        timerEl.style.display = 'block';
+        timerInterval = setInterval(updateTimer, 100);
+        updateTimer();
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    recordBtn.onclick = async () => {
+        clearMessages();
+
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            // Start recording
+            try {
+                recordBtn.disabled = true;
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+                mediaRecorder.onstop = () => {
+                    stopTimer();
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    currentAudioBlob = audioBlob;
+                    
+                    recordBtn.classList.remove('recording');
+                    waveformContainer.classList.remove('active');
+                    recordBtn.disabled = false;
+                    recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    analyzeBtn.classList.add('show');
+                    resetBtn.classList.add('show');
+                    
+                    waveText.textContent = 'Ready to analyze...';
+                    statusMsg.textContent = 'Recording saved. Ready to analyze.';
+                    statusMsg.style.color = '#10b981';
+                };
+
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+                waveformContainer.classList.add('active');
+                recordBtn.disabled = false;
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                statusMsg.innerHTML = '<span class="status-recording"><span class="loading-spinner"></span>Recording...</span>';
+                waveText.textContent = 'Voice detected...';
+                startTimer();
+
+            } catch (error) {
+                recordBtn.disabled = false;
+                if (error.name === 'NotAllowedError') {
+                    showError('Microphone permission denied. Please allow access to continue.');
+                } else if (error.name === 'NotFoundError') {
+                    showError('No microphone found. Please check your device.');
+                } else {
+                    showError('Error accessing microphone: ' + error.message);
+                }
+            }
+        } else {
+            // Stop recording
+            mediaRecorder.stop();
+            const stream = mediaRecorder.stream;
+            stream.getTracks().forEach(track => track.stop());
+        }
+    };
+
+    document.getElementById('file-input').onchange = (e) => {
+        clearMessages();
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size exceeds 10MB limit.');
+                return;
+            }
+
+            currentAudioBlob = file;
+            analyzeBtn.classList.add('show');
+            resetBtn.classList.add('show');
+            statusMsg.textContent = `File selected: ${file.name}. Ready to analyze.`;
+            statusMsg.style.color = '#059669';
+            waveText.textContent = 'File ready';
+        }
+    };
+
+    async function submitAudio() {
+        clearMessages();
+
+        if (!currentAudioBlob) {
+            showError('No audio recorded or selected. Please record or upload audio first.');
+            return;
+        }
+
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<span class="loading-spinner"></span> Analyzing...';
+        statusMsg.innerHTML = '<span class="status-uploading"><span class="loading-spinner"></span>Sending to analysis...</span>';
+
+        try {
+            const formData = new FormData();
+            formData.append('audio', currentAudioBlob, 'recording.wav');
+
+            const response = await fetch(`${API_BASE}/api/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                showSuccess('Analysis complete! Redirecting to results...');
+                statusMsg.innerHTML = '<span class="status-success"><i class="fas fa-check-circle"></i> Analysis successful!</span>';
+                
+                // Store the result
+                localStorage.setItem('lastAnalysis', JSON.stringify(data));
+                
+                // Redirect after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'history.html';
+                }, 1500);
+            } else {
+                showError('Analysis failed: ' + (data.message || 'Unknown error'));
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-check"></i> Analyze';
+            }
+        } catch (error) {
+            showError('Connection error: ' + error.message + '. Make sure Flask server is running.');
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<i class="fas fa-check"></i> Analyze';
+        }
+    }
+
+    function resetRecording() {
+        clearMessages();
+        
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+        
+        stopTimer();
+        timerEl.style.display = 'none';
+        audioChunks = [];
+        currentAudioBlob = null;
+        mediaRecorder = null;
+        
+        recordBtn.classList.remove('recording');
+        waveformContainer.classList.remove('active');
+        recordBtn.disabled = false;
+        recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        analyzeBtn.classList.remove('show');
+        resetBtn.classList.remove('show');
+        
+        waveText.textContent = 'Ready to listen...';
+        statusMsg.textContent = '';
+        
+        document.getElementById('file-input').value = '';
+    }
+
+    // Check authentication on page load
+    window.addEventListener('load', checkAuth);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stress Tone AI | Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003d82;
+            --primary-dark: #002852;
+            --primary-light: #1a5ba8;
+            --accent: #d32f2f;
+            --bg: #f5f5f5;
+            --white: #ffffff;
+            --danger: #d32f2f;
+            --success: #1976d2;
+            --text-dark: #202124;
+            --text-light: #5f6368;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+        }
+
+        body { 
+            background: var(--bg); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 120px;
+        }
+
+        /* Official Header Bar */
+        .official-header {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-bottom: 4px solid var(--accent);
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            padding: 3rem 20px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            border-top: 4px solid var(--primary);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .gov-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        /* Update this existing class */
+.gov-seal {
+    width: 110px;
+    height: 110px;
+    /* Use white background for logos usually looks better than gradient */
+    background: #ffffff; 
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 61, 130, 0.35);
+    border: 4px solid var(--accent);
+    position: relative;
+    flex-shrink: 0;
+    
+    /* VITAL: This cuts the corners of the image to make it round */
+    overflow: hidden; 
+}
+
+/* Add this NEW rule for the image */
+.gov-seal img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures image fills circle without stretching */
+    display: block;
+}
+
+/* Remove or comment out the .gov-seal i rule since we aren't using the icon anymore */
+/* .gov-seal i {
+    display: block;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+} 
+*/
+
+        .gov-seal i {
+            display: block;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .gov-seal::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            opacity: 0.25;
+        }
+
+        .gov-text {
+            text-align: left;
+        }
+
+        .gov-text .ministry {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary);
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .gov-text .dept {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        h2 { 
+            margin-bottom: 0.5rem; 
+            color: var(--text-dark); 
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        p { 
+            color: var(--text-light); 
+            font-size: 0.9rem; 
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        /* Messages */
+        .error-message, .success-message {
+            padding: 12px 14px;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+            display: none;
+            font-size: 0.9rem;
+            border-left: 4px solid;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #d32f2f;
+        }
+
+        .success-message {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-color: #1976d2;
+        }
+
+        .message-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .message-text {
+            flex: 1;
+        }
+
+        /* Form */
+        .input-group { 
+            margin-bottom: 1.5rem; 
+            text-align: left; 
+        }
+
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            margin-bottom: 0.5rem; 
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            padding-left: 40px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: var(--white);
+            color: var(--text-dark);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.08);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            color: #9ca3af;
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        .input-group input:focus ~ .input-icon {
+            color: var(--primary);
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 11px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 2px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-auth:hover:not(:disabled) { 
+            background: var(--primary-dark);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-auth:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-auth:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toggle-text { 
+            margin-top: 1.5rem; 
+            font-size: 0.85rem; 
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .toggle-text span { 
+            color: var(--primary); 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .toggle-text span:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Features */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            padding: 4px 8px;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        .send-code-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            padding: 6px 12px;
+            font-weight: 600;
+            border-radius: 2px;
+        }
+
+        .send-code-btn:hover:not(:disabled) {
+            background: rgba(0, 61, 130, 0.08);
+            color: var(--primary-dark);
+        }
+
+        .send-code-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .verification-timer {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 6px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        #verification-code {
+            letter-spacing: 4px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Demo Credentials */
+        .demo-info {
+            background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
+            border: 2px solid var(--primary-light);
+            border-radius: 2px;
+            padding: 12px 14px;
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .demo-info strong {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-size: 0.75rem;
+        }
+
+        .demo-info em {
+            font-style: normal;
+            color: var(--primary);
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Footer Styles */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary);
+            border-top: 2px solid var(--accent);
+            padding: 1.5rem 2rem;
+            z-index: 100;
+            color: white;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .footer-left strong {
+            color: white;
+            font-weight: 600;
+        }
+
+        .footer-center {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-center a {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .footer-center a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .footer-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .footer-info {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.9);
+            white-space: nowrap;
+        }
+
+        .compliance-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: #10b981;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 2px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            footer {
+                padding: 1rem 1.5rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-center {
+                justify-content: center;
+                gap: 1.5rem;
+            }
+
+            .footer-right {
+                justify-content: center;
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            footer {
+                padding: 1rem;
+            }
+
+            .footer-left {
+                font-size: 0.75rem;
+                justify-content: center;
+                width: 100%;
+                text-align: center;
+            }
+
+            .footer-center {
+                gap: 1rem;
+                font-size: 0.75rem;
+            }
+
+            .footer-center a {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Add margin to body to prevent footer overlap */
+        body {
+            padding-bottom: 120px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-bottom: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Official Header -->
+<div class="official-header">
+    <i class="fas fa-shield-alt"></i> Official Government Health Service Portal | Ministry of Mental Health & Wellness
+</div>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo-section">
+            <div class="gov-logo">
+                <div class="gov-seal">
+                    <img src="https://odisha.gov.in/sites/default/files/styles/medium/public/2021-02/national-emblem1.png?itok=34RE5eSc" alt="Government Seal" />
+                    <i class="fas fa-shield-check">
+                    </i>
+                </div>
+                <div class="gov-text">
+                    <div class="ministry">Ministry of<br>Mental Health</div>
+                    <div class="dept">Government Health Service</div>
+                </div>
+            </div>
+            <h2 id="auth-title">Welcome Back</h2>
+            <p id="auth-desc">Secure Access to Your Mental Health Records</p>
+        </div>
+
+        <div class="error-message" id="error-msg">
+            <span class="message-text"></span>
+        </div>
+        <div class="success-message" id="success-msg">
+            <span class="message-text"></span>
+        </div>
+
+        <form id="auth-form" onsubmit="handleAuth(event)">
+            <div class="input-group" id="name-group">
+                <label for="name">Full Name</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        placeholder="Name" 
+                        autocomplete="name"
+                    >
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="your@email.com" 
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="••••••••" 
+                        required
+                        autocomplete="current-password"
+                    >
+                    <button 
+                        type="button" 
+                        class="password-toggle" 
+                        onclick="togglePasswordVisibility(this)"
+                        title="Show/hide password"
+                    >
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-group" id="age-group" style="display: none;">
+                <label for="age">Age</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input
+                        type="number"
+                        id="age"
+                        placeholder="Your age"
+                        min="13"
+                        max="120"
+                        autocomplete="off"
+                    >
+                </div>
+            </div>
+
+            <div class="input-group" id="captcha-group" style="display: none;">
+                <label for="captcha-answer">Captcha</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-shield-alt input-icon"></i>
+                    <div style="width:100%; display:flex; gap:8px; align-items:center;">
+                        <div id="captcha-question" style="padding:10px 12px; border:2px solid #e5e7eb; border-radius:8px; background:#f9fafb; min-width:120px; text-align:center;"></div>
+                        <input
+                            type="text"
+                            id="captcha-answer"
+                            placeholder="Answer"
+                            autocomplete="off"
+                            style="flex:1; padding:10px 12px; border:2px solid #e5e7eb; border-radius:8px;"
+                        >
+                        <button type="button" class="send-code-btn" onclick="generateCaptcha()" title="Refresh captcha">⟳</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="remember-me" />
+                <label for="remember-me" style="margin:0; font-size:0.9rem; color:#374151;">Remember me</label>
+            </div>
+
+            <button type="submit" class="btn-auth" id="auth-btn">
+                <span id="btn-text">Login Now</span>
+            </button>
+        </form>
+
+        <div class="demo-info" id="demo-info">
+            <strong>Demo Account</strong>
+            <div style="margin-top:6px; font-size:0.85rem;">Email: <em>test@example.com</em> | Password: <em>password123</em></div>
+            <div style="margin-top:10px; display:flex; gap:8px; justify-content:center;">
+                <button type="button" class="send-code-btn" onclick="useDemoLogin(false)" style="position:static; font-weight:700; padding:8px 12px; background:rgba(0,61,130,0.1); border:1px solid var(--primary-light); color:var(--primary);">Fill Demo</button>
+                <button type="button" class="send-code-btn" onclick="useDemoLogin(true)" style="position:static; font-weight:700; padding:8px 12px; background:rgba(0,61,130,0.1); border:1px solid var(--primary-light); color:var(--primary);">Use Demo</button>
+            </div>
+        </div>
+
+        <div class="toggle-text">
+            <span id="toggle-link" onclick="toggleMode()">Don't have an account? Sign Up</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isLoginMode = true;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let currentCaptchaAnswer = null;
+
+    function showError(message) {
+        const errorEl = document.getElementById('error-msg');
+        const textEl = errorEl.querySelector('.message-text');
+        textEl.textContent = message;
+        errorEl.style.display = 'block';
+        document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        const successEl = document.getElementById('success-msg');
+        const textEl = successEl.querySelector('.message-text');
+        textEl.textContent = message;
+        successEl.style.display = 'block';
+        document.getElementById('error-msg').style.display = 'none';
+    }
+
+    function clearMessages() {
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function showInfo(message) {
+        // reuse success message styling for lightweight info
+        const successEl = document.getElementById('success-msg');
+        const textEl = successEl.querySelector('.message-text');
+        textEl.textContent = message;
+        successEl.style.display = 'block';
+        document.getElementById('error-msg').style.display = 'none';
+        // auto-hide after short time
+        setTimeout(() => { try { successEl.style.display = 'none'; } catch(e){} }, 2500);
+    }
+
+    function togglePasswordVisibility(toggle) {
+        const input = document.getElementById('password');
+        const btn = toggle || document.querySelector('.password-toggle');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        } else {
+            input.type = 'password';
+            btn.innerHTML = '<i class="fas fa-eye"></i>';
+        }
+    }
+
+    function toggleMode() {
+        clearMessages();
+        isLoginMode = !isLoginMode;
+        const title = document.getElementById('auth-title');
+        const desc = document.getElementById('auth-desc');
+        const btn = document.getElementById('auth-btn');
+        const link = document.getElementById('toggle-link');
+        const form = document.getElementById('auth-form');
+        const nameGroup = document.getElementById('name-group');
+        const nameInput = document.getElementById('name');
+        const ageGroup = document.getElementById('age-group');
+        const ageInput = document.getElementById('age');
+
+        form.reset();
+        document.getElementById('password').type = 'password';
+        document.querySelector('.password-toggle').innerHTML = '<i class="fas fa-eye"></i>';
+
+        if (isLoginMode) {
+            title.textContent = "Welcome Back";
+            desc.textContent = "Analyze your voice, manage your stress";
+            document.getElementById('btn-text').textContent = "Login Now";
+            link.textContent = "Don't have an account? Sign Up";
+            nameInput.removeAttribute('required');
+            nameInput.placeholder = "John Doe";
+            if (ageGroup) ageGroup.style.display = 'none';
+            if (ageInput) ageInput.removeAttribute('required');
+            // hide captcha when in login mode
+            const captchaGroupHide = document.getElementById('captcha-group');
+            const captchaInputHide = document.getElementById('captcha-answer');
+            if (captchaGroupHide) captchaGroupHide.style.display = 'none';
+            if (captchaInputHide) captchaInputHide.removeAttribute('required');
+        } else {
+            title.textContent = "Create Account";
+            desc.textContent = "Join us to start tracking your mental health";
+            document.getElementById('btn-text').textContent = "Register Now";
+            link.textContent = "Already have an account? Login";
+            nameInput.setAttribute('required', 'required');
+            nameInput.placeholder = "Your Full Name";
+            if (ageGroup) ageGroup.style.display = 'block';
+            if (ageInput) ageInput.setAttribute('required', 'required');
+            // show captcha for signup
+            const captchaGroup = document.getElementById('captcha-group');
+            const captchaInput = document.getElementById('captcha-answer');
+            if (captchaGroup) captchaGroup.style.display = 'block';
+            if (captchaInput) captchaInput.setAttribute('required', 'required');
+            generateCaptcha();
+        }
+    }
+
+    
+
+    function generateCaptcha() {
+        // simple math captcha
+        const a = Math.floor(Math.random() * 12) + 3; // 3..14
+        const b = Math.floor(Math.random() * 12) + 1; // 1..12
+        const ops = ['+', '-'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let question = '';
+        let ans = 0;
+        if (op === '+') { question = `${a} + ${b}`; ans = a + b; }
+        else { question = `${a} - ${b}`; ans = a - b; }
+        currentCaptchaAnswer = ans;
+        const qEl = document.getElementById('captcha-question');
+        const input = document.getElementById('captcha-answer');
+        if (qEl) qEl.textContent = question;
+        if (input) input.value = '';
+    }
+
+    // Demo autofill / quick-login helper
+    function useDemoLogin(submit) {
+        const demoEmail = 'test@example.com';
+        const demoPass = 'password123';
+        document.getElementById('email').value = demoEmail;
+        document.getElementById('password').value = demoPass;
+        // show success message briefly when filling
+        if (!submit) {
+            showInfo('Demo credentials filled. Click Login to continue.');
+            return;
+        }
+
+        // Mark remember-me if user previously chose it
+        const remember = localStorage.getItem('rememberedEmail') === demoEmail;
+        document.getElementById('remember-me').checked = remember;
+
+        // submit the form programmatically
+        document.getElementById('auth-form').dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+
+    // Prefill remembered email on load and handle remember-me after login
+    function applyRememberedEmail() {
+        const remembered = localStorage.getItem('rememberedEmail');
+        if (remembered) {
+            const emailEl = document.getElementById('email');
+            if (emailEl) emailEl.value = remembered;
+            const rememberCb = document.getElementById('remember-me');
+            if (rememberCb) rememberCb.checked = true;
+        }
+    }
+
+    async function handleAuth(event) {
+        event.preventDefault();
+        clearMessages();
+
+        const email = document.getElementById('email').value.trim();
+        const pass = document.getElementById('password').value;
+        const name = document.getElementById('name').value.trim();
+        const btn = document.getElementById('auth-btn');
+        const btnText = document.getElementById('btn-text');
+        const originalText = btnText.textContent;
+        const ageEl = document.getElementById('age');
+        const age = ageEl ? parseInt(ageEl.value.trim() || '0', 10) : null;
+
+        // Validation
+        if (!email || !pass) {
+            showError("Please fill in all fields!");
+            return;
+        }
+
+        if (!isLoginMode && !name) {
+            showError("Please enter your full name!");
+            return;
+        }
+
+        if (!emailRegex.test(email)) {
+            showError("Please enter a valid email address!");
+            return;
+        }
+
+        if (pass.length < 8) {
+            showError("Password must be at least 8 characters long!");
+            return;
+        }
+
+        // Validate age and captcha on signup
+        if (!isLoginMode) {
+            if (!age || isNaN(age) || age < 13) {
+                showError("Please enter a valid age (13+)");
+                return;
+            }
+            const captchaInput = document.getElementById('captcha-answer');
+            const answer = captchaInput ? captchaInput.value.trim() : '';
+            if (!answer || isNaN(Number(answer)) || Number(answer) !== currentCaptchaAnswer) {
+                showError("Captcha incorrect. Please try again.");
+                // regenerate captcha for next attempt
+                generateCaptcha();
+                return;
+            }
+        }
+
+        // Disable button during submission
+        btn.disabled = true;
+        btnText.innerHTML = '<span class="loading-spinner"></span> ' + (isLoginMode ? 'Logging in...' : 'Registering...');
+
+        setTimeout(() => {
+            try {
+                if (isLoginMode) {
+                    // Login
+                    const storedUserData = localStorage.getItem(email);
+                    
+                    // Demo account (guest) — limited to 3 uses
+                    if (email === 'test@example.com' && pass === 'password123') {
+                        const guestKey = 'guestLoginCount';
+                        let guestCount = parseInt(localStorage.getItem(guestKey) || '0', 10);
+                        if (guestCount >= 3) {
+                            showError('Guest login limit reached (3). Please register.');
+                            btn.disabled = false;
+                            btnText.textContent = originalText;
+                            return;
+                        }
+
+                        // Ensure a guest user record exists in localStorage for demo
+                        const storedGuest = localStorage.getItem(email);
+                        if (!storedGuest) {
+                            const guestData = {
+                                name: 'Guest User',
+                                email: email,
+                                password: pass,
+                                age: null,
+                                registeredAt: new Date().toISOString(),
+                                demo: true
+                            };
+                            localStorage.setItem(email, JSON.stringify(guestData));
+                        }
+
+                        guestCount += 1;
+                        localStorage.setItem(guestKey, String(guestCount));
+                        showSuccess(`Login successful! Redirecting... (guest ${guestCount}/3)`);
+                        sessionStorage.setItem('activeUser', email);
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1200);
+                        return;
+                    }
+
+                    if (!storedUserData) {
+                        showError("Email not found. Please register first!");
+                        btn.disabled = false;
+                        btnText.textContent = originalText;
+                        return;
+                    }
+
+                    const storedUser = JSON.parse(storedUserData);
+                    if (storedUser.password === pass) {
+                        showSuccess("Login successful! Redirecting...");
+                        // store active session
+                        sessionStorage.setItem("activeUser", email);
+
+                        // apply remember-me preference
+                        try {
+                            const rememberMe = document.getElementById('remember-me');
+                            if (rememberMe && rememberMe.checked) {
+                                localStorage.setItem('rememberedEmail', email);
+                            } else {
+                                localStorage.removeItem('rememberedEmail');
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                        setTimeout(() => {
+                            window.location.href = "dashboard.html";
+                        }, 1200);
+                    } else {
+                        showError("Invalid password!");
+                        btn.disabled = false;
+                        btnText.textContent = originalText;
+                    }
+                } else {
+                    // Register
+                    if (email === 'test@example.com') {
+                        showError("This email is reserved for demo. Please use a different email.");
+                        btn.disabled = false;
+                        btnText.textContent = originalText;
+                        return;
+                    }
+
+                    if (localStorage.getItem(email)) {
+                        showError("Email already registered! Please login or use a different email.");
+                        btn.disabled = false;
+                        btnText.textContent = originalText;
+                        return;
+                    }
+
+                    const userData = { 
+                        name: name,
+                        email: email, 
+                        password: pass, 
+                        age: age || null,
+                        registeredAt: new Date().toISOString() 
+                    };
+                    localStorage.setItem(email, JSON.stringify(userData));
+                    showSuccess("Registration successful! Switching to login...");
+                    
+                    setTimeout(() => {
+                        document.getElementById('auth-form').reset();
+                        document.getElementById('password').type = 'password';
+                        document.querySelector('.password-toggle').innerHTML = '<i class="fas fa-eye"></i>';
+                        toggleMode();
+                        // remember preference not set on fresh reg; clear remember-me
+                        try { localStorage.removeItem('rememberedEmail'); } catch(e) {}
+                        btn.disabled = false;
+                        btnText.textContent = "Login Now";
+                    }, 1500);
+                }
+            } catch (error) {
+                showError("An error occurred. Please try again.");
+                btn.disabled = false;
+                btnText.textContent = originalText;
+                console.error("Auth error:", error);
+            }
+        }, 600);
+    }
+
+    // Clear messages when user starts typing
+    document.getElementById('email').addEventListener('focus', clearMessages);
+    document.getElementById('password').addEventListener('focus', clearMessages);
+
+    // Pre-fill demo credentials
+    window.addEventListener('load', () => {
+        // Apply any remembered email and keep form ready
+        try { applyRememberedEmail(); } catch (e) { /* ignore */ }
+    });
+</script>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-left">
+            <strong>Stress Tone AI Portal</strong> — Ministry of Mental Health & Wellness
+            <div class="footer-divider"></div>
+            <span class="compliance-badge"><i class="fas fa-lock"></i> HIPAA Compliant</span>
+        </div>
+        
+        <div class="footer-center">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms & Conditions</a>
+            <a href="#security">Security</a>
+            <a href="#accessibility">Accessibility</a>
+            <a href="#contact">Contact Us</a>
+        </div>
+
+        <div class="footer-right">
+            <div class="footer-info">
+                <i class="fas fa-phone"></i> 1-800-HEALTH-1
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-info">
+                <i class="fas fa-globe"></i> www.health.gov
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

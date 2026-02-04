@@ -1,0 +1,147 @@
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+
+.main-container {
+    display: flex;
+    justify-content: center;
+    padding: 50px 20px;
+}
+
+.recording-card {
+    background: white;
+    width: 100%;
+    max-width: 800px;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+.header {
+    display: flex;
+    justify-content: space-between; /* Isse links right side chale jayenge */
+    align-items: center;
+    padding: 15px 5%;
+    background: #4c3a7f; /* Aapki theme ka color */
+    color: #e8dff5;
+}
+body {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); /* Blue gradient */
+}
+:root {
+    /* White ki jagah ye colors use karein */
+    --bg-body: #f0f4f8;   /* Soft Blue-Grey (Calming) */
+    --white: #fdfdfd;     /* Pure white ki jagah off-white cards */
+    --border: #d1d5db;    /* Borders ko thoda dark karein */
+}
+h2 { color: #2d3436; margin-bottom: 30px; }
+
+/* Waveform Box */
+.waveform-container {
+    background: #1a1a2e;
+    height: 180px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+.wave-icon { font-size: 40px; margin-bottom: 10px; }
+
+/* Live Waveform Animation Placeholder */
+.live-bars { display: flex; gap: 5px; height: 40px; align-items: center; }
+.live-bars span {
+    width: 4px; height: 10px; background: #6c5ce7;
+    animation: bounce 0.5s infinite alternate;
+}
+@keyframes bounce { from { height: 10px; } to { height: 40px; } }
+
+/* Mic Button */
+.mic-btn {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+    transition: 0.3s;
+    margin-bottom: 30px;
+}
+
+.recording-active { background: #ff4757; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
+
+/* Upload Area */
+.upload-box {
+    border: 2px dashed #dfe6e9;
+    padding: 30px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-bottom: 30px;
+}
+.upload-box:hover { background: #f8f9fa; border-color: #6c5ce7; }
+.upload-box i { font-size: 35px; color: #b2bec3; }
+.upload-box p { margin: 10px 0 5px; font-weight: bold; color: #2d3436; }
+.upload-box span { font-size: 12px; color: #b2bec3; }
+
+/* Tips Box */
+.tips-box {
+    background: #f0f3ff;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: left;
+}
+.tips-box h4 { color: #3f51b5; margin-top: 0; }
+.tips-box ul { padding-left: 20px; color: #555; font-size: 14px; line-height: 1.8; }
+bottom-disclaimer {
+    background-color: #1a2a3a; /* Dark background as per your image */
+    color: #cbd5e0; /* Light grey text color */
+    padding: 20px 10px;
+    text-align: center;
+    width: 100%;
+    margin-top: 40px; /* Space from cards above */
+    border-top: 1px solid #2d3748;
+}
+
+.disclaimer-text p {
+    margin: 5px 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.disclaimer-text i {
+    margin-right: 6px;
+    color: #fff;
+}
+
+.disclaimer-text strong {
+    color: #e8dff5;
+    font-size: 14px;
+}
+.bottom-disclaimer {
+    background-color: #4c3a7f; /* Dark background as per your image */
+    color: #e8dff5; /* Light grey text color */
+    padding: 20px 10px;
+    text-align: center;
+    width: 100%;
+    margin-top: 40px; /* Space from cards above */
+    border-top: 1px solid #6b4e9a;
+}
+
+/* Footer Styling */
+footer {
+    background: linear-gradient(90deg, #4c3a7f, #6b4e9a);
+    color: #e8dff5;
+    text-align: center;
+    padding: 2rem;
+    margin-top: 3rem;
+    border-top: 1px solid rgba(0,0,0,0.2);
+}
