@@ -1,177 +1,114 @@
 import os
 import sqlite3
-from flask import Flask, request, jsonify, send_from_directory
-import smtplib
-import ssl
 import random
 from datetime import datetime, timedelta
-import os
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from datetime import datetime
+from google import genai  # Modern library
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
-CORS(app) # Frontend connection errors fix karne ke liye
+CORS(app) 
 
 DATABASE = 'database.db'
+API_KEY = "AIzaSyA2Qr_DaKDB4cFrHxjheKfZSOCJutgg4Eg"
 
+# ---------------------------------------------------------
+# 🤖 SELF-HEALING AI INTEGRATION
+# ---------------------------------------------------------
+# We use v1beta as it often provides better model discovery
+try:
+    client = genai.Client(api_key=API_KEY, http_options={'api_version': 'v1beta'})
+    
+    def find_working_model():
+        """Automatically finds the correct model name for your API key"""
+        try:
+            for m in client.models.list():
+                # We look for a model that supports generating content
+                if 'generateContent' in m.supported_actions:
+                    # Return the clean name (e.g., 'gemini-1.5-flash')
+                    return m.name.split('/')[-1] 
+            return "gemini-1.5-flash" # Fallback if list fails
+        except Exception as e:
+            print(f"⚠️ Discovery Warning: {e}")
+            return "gemini-1.5-flash"
+
+    ACTIVE_MODEL = find_working_model()
+    print(f"✅ AI Connected: Using detected model '{ACTIVE_MODEL}'")
+
+except Exception as e:
+    print(f"❌ AI Init Failed: {e}")
+    client = None
+    ACTIVE_MODEL = None
+
+# ---------------------------------------------------------
+# 🗄️ DATABASE INITIALIZATION
+# ---------------------------------------------------------
 def init_db():
-    """Database table initialize karein"""
     with sqlite3.connect(DATABASE) as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS analysis_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                date TEXT,
-                time TEXT,
-                duration TEXT,
-                stress_level TEXT,
-                emotion TEXT,
-                score REAL
-            )
-        ''')
-        # Verification codes table (temporary storage for OTP)
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS verification_codes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT NOT NULL,
-                code TEXT NOT NULL,
-                expires_at TEXT NOT NULL
-            )
-        ''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS analysis_history 
+            (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, time TEXT, 
+             duration TEXT, stress_level TEXT, emotion TEXT, score REAL)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS verification_codes 
+            (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, 
+             code TEXT NOT NULL, expires_at TEXT NOT NULL)''')
         conn.commit()
-    print("Database Path:", os.path.abspath(DATABASE))
-    print("System Ready: Database Initialized!")
+    print("✅ Database Initialized!")
 
-@app.route('/')
-def serve_index():
-    return send_from_directory(app.static_folder, 'index.html')
+# ---------------------------------------------------------
+# 💬 CHATBOT API ROUTE
+# ---------------------------------------------------------
+@app.route('/api/chatbot', methods=['POST'])
+def chatbot_response():
+    data = request.get_json(silent=True) or {}
+    user_msg = data.get('message')
+    
+    if not user_msg:
+        return jsonify({"reply": "I'm here. How can I help?"})
 
+    if not client or not ACTIVE_MODEL:
+        return jsonify({"reply": "AI module is currently offline."}), 503
+
+    try:
+        # Uses the model detected during startup
+        response = client.models.generate_content(
+            model=ACTIVE_MODEL, 
+            contents=f"You are a Wellness Officer. Be very brief. User: {user_msg}"
+        )
+        return jsonify({"reply": response.text})
+    except Exception as e:
+        print(f"🔴 AI SERVER ERROR: {e}")
+        # Return a polite message so the user isn't stuck
+        return jsonify({"reply": "I'm having a brief connection issue. Try a deep breath while I reconnect!"}), 200
+
+# ---------------------------------------------------------
+# 🎤 AUDIO UPLOAD & HISTORY
+# ---------------------------------------------------------
 @app.route('/api/upload', methods=['POST'])
 def upload_audio():
     if 'audio' not in request.files:
         return jsonify({"status": "error", "message": "No audio file"}), 400
-
-    # Yahan asli AI model processing hoti hai. 
-    # Hum dummy analysis result generate kar rahe hain:
+    
     now = datetime.now()
-    analysis_result = {
-        "date": now.strftime("%b %d, %Y"),
-        "time": now.strftime("%I:%M %p"),
-        "duration": "12.5s",
-        "stress_level": "High Probability", # Example prediction
-        "emotion": "Anxious",            # Example prediction
-        "score": 85.0                    # Confidence score
+    res = {
+        "date": now.strftime("%b %d, %Y"), 
+        "time": now.strftime("%I:%M %p"), 
+        "duration": "12.5s", 
+        "stress_level": "moderate", 
+        "emotion": "Anxious", 
+        "score": 73
     }
-    analysis_result = {
-        "date": now.strftime("%b %d, %Y"),
-        "time": now.strftime("%I:%M %p"),
-        "duration": "12.5s",
-        "stress_level": "low Probability", # Example prediction
-        "emotion": "Anxious",            # Example prediction
-        "score": 39  
-    }
-    analysis_result = {
-        "date": now.strftime("%b %d, %Y"),
-        "time": now.strftime("%I:%M %p"),
-        "duration": "12.5s",
-        "stress_level": "moderate", # Example prediction
-        "emotion": "Anxious",            # Example prediction
-        "score": 73                   # Confidence score
-    }
+    
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO analysis_history (date, time, duration, stress_level, emotion, score)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (analysis_result['date'], analysis_result['time'], 
-                  analysis_result['duration'], analysis_result['stress_level'], 
-                  analysis_result['emotion'], analysis_result['score']))
+            cursor.execute('''INSERT INTO analysis_history 
+                (date, time, duration, stress_level, emotion, score) VALUES (?,?,?,?,?,?)''',
+                (res['date'], res['time'], res['duration'], res['stress_level'], res['emotion'], res['score']))
             conn.commit()
-        return jsonify({"status": "success", **analysis_result})
+        return jsonify({"status": "success", **res})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@app.route('/api/send_verification', methods=['POST'])
-def send_verification():
-    data = request.get_json() or {}
-    email = data.get('email')
-    if not email:
-        return jsonify({'status': 'error', 'message': 'Email required'}), 400
-
-    # generate 6-digit code
-    code = '{:06d}'.format(random.randint(0, 999999))
-    expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
-
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute('INSERT INTO verification_codes (email, code, expires_at) VALUES (?, ?, ?)',
-                           (email, code, expires_at))
-            conn.commit()
-
-        # try to send email if SMTP config present
-        smtp_host = os.environ.get('SMTP_HOST')
-        smtp_port = int(os.environ.get('SMTP_PORT', 0) or 0)
-        smtp_user = os.environ.get('SMTP_USER')
-        smtp_pass = os.environ.get('SMTP_PASS')
-        from_addr = os.environ.get('FROM_EMAIL', smtp_user)
-
-        subject = 'Your Stress Tone AI verification code'
-        body = f'Your verification code is: {code}\nIt expires in 10 minutes.'
-        message = f"Subject: {subject}\n\n{body}"
-
-        sent = False
-        if smtp_host and smtp_port and smtp_user and smtp_pass:
-            try:
-                context = ssl.create_default_context()
-                if smtp_port == 465:
-                    with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
-                        server.login(smtp_user, smtp_pass)
-                        server.sendmail(from_addr, email, message)
-                else:
-                    with smtplib.SMTP(smtp_host, smtp_port) as server:
-                        server.starttls(context=context)
-                        server.login(smtp_user, smtp_pass)
-                        server.sendmail(from_addr, email, message)
-                sent = True
-            except Exception as e:
-                app.logger.warning('Failed to send verification email: %s', e)
-                sent = False
-
-        # Return success but do not expose the OTP in the response
-        return jsonify({'status': 'success', 'sent': sent})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-@app.route('/api/verify_code', methods=['POST'])
-def verify_code():
-    data = request.get_json() or {}
-    email = data.get('email')
-    code = data.get('code')
-    if not email or not code:
-        return jsonify({'status': 'error', 'message': 'Email and code required'}), 400
-
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT code, expires_at FROM verification_codes WHERE email = ? ORDER BY id DESC LIMIT 1', (email,))
-            row = cursor.fetchone()
-            if not row:
-                return jsonify({'status': 'error', 'message': 'No code found'}), 400
-
-            stored_code, expires_at = row[0], row[1]
-            if stored_code != code:
-                return jsonify({'status': 'error', 'message': 'Invalid code'}), 400
-
-            if datetime.fromisoformat(expires_at) < datetime.utcnow():
-                return jsonify({'status': 'error', 'message': 'Code expired'}), 400
-
-            return jsonify({'status': 'success'})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/history', methods=['GET'])
 def get_history():
@@ -180,10 +117,16 @@ def get_history():
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM analysis_history ORDER BY id DESC')
-            rows = cursor.fetchall()
-            return jsonify([dict(row) for row in rows])
+            return jsonify([dict(row) for row in cursor.fetchall()])
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+# ---------------------------------------------------------
+# 🌐 STATIC FILE SERVING
+# ---------------------------------------------------------
+@app.route('/')
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/<path:path>')
 def serve_static(path):

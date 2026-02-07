@@ -603,64 +603,119 @@
     <p><strong>Mental Health Portal</strong> — Ministry of Health</p>
     <p style="font-size:0.75rem; opacity:0.8; margin-top:10px;">&copy; 2026 | HIPAA Compliant | Emergency: 1-800-HEALTH-123</p>
 </footer>
-<script>
-    const API_KEY = "AIzaSyAD2GxUlRiXE-QCfOWQganicEoLQBHoZ8s";
-    const MODEL = "gemini-1.5-flash"; // The most stable production name
+<script src="faq-data.js"></script>
 
+<script>
+    // --- 1. Dashboard Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const data = { total: 42, avg: "Moderate", emotion: "Calm", last: "2h ago", low: 60, mod: 30, high: 10 };
+        const updateEl = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
+        
+        updateEl('total-count', data.total);
+        updateEl('avg-stress', data.avg);
+        updateEl('dom-emotion', data.emotion);
+        updateEl('last-check', data.last);
+        
+        if(document.getElementById('low-bar')) {
+            document.getElementById('low-bar').style.height = (data.low * 1.5) + "px";
+            document.getElementById('moderate-bar').style.height = (data.mod * 1.5) + "px";
+            document.getElementById('high-bar').style.height = (data.high * 1.5) + "px";
+        }
+    });
+
+    // --- 2. Chat Logic ---
     async function sendMessage() {
         const input = document.getElementById('chat-input');
         const body = document.getElementById('chat-body');
         const status = document.getElementById('last-msg-time');
-        const text = input.value.trim();
+        const userText = input.value.trim();
 
-        if (!text) return;
+        if (!userText) return;
 
-        body.innerHTML += `<div style="text-align:right; margin-bottom:15px;"><div style="display:inline-block; background:#f1f1f1; padding:8px 12px; border-radius:8px; font-size:0.85rem;">${text}</div></div>`;
+        // Show user message
+        body.innerHTML += `<div style="text-align:right; margin-bottom:15px;"><div style="display:inline-block; background:#f1f1f1; padding:8px 12px; border-radius:8px; font-size:0.85rem;">${userText}</div></div>`;
         input.value = "";
-        status.innerText = "Connecting...";
+        body.scrollTop = body.scrollHeight;
 
+        // --- SMART LOCAL FAQ CHECK ---
+        let lowText = userText.toLowerCase();
+        if (typeof faqData !== 'undefined') {
+            const matchedKey = Object.keys(faqData).find(key => lowText.includes(key.toLowerCase()));
+            if (matchedKey) {
+                status.innerText = "Officer is typing...";
+                setTimeout(() => {
+                    addBotMessage(faqData[matchedKey]);
+                    status.innerText = "Online";
+                }, 600);
+                return; 
+            }
+        }
+
+        // --- API CALL TO BACKEND ---
+        status.innerText = "Consulting AI...";
         try {
-            // Using v1 (Stable) instead of v1beta
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${API_KEY}`, {
+            const response = await fetch('http://127.0.0.1:8000/api/chatbot', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: text }] }]
-                })
+                body: JSON.stringify({ message: userText })
             });
-
+            
             const data = await response.json();
-
-            if (!response.ok) {
-                // This will tell us if the API is still disabled (403/404) or Quota hit (429)
-                throw new Error(data.error ? data.error.message : "API Error");
+            
+            if (response.ok) {
+                addBotMessage(data.reply);
+                status.innerText = "Online";
+            } else {
+                throw new Error(data.reply || "Server Error");
             }
 
-            const aiText = data.candidates[0].content.parts[0].text;
-            status.innerText = "Online";
-            body.innerHTML += `<div class="message-row" style="display:flex; gap:10px; margin-bottom:15px;"><div style="background:#eaf6ff; padding:10px; border-radius:8px; font-size:0.85rem; border:1px solid #d0e8ff;"><strong>Wellness Officer</strong><br>${aiText}</div></div>`;
         } catch (e) {
-            console.error(e);
-            status.innerText = "Error";
-            body.innerHTML += `<div style="color:red; font-size:0.75rem; text-align:center; margin-top:10px;">Error: ${e.message}<br>Please ensure the 'Generative Language API' is ENABLED in your Google Cloud Console.</div>`;
+            console.error("Chat Error:", e);
+            status.innerText = "Offline";
+            body.innerHTML += `<div style="color:red; font-size:0.7rem; text-align:center; padding:10px;">Connection issue. Is the Python backend running?</div>`;
         }
+    }
+
+    // --- 3. UI HELPERS ---
+    function addBotMessage(text) {
+        const body = document.getElementById('chat-body');
+        const messageId = 'msg-' + Date.now();
+        
+        body.innerHTML += `
+            <div class="message-row" style="display:flex; gap:10px; margin-bottom:15px;">
+                <img src="https://interviewtimes.net/wp-content/uploads/2025/01/448250365_481414594396194_3557635209793538322_n.jpg" style="width:30px; height:30px; border-radius:50%;">
+                <div style="background:#eaf6ff; padding:10px; border-radius:8px; font-size:0.85rem; border:1px solid #d0e8ff;">
+                    <strong>Wellness Officer</strong><br><span id="${messageId}"></span>
+                </div>
+            </div>`;
+        
+        typeWriter(text, messageId);
         body.scrollTop = body.scrollHeight;
     }
 
+    function typeWriter(text, elementId) {
+        let i = 0;
+        const speed = 20; // Lower is faster
+        const element = document.getElementById(elementId);
+        function type() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+                const body = document.getElementById('chat-body');
+                body.scrollTop = body.scrollHeight;
+            }
+        }
+        type();
+    }
+
+    function toggleChat(show) {
+        document.getElementById('chat-window').style.display = show ? 'flex' : 'none';
+        document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex';
+    }
     function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
-    
-    // Existing Dashboard logic below...
-    document.addEventListener('DOMContentLoaded', () => {
-        const data = { total: 42, avg: "Moderate", emotion: "Calm", last: "2h ago", low: 60, mod: 30, high: 10 };
-        document.getElementById('total-count').innerText = data.total;
-        document.getElementById('avg-stress').innerText = data.avg;
-        document.getElementById('dom-emotion').innerText = data.emotion;
-        document.getElementById('last-check').innerText = data.last;
-        document.getElementById('low-bar').style.height = (data.low * 1.5) + "px";
-        document.getElementById('moderate-bar').style.height = (data.mod * 1.5) + "px";
-        document.getElementById('high-bar').style.height = (data.high * 1.5) + "px";
-    });
-    function toggleChat(show) { document.getElementById('chat-window').style.display = show ? 'flex' : 'none'; document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex'; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
 </body>
 </html>
