@@ -326,12 +326,17 @@
 
 /* Chat Body area */
 #chat-body {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background: #fdfdfd;
+    background-color: #e5ddd5;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Official WhatsApp doodle background */
+    background-repeat: repeat;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
+.message-row img {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 /* Footer & Input */
 .sidebar-footer {
     padding: 20px;
@@ -566,9 +571,9 @@
     </div>
 
     <div class="agent-profile-area">
-        <img src="https://www.onlinelogomaker.com/blog/wp-content/uploads/2017/07/medical-logo.jpg" alt="Officer">
+        <img src="https://s7d1.scene7.com/is/image/wbcollab/India_PM_Narendra_Modi-2?qlt=75&resMode=sharp2" alt="Officer">
         <div class="agent-text">
-            <span class="agent-name">👨🏻‍💼 Wellness Officer</span>
+            <span class="agent-name">Wellness Officer👨🏻‍💼</span>
             <span class="agent-status">Online</span>
         </div>
     </div>
@@ -577,7 +582,7 @@
         <div class="message-row bot" style="display:flex; gap:10px; margin-bottom:15px;">
             <img src="https://interviewtimes.net/wp-content/uploads/2025/01/448250365_481414594396194_3557635209793538322_n.jpg" class="chat-avatar" style="width:35px; height:35px; border-radius:50%;">
             <div class="chat-bubble-tail" style="background:#eaf6ff; padding:10px; border-radius:8px; border:1px solid #d0e8ff;">
-                <strong>👨🏻‍💼 Officer</strong><br>
+                <strong>Consultant👨🏻‍💼</strong><br>
                 Hello! I am your AI Wellness Consultant. How can I help you today?
             </div>
         </div>
@@ -677,21 +682,39 @@
     }
 
     // --- 3. UI HELPERS ---
-    function addBotMessage(text) {
-        const body = document.getElementById('chat-body');
-        const messageId = 'msg-' + Date.now();
-        
-        body.innerHTML += `
-            <div class="message-row" style="display:flex; gap:10px; margin-bottom:15px;">
-                <img src="https://interviewtimes.net/wp-content/uploads/2025/01/448250365_481414594396194_3557635209793538322_n.jpg" style="width:30px; height:30px; border-radius:50%;">
-                <div style="background:#eaf6ff; padding:10px; border-radius:8px; font-size:0.85rem; border:1px solid #d0e8ff;">
-                    <strong>Wellness Officer</strong><br><span id="${messageId}"></span>
-                </div>
-            </div>`;
-        
+    // --- Updated User Message Logic --
+
+// --- Updated Officer Message Logic ---
+function addBotMessage(text) {
+    const body = document.getElementById('chat-body');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
+    
+    // Use the officer's photo URL
+    const officerPhoto = "https://interviewtimes.net/wp-content/uploads/2025/01/448250365_481414594396194_3557635209793538322_n.jpg";
+
+    body.innerHTML += `
+        <div class="message-row bot-row">
+            <img src="${officerPhoto}" class="chat-avatar">
+            <div class="bot-bubble">
+                <strong class="officer-name">Officer</strong><br>
+                ${text}
+                <div class="chat-time">${time}</div>
+            </div>
+        </div>`;
+    body.scrollTop = body.scrollHeight;
+}
+    body.innerHTML += `
+        <div class="message-row" style="display: flex; justify-content: flex-start; align-items: flex-end; gap: 8px; margin-bottom: 15px;">
+            <img src="${officerPhoto}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd;">
+            <div style="background: #ffffff; padding: 8px 12px; border-radius: 15px 15px 15px 0; font-size: 0.85rem; max-width: 70%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); border: 1px solid #eaeaea;">
+                <strong style="color: #075e54; font-size: 0.75rem;">Officer</strong><br>
+                ${text}
+                <div style="font-size: 0.65rem; color: #999; margin-top: 4px;">${time}</div>
+            </div>
+        </div>`;
+    body.scrollTop = body.scrollHeight;
         typeWriter(text, messageId);
         body.scrollTop = body.scrollHeight;
-    }
 
     function typeWriter(text, elementId) {
         let i = 0;
