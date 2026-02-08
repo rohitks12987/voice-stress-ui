@@ -217,7 +217,7 @@
 .instruction-grid {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.2rem;
 }
 
 .instruction-item {
@@ -489,6 +489,93 @@
     border-radius: 4px;
     text-align: center;
 }
+.water-btn {
+    background: white;
+    border: 1px solid #00adef;
+    color: #00adef;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.water-btn:hover {
+    background: #00adef;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 173, 239, 0.2);
+}
+
+.water-tracker {
+    background: linear-gradient(to right, #ffffff, #f0f9ff) !important;
+}
+.reading-box {
+    background: #ffffff;
+    border: 1px dashed #003d82;
+    padding: 20px;
+    margin: 15px 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #333;
+    border-radius: 8px;
+    font-style: italic;
+    text-align: center;
+}
+
+.scan-instructions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ins-item {
+    font-size: 0.85rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-decoration: underline;
+}
+
+.start-scan-btn {
+    display: inline-block;
+    background: var(--primary);
+    color: white !important;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 61, 130, 0.3);
+    transition: 0.3s;
+}
+
+.start-scan-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+}
+
+.pulse-mic {
+    margin-right: 10px;
+    animation: mic-pulse 1.5s infinite;
+}
+
+@keyframes mic-pulse {
+    0% { transform: scale(1); color: #fff; }
+    50% { transform: scale(1.2); color: #ffb3b3; }
+    100% { transform: scale(1); color: #fff; }
+}
 </style>
     
 </head>
@@ -615,6 +702,49 @@
         </a>
     </div>
 </div>
+<div class="info-card water-tracker" style="border-left: 5px solid #00adef;">
+    <div class="info-header" style="color: #0077b6; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fas fa-tint"></i> Daily Hydration Tracker</span>
+        <span id="water-percentage" style="font-size: 0.8rem; background: #00adef; color: white; padding: 2px 8px; border-radius: 10px;">0%</span>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 20px; padding: 10px;">
+        <div class="water-progress-container" style="flex: 1; height: 12px; background: #e0f2fe; border-radius: 10px; overflow: hidden; border: 1px solid #bae6fd;">
+            <div id="water-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00adef, #0077b6); transition: width 0.5s ease;"></div>
+        </div>
+        <div style="font-weight: 700; color: #1e40af;">
+            <span id="current-water">0</span> / 3.0L
+        </div>
+    </div>
+
+    <div class="water-controls" style="display: flex; gap: 10px; margin-top: 15px;">
+        <button onclick="addWater(0.25)" class="water-btn"><i class="fas fa-glass-whiskey"></i> +250ml</button>
+        <button onclick="addWater(0.5)" class="water-btn"><i class="fas fa-bottle-water"></i> +500ml</button>
+        <button onclick="resetWater()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size: 0.8rem;"><i class="fas fa-undo"></i> Reset</button>
+    </div>
+    <p style="font-size: 0.75rem; color: #64748b; margin-top: 10px;"><i>* Gov Recommendation: 3-4 Liters daily for optimal cognitive function.</i></p>
+</div>
+<div class="info-card reading-section" style="border-left: 5px solid var(--primary);">
+    <div class="info-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fas fa-file-alt"></i> Quick Scan: Standard Reading Text</span>
+        <button onclick="changeText()" class="refresh-btn"></button>
+    </div>
+    
+    <div class="reading-box" id="reading-paragraph">
+        When the sunlight strikes raindrops in the air, they act as a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors. These take the shape of a long round arch, with its path high above, and its two ends apparently beyond the horizon. There is, according to legend, a boiling pot of gold at one end. People look, but no one ever finds it. When a man looks for something beyond his reach, his friends say he is looking for the pot of gold at the end of the rainbow."
+    </div>
+
+    <div class="scan-instructions">
+        <div class="ins-item"><i class="fas fa-info-circle"></i> Screen par likha hua paragraph saaf aur dheemi awaaz mein padhein.</div>
+        <div class="ins-item"><i class="fas fa-clock"></i> Reading duration: 10-15 seconds.</div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="record.html" class="start-scan-btn">
+            <i class="fas fa-microphone-alt pulse-mic"></i> START VOICE SCAN
+        </a>
+    </div>
+</div>
 </div>
 <button class="panic-btn" onclick="openModal('panic-modal')"><i class="fas fa-exclamation-triangle"></i> EMERGENCY</button>
 <button class="floating-btn" onclick="openModal('help-modal')"><i class="fas fa-question-circle"></i> How to Use</button>
@@ -627,11 +757,28 @@
                     <div class="icon-box"><i class="fas fa-microphone-alt"></i></div>
                     <div class="step-content">
                         <span class="step-number">STEP 01</span>
-                        <h4>Vocal Clarity</h4>
-                        <p>Speak in your <strong>natural tone</strong> for 10-15 seconds.</p>
+                        <h4>Review Trends</h4>
+                        <p>Check your <strong>History</strong> tab to see how your stress levels change over the week.</p>
+                    </div>
+                </div>
+                <div class="instruction-item">
+                    <div class="icon-box"><i class="fas fa-microphone-alt"></i></div>
+                    <div class="step-content">
+                        <span class="step-number">STEP 02</span>
+                        <h4>Standard Reading</h4>
+                        <p>Read the <strong>Quick Scan</strong> text naturally. Avoid whispering or shouting.</p>
+                    </div>
+                </div>
+                <div class="instruction-item">
+                    <div class="icon-box"><i class="fas fa-microphone-alt"></i></div>
+                    <div class="step-content">
+                        <span class="step-number">STEP 03</span>
+                        <h4>Eliminate Noise</h4>
+                        <p>Background noise can interfere with frequency analysis. Find a silent zone.</p>
                     </div>
                 </div>
             </div>
+            
         </div>
     </div>
 </div>
@@ -822,6 +969,57 @@ function addBotMessage(text) {
     function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    // Initializing Water Tracker
+let totalWater = parseFloat(localStorage.getItem('dailyWater')) || 0;
+const goal = 3.0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateWaterUI();
+});
+
+function addWater(amount) {
+    totalWater += amount;
+    if (totalWater > goal) totalWater = goal; // Cap at goal
+    localStorage.setItem('dailyWater', totalWater);
+    updateWaterUI();
+}
+
+function resetWater() {
+    if(confirm("Reset today's water intake?")) {
+        totalWater = 0;
+        localStorage.setItem('dailyWater', 0);
+        updateWaterUI();
+    }
+}
+
+function updateWaterUI() {
+    const percent = Math.floor((totalWater / goal) * 100);
+    document.getElementById('current-water').innerText = totalWater.toFixed(2) + "L";
+    document.getElementById('water-bar').style.width = percent + "%";
+    document.getElementById('water-percentage').innerText = percent + "%";
+    
+    // Pro Tip: Change color when goal is reached
+    if(percent >= 100) {
+        document.getElementById('water-bar').style.background = "#22c55e";
+        document.getElementById('water-percentage').innerText = "GOAL REACHED! 🎉";
+    }
+}
+const paragraphs = [
+    "I am focused on my well-being today. Taking a few deep breaths helps me stay calm and grounded.",
+    "Mental health is just as important as physical health. I am committed to taking small steps for my peace of mind.",
+    "A steady voice and clear mind are signs of a healthy nervous system. I am observing my thoughts without judgment.",
+    "Balance is not something you find, it is something you create. Today, I choose to be kind to myself."
+];
+
+function changeText() {
+    const display = document.getElementById('reading-paragraph');
+    const randomIndex = Math.floor(Math.random() * paragraphs.length);
+    display.style.opacity = 0;
+    setTimeout(() => {
+        display.innerText = `"${paragraphs[randomIndex]}"`;
+        display.style.opacity = 1;
+    }, 300);
+}
 </script>
 <script>
 function checkPrice() {
