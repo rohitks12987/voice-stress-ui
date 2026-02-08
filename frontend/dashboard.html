@@ -459,6 +459,36 @@
 .sidebar-open {
     width: var(--sidebar-width);
 }
+.med-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.med-table th {
+    background-color: #f2f2f2;
+    padding: 12px;
+    border-bottom: 2px solid #1a5f7a;
+}
+
+.med-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.med-table tr:hover {
+    background-color: #f1f8ff;
+}
+
+.save-tag {
+    color: #2e7d32;
+    font-weight: bold;
+    background: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-align: center;
+}
 </style>
     
 </head>
@@ -517,7 +547,7 @@
             <div><div class="tip-item"><i class="fas fa-check"></i> Daily walks</div><div class="tip-item"><i class="fas fa-check"></i> Regular exercise</div></div>
         </div>
     </div>
-
+    
     <div class="probability-card">
         <div class="info-header">Stress Level Distribution</div>
         <div class="chart-container">
@@ -526,6 +556,65 @@
             <div class="bar-group"><div class="bar-value" id="high-percent">--</div><div class="bar high" id="high-bar"></div><div class="bar-label">High</div></div>
         </div>
     </div>
+    <div class="info-card" style="margin-top: 20px;">
+    <div class="info-header" style="background-color: white;">
+        <i class="fas fa-pills"></i> Jan Aushadhi (Generic) vs Branded Price List
+    </div>
+    <div style="overflow-x: auto; padding: 15px;">
+        <table class="med-table">
+            <thead>
+                <tr>
+                    <th>Medicine Name</th>
+                    <th>Purpose</th>
+                    <th>Jan Aushadhi (₹)</th>
+                    <th>Branded Price (₹)</th>
+                    <th>Savings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Alprax(0.25mg) </td>
+                    <td>Anxiety Relief</td>
+                    <td>10</td>
+                    <td>30-80</td>
+                    <td class="save-tag">75% Save</td>
+                </tr>
+                <tr>
+                    <td>Nexito(10mg)</td>
+                    <td>Mood Stabilization</td>
+                    <td>15</td>
+                    <td>50 - 70</td>
+                    <td class="save-tag">70% Save</td>
+                </tr>
+                <tr>
+                    <td>Inderal(10mg)</td>
+                    <td>Beta Blocker</td>
+                    <td>15</td>
+                    <td>90-110</td>
+                    <td class="save-tag">70% Save</td>
+                </tr>
+                <tr>
+                    <td>Zolpidem(500mg)</td>
+                    <td>Insomnia</td>
+                    <td>12</td>
+                    <td>80-150</td>
+                    <td class="save-tag">70% Save</td>
+                </tr>
+                <tr>
+                    <td>Sertraline(50mg)</td>
+                    <td>Antidepressant</td>
+                    <td>20</td>
+                    <td>120-200</td>
+                    <td class="save-tag">80% Save</td>
+            </tbody>
+        </table>
+    </div>
+    <div style="padding: 10px; font-size: 0.8rem; text-align: center; background: #f9f9f9;">
+        <a href="https://janaushadhi.gov.in/" target="_blank" style="color: #1a5f7a; text-decoration: none; font-weight: bold;">
+            <i class="fas fa-external-link-alt"></i> Find more on PMBJP Official Website
+        </a>
+    </div>
+</div>
 </div>
 <button class="panic-btn" onclick="openModal('panic-modal')"><i class="fas fa-exclamation-triangle"></i> EMERGENCY</button>
 <button class="floating-btn" onclick="openModal('help-modal')"><i class="fas fa-question-circle"></i> How to Use</button>
@@ -546,6 +635,8 @@
         </div>
     </div>
 </div>
+
+
 <div id="panic-modal" class="modal">
     <div class="modal-content" style="border-top: 10px solid #d32f2f;">
         <div class="modal-header" style="background: #fee2e2; color: #991b1b;"><h3>SOS Assistance</h3><span class="close-btn" onclick="closeModal('panic-modal')">&times;</span></div>
@@ -731,6 +822,21 @@ function addBotMessage(text) {
     function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+</script>
+<script>
+function checkPrice() {
+    const med = document.getElementById('med-search').value.toLowerCase();
+    const result = document.getElementById('price-result');
+    
+    // Example logic
+    if(med.includes("paracetamol")) {
+        result.innerText = "Jan Aushadhi Price: ₹10.25 | Save approx 75%!";
+    } else if(med.includes("metformin")) {
+        result.innerText = "Jan Aushadhi Price: ₹12.50 | Save approx 80%!";
+    } else {
+        result.innerText = "Medicine details available at nearest Jan Aushadhi Kendra.";
+    }
+}
 </script>
 </body>
 </html>
