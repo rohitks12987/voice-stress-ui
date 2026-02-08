@@ -576,6 +576,52 @@
     50% { transform: scale(1.2); color: #ffb3b3; }
     100% { transform: scale(1); color: #fff; }
 }
+.track-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3efff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd6fe;
+    transition: 0.3s;
+}
+
+.track-item:hover {
+    background: #ede9fe;
+    transform: scale(1.02);
+}
+
+.track-info strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #4c1d95;
+}
+
+.track-info span {
+    font-size: 0.75rem;
+    color: #7c3aed;
+}
+
+.play-btn {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.play-btn:hover {
+    background: #7c3aed;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
 </style>
     
 </head>
@@ -744,6 +790,38 @@
             <i class="fas fa-microphone-alt pulse-mic"></i> START VOICE SCAN
         </a>
     </div>
+    <div class="info-card music-section" style="border-left: 5px solid #8b5cf6;">
+    <div class="info-header" style="color: #5b21b6;">
+        <i class="fas fa-music"></i> Mental Wellness Soundscapes
+    </div>
+    
+    <div class="music-container" style="padding: 15px;">
+        <div class="track-item">
+            <div class="track-info">
+                <strong>Morning Focus</strong>
+                <span>Instrumental • 5 mins</span>
+            </div>
+            <button class="play-btn" onclick="togglePlay('track1')">
+                <i class="fas fa-play" id="icon-track1"></i>
+            </button>
+            <audio id="track1" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+        </div>
+
+        <div class="track-item">
+            <div class="track-info">
+                <strong>Deep Relaxation</strong>
+                <span>Nature Sounds • 10 mins</span>
+            </div>
+            <button class="play-btn" onclick="togglePlay('track2')">
+                <i class="fas fa-play" id="icon-track2"></i>
+            </button>
+            <audio id="track2" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
+        </div>
+    </div>
+    <p style="font-size: 0.7rem; color: #6b7280; text-align: center; margin-top: 10px;">
+        <i class="fas fa-headphones"></i> Use headphones for a better experience.
+    </p>
+</div>
 </div>
 </div>
 <button class="panic-btn" onclick="openModal('panic-modal')"><i class="fas fa-exclamation-triangle"></i> EMERGENCY</button>
@@ -1019,6 +1097,27 @@ function changeText() {
         display.innerText = `"${paragraphs[randomIndex]}"`;
         display.style.opacity = 1;
     }, 300);
+}
+function togglePlay(id) {
+    const audio = document.getElementById(id);
+    const icon = document.getElementById('icon-' + id);
+    
+    // Pause all other tracks first
+    document.querySelectorAll('audio').forEach(el => {
+        if(el.id !== id) {
+            el.pause();
+            const otherIcon = document.getElementById('icon-' + el.id);
+            if(otherIcon) otherIcon.className = 'fas fa-play';
+        }
+    });
+
+    if (audio.paused) {
+        audio.play();
+        icon.className = 'fas fa-pause';
+    } else {
+        audio.pause();
+        icon.className = 'fas fa-play';
+    }
 }
 </script>
 <script>
