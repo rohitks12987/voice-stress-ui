@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Health Portal | Dashboard</title>
+    <title>Mental Stress Detection Using Voice Tone Anlaysis | Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -456,10 +456,6 @@
 #chat-input { flex: 1; border: none; padding: 10px 0; outline: none; font-family: monospace; }
 .input-row button { background: none; border: none; color: #00adef; cursor: pointer; font-size: 1.2rem; }
 .powered-label { font-size: 9px; text-align: center; color: #bbb; padding: 5px; border-top: 1px solid #eee; }
-
-
-
-/* State when open */
 .sidebar-open {
     width: var(--sidebar-width);
 }
@@ -531,10 +527,8 @@
         </div>
     </div>
 </div>
-
 <button class="panic-btn" onclick="openModal('panic-modal')"><i class="fas fa-exclamation-triangle"></i> EMERGENCY</button>
 <button class="floating-btn" onclick="openModal('help-modal')"><i class="fas fa-question-circle"></i> How to Use</button>
-
 <div id="help-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header"><h3>Instructions</h3><span class="close-btn" onclick="closeModal('help-modal')">&times;</span></div>
@@ -552,7 +546,6 @@
         </div>
     </div>
 </div>
-
 <div id="panic-modal" class="modal">
     <div class="modal-content" style="border-top: 10px solid #d32f2f;">
         <div class="modal-header" style="background: #fee2e2; color: #991b1b;"><h3>SOS Assistance</h3><span class="close-btn" onclick="closeModal('panic-modal')">&times;</span></div>
@@ -563,7 +556,6 @@
         </div>
     </div>
 </div>
-
 <div class="consultant-chat-window" id="chat-window" style="display:none; flex-direction:column;">
     <div class="chat-top-bar" onclick="toggleChat(false)">
         <span>Chat with us</span>
