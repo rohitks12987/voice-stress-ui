@@ -71,3 +71,36 @@ def save_wellness(data: WellnessRequest):
         return {"status": "success"}
     finally:
         db.close()
+        # main.py
+
+# ... (Imports aur Database setup ke baad)
+
+def init_db():
+    db = SessionLocal()
+    try:
+        # Check karte hain ki kya koi user pehle se hai
+        if not db.query(User).first():
+            default_user = User(
+                username="Aditya Sharma",
+                phone="+91 98765 43210",
+                address="Shanti Nagar, New Delhi, India",
+                photo_url="https://www.w3schools.com/howto/img_avatar.png"
+            )
+            db.add(default_user)
+            db.commit()
+            print("✅ Default user created in MySQL")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+    finally:
+        db.close()
+
+# --- SERVER START HONE PAR ISKO CALL KAREIN ---
+if __name__ == "__main__":
+    # Tables banane ke liye
+    Base.metadata.create_all(bind=engine)
+    # Default data dalne ke liye
+    init_db()
+    # Server start karne ke liye (agar uvicorn use kar rahe hain)
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+    
