@@ -101,9 +101,38 @@
         .bar.high { background: #ef4444; }
 
         /* Ticker */
-        .news-ticker { background: #8888e6; color: var(--primary); padding: 8px 0; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; border-top: 2px solid #004080; border-bottom: 2px solid #004080; }
-        .scrolling-text { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
-        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    /* Ticker ko content ke upar laane ke liye */
+.news-ticker {
+    background: #e0f2fe; /* Light Blue Gov style */
+    color: #003366;
+    padding: 10px 0;
+    overflow: hidden;
+    position: sticky; /* Taaki scroll karne par bhi dikhta rahe */
+    top: 0; 
+    z-index: 99;
+    border-bottom: 1px solid #bae6fd;
+    width: 100%;
+}
+
+.scrolling-text {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%;
+    animation: ticker 25s linear infinite;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+@keyframes ticker {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+
+/* Icons in ticker */
+.news-ticker i {
+    margin: 0 15px;
+    color: #ff9933; /* Saffron color for highlights */
+}
 
         /* Modals */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
@@ -622,31 +651,204 @@
     background: #7c3aed;
     box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
 }
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 25px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.nav-item i { width: 20px; font-size: 1.1rem; }
+
+.nav-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: #00adef;
+}
+
+.nav-item.active {
+    background: rgba(0, 173, 239, 0.1);
+    color: #00adef;
+    border-left: 4px solid #00adef;
+    font-weight: bold;
+}
+
+.water-btn {
+    background: #00adef;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+/* Styling for the Style Change Button */
+.style-btn {
+    background: rgba(0, 173, 239, 0.1);
+    color: #00adef;
+    border: 1px solid #00adef;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.style-btn:hover {
+    background: #00adef;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Sidebar SOS button */
+.sos-btn-sidebar {
+    width: 100%;
+    background: linear-gradient(45deg, #d32f2f, #f44336);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(211,47,47,0.3);
+}
+
+/* Scrollbar for Sidebar */
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+/* GOV OF INDIA COLOR PALETTE */
+:root {
+    --nic-blue: #0055a4;
+    --nic-dark: #003366;
+    --nic-bg: #f0f4f7;
+    --nic-saffron: #ff9933;
+}
+
+.gov-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 25px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-left: 4px solid transparent;
+    transition: 0.2s;
+}
+
+.gov-nav-link:hover {
+    background: #f1f5f9;
+    color: var(--nic-blue);
+}
+
+.gov-nav-link.active {
+    background: #e0f2fe;
+    color: var(--nic-blue);
+    border-left-color: var(--nic-blue);
+}
+
+.style-toggle-btn {
+    width: 100%;
+    margin-top: 12px;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.gov-sos-btn {
+    width: 100%;
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+}
+
+/* Ensure Main Content scrolls while sidebar stays put */
+.dashboard-wrapper {
+    overflow: hidden;
+}
+main {
+    height: 100vh;
+    overflow-y: auto;
+}
 </style>
     
 </head>
 <body>
 
 <div class="official-header"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness</div>
+<div class="dashboard-wrapper" style="display: flex; min-height: 100vh; background: #f0f4f7;">
+    
+    <aside class="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000;">
+        
+        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 55px; margin-bottom: 12px;">
+            <div style="font-size: 0.65rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px;">
+                Ministry of Health &<br>Family Welfare
+            </div>
+        </div>
 
-<nav class="navbar">
-    <div class="logo"><i class="fas fa-brain"></i> Mental Stress Detection Using Voice Tone Analysis</div>
-    <div class="nav-links">
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="record.html">Record</a>
-        <a href="history.html">History</a>
-        <a href="#" onclick="logout()" class="logout">Logout</a>
-    </div>
-</nav>
+        <div style="padding: 20px; background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 55px; height: 55px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
+                <div style="overflow: hidden;">
+                    <h4 id="display-name" style="font-size: 0.95rem; margin: 0; color: #1e293b; font-weight: 700;">Loading...</h4>
+                    <p id="display-phone" style="font-size: 0.75rem; color: #64748b; margin: 0;"></p>
+                </div>
+            </div>
+            <p id="display-address" style="font-size: 0.7rem; color: #64748b; margin-top: 10px; line-height: 1.4;">
+                <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i> Loading...
+            </p>
+            <button onclick="toggleTheme()" class="style-toggle-btn">
+                <i class="fas fa-adjust"></i> Change Dashboard Style
+            </button>
+        </div>
 
-<div class="news-ticker">
+        <nav style="flex: 1; padding: 15px 0;">
+            <a href="#" class="gov-nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="record.html" class="gov-nav-link"><i class="fas fa-microphone-alt"></i> Voice Analysis</a>
+            <a href="history.html" class="gov-nav-link"><i class="fas fa-history"></i> My Reports</a>
+            <a href="login.html" class="gov-nav-link"><i class="fas fa-sign-out-alt"></i>Logout</a>
+        </nav>
+
+       
+    </aside>
+
+    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column;">
+
+        <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ff9933; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <i class="fas fa-brain" style="font-size: 2rem; color: #ffffff;"></i>
+                <div>
+                    <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Mental Wellness & Tone Analysis</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">An AI-Powered Digital India Initiative</span>
+                </div>
+            </div>
+        </div>
+        <div class="news-ticker">
     <div class="scrolling-text">
         <i class="fas fa-bell"></i> Inhale for 4s, hold for 4s, and exhale for 4s to reset your nervous system.
         <i class="fas fa-bullhorn"></i> A quick 5-minute walk can reduce vocal tension.
         <i class="fas fa-check-circle"></i> Hydration helps maintain a steady, stress-free tone.
     </div>
 </div>
-
 <div class="container">
     <section class="welcome-section">
         <h1>Welcome back, <span id="user-name">User</span>!</h1>
@@ -824,6 +1026,9 @@
 </div>
 </div>
 </div>
+</main>
+</div>
+
 <button class="panic-btn" onclick="openModal('panic-modal')"><i class="fas fa-exclamation-triangle"></i> EMERGENCY</button>
 <button class="floating-btn" onclick="openModal('help-modal')"><i class="fas fa-question-circle"></i> How to Use</button>
 <div id="help-modal" class="modal">
@@ -860,7 +1065,7 @@
         </div>
     </div>
 </div>
-
+j
 
 <div id="panic-modal" class="modal">
     <div class="modal-content" style="border-top: 10px solid #d32f2f;">
@@ -1119,6 +1324,75 @@ function togglePlay(id) {
         icon.className = 'fas fa-play';
     }
 }
+// Function to push current UI state to MySQL
+async function autoSyncToDB() {
+    const payload = {
+        user_id: 1, // Default user for now
+        water: parseFloat(localStorage.getItem('dailyWater')) || 0,
+        stress: parseInt(document.getElementById('total-count').innerText) || 0,
+        emotion: document.getElementById('dom-emotion').innerText || "Unknown"
+    };
+
+    try {
+        await fetch('http://127.0.0.1:8000/api/save-wellness', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        console.log("📊 MySQL Auto-Sync Complete");
+    } catch (err) {
+        console.warn("MySQL Sync Offline");
+    }
+}
+
+// Update your existing addWater function to trigger sync
+function addWater(amount) {
+    totalWater += amount;
+    if (totalWater > goal) totalWater = goal;
+    localStorage.setItem('dailyWater', totalWater);
+    updateWaterUI();
+    autoSyncToDB(); // <--- ADD THIS LINE
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Fetch User Data from MySQL via Python API
+    const userId = 1; 
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/user-details/${userId}`);
+        if (response.ok) {
+            const userData = await response.json();
+            
+            // Update Sidebar with fetched data
+            document.getElementById('display-name').innerText = userData.name;
+            document.getElementById('display-phone').innerText = userData.phone;
+            document.getElementById('display-address').innerText = userData.address;
+            document.getElementById('user-photo').src = userData.photo;
+            
+            // Also update the welcome message in main content
+            document.getElementById('user-name').innerText = userData.name.split(' ')[0];
+        }
+    } catch (error) {
+        console.error("Could not load user profile:", error);
+    }
+    
+    // 2. Load existing stress data (your previous logic)
+    // updateEl('total-count', data.total); ... etc
+    function toggleTheme() {
+    const mainContent = document.querySelector('.main-content');
+    const isDarkMode = mainContent.style.background === 'rgb(30, 41, 59)'; // #1e293b
+    
+    if (!isDarkMode) {
+        // Switch to Dark Style
+        mainContent.style.background = '#1e293b';
+        mainContent.style.color = '#f1f5f9';
+        alert("Dark Mode Activated!");
+    } else {
+        // Switch to Light Style
+        mainContent.style.background = '#f4f7f9';
+        mainContent.style.color = '#334155';
+        alert("Light Mode Activated!");
+    }
+}
+});
 </script>
 <script>
 function checkPrice() {
