@@ -318,6 +318,40 @@
             cursor: not-allowed;
         }
 
+        .auth-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+
+        .auth-actions .btn-auth {
+            margin-top: 0;
+            flex: 1;
+        }
+
+        .btn-admin-side {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 16px;
+            border: 1px solid var(--primary);
+            border-radius: 2px;
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+
+        .btn-admin-side:hover {
+            background: #eef4fb;
+        }
+
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -575,6 +609,10 @@
             body {
                 padding-bottom: 140px;
             }
+
+            .auth-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -697,9 +735,14 @@
                 <label for="remember-me" style="margin:0; font-size:0.9rem; color:#374151;">Remember me</label>
             </div>
 
-            <button type="submit" class="btn-auth" id="auth-btn">
-                <span id="btn-text">Login Now</span>
-            </button>
+            <div class="auth-actions">
+                <button type="submit" class="btn-auth" id="auth-btn">
+                    <span id="btn-text">Login Now</span>
+                </button>
+                <a href="admin.html" class="btn-admin-side" id="admin-side-link">
+                    <i class="fas fa-user-shield"></i> Admin Panel
+                </a>
+            </div>
         </form>
 
         <div class="demo-info" id="demo-info">
@@ -775,6 +818,7 @@
         const btn = document.getElementById('auth-btn');
         const link = document.getElementById('toggle-link');
         const form = document.getElementById('auth-form');
+        const adminSideLink = document.getElementById('admin-side-link');
         const nameGroup = document.getElementById('name-group');
         const nameInput = document.getElementById('name');
         const ageGroup = document.getElementById('age-group');
@@ -798,6 +842,7 @@
             const captchaInputHide = document.getElementById('captcha-answer');
             if (captchaGroupHide) captchaGroupHide.style.display = 'none';
             if (captchaInputHide) captchaInputHide.removeAttribute('required');
+            if (adminSideLink) adminSideLink.style.display = 'inline-flex';
         } else {
             title.textContent = "Create Account";
             desc.textContent = "Join us to start tracking your mental health";
@@ -813,6 +858,7 @@
             if (captchaGroup) captchaGroup.style.display = 'block';
             if (captchaInput) captchaInput.setAttribute('required', 'required');
             generateCaptcha();
+            if (adminSideLink) adminSideLink.style.display = 'none';
         }
     }
 

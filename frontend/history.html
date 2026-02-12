@@ -670,7 +670,9 @@
         refreshBtn.disabled = true;
 
         try {
-            const response = await fetch(`${API_BASE}/api/history`);
+            const activeUser = sessionStorage.getItem('activeUser') || '';
+            const query = activeUser ? `?user_email=${encodeURIComponent(activeUser)}` : '';
+            const response = await fetch(`${API_BASE}/api/history${query}`);
 
             if (!response.ok) {
                 throw new Error(`Server error: ${response.status}`);

@@ -652,6 +652,21 @@
         try {
             const formData = new FormData();
             formData.append('audio', currentAudioBlob, 'recording.wav');
+            const activeUser = sessionStorage.getItem('activeUser') || '';
+            formData.append('user_email', activeUser);
+
+            if (activeUser) {
+                const localUserRaw = localStorage.getItem(activeUser);
+                if (localUserRaw) {
+                    try {
+                        const localUser = JSON.parse(localUserRaw);
+                        if (localUser.name) formData.append('full_name', localUser.name);
+                        if (localUser.age) formData.append('age', localUser.age);
+                    } catch (parseError) {
+                        console.warn('Failed to read local user profile:', parseError);
+                    }
+                }
+            }
 
             const response = await fetch(`${API_BASE}/api/upload`, {
                 method: 'POST',

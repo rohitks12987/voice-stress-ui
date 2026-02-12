@@ -822,7 +822,7 @@ main {
             <a href="#" class="gov-nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
             <a href="record.html" class="gov-nav-link"><i class="fas fa-microphone-alt"></i> Voice Analysis</a>
             <a href="history.html" class="gov-nav-link"><i class="fas fa-history"></i> My Reports</a>
-            <a href="login.html" class="gov-nav-link"><i class="fas fa-sign-out-alt"></i>Logout</a>
+            <a href="#" class="gov-nav-link" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i>Logout</a>
         </nav>
 
        
@@ -1069,8 +1069,6 @@ main {
         </div>
     </div>
 </div>
-j
-
 <div id="panic-modal" class="modal">
     <div class="modal-content" style="border-top: 10px solid #d32f2f;">
         <div class="modal-header" style="background: #fee2e2; color: #991b1b;"><h3>SOS Assistance</h3><span class="close-btn" onclick="closeModal('panic-modal')">&times;</span></div>
@@ -1128,169 +1126,174 @@ j
 <script src="faq-data.js"></script>
 
 <script>
-    // --- 1. Dashboard Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const data = { total: 42, avg: "Moderate", emotion: "Calm", last: "2h ago", low: 60, mod: 30, high: 10 };
-        const updateEl = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
-        
-        updateEl('total-count', data.total);
-        updateEl('avg-stress', data.avg);
-        updateEl('dom-emotion', data.emotion);
-        updateEl('last-check', data.last);
-        
-        if(document.getElementById('low-bar')) {
-            document.getElementById('low-bar').style.height = (data.low * 1.5) + "px";
-            document.getElementById('moderate-bar').style.height = (data.mod * 1.5) + "px";
-            document.getElementById('high-bar').style.height = (data.high * 1.5) + "px";
-        }
-    });
+const API_BASE = window.location.origin;
+const ACTIVE_USER = sessionStorage.getItem('activeUser') || '';
+const WATER_GOAL_LITERS = 3.0;
+const FALLBACK_REPLIES = (typeof defaultResponses !== 'undefined' && Array.isArray(defaultResponses))
+    ? defaultResponses
+    : ["I can help with wellness tips, breathing routines, or using this dashboard."];
 
-    // --- 2. Chat Logic ---
-    async function sendMessage() {
-        const input = document.getElementById('chat-input');
-        const body = document.getElementById('chat-body');
-        const status = document.getElementById('last-msg-time');
-        const userText = input.value.trim();
-
-        if (!userText) return;
-
-        // Show user message
-        body.innerHTML += `<div style="text-align:right; margin-bottom:15px;"><div style="display:inline-block; background:#f1f1f1; padding:8px 12px; border-radius:8px; font-size:0.85rem;">${userText}</div></div>`;
-        input.value = "";
-        body.scrollTop = body.scrollHeight;
-
-        // --- SMART LOCAL FAQ CHECK ---
-        let lowText = userText.toLowerCase();
-        if (typeof faqData !== 'undefined') {
-            const matchedKey = Object.keys(faqData).find(key => lowText.includes(key.toLowerCase()));
-            if (matchedKey) {
-                status.innerText = "Officer is typing...";
-                setTimeout(() => {
-                    addBotMessage(faqData[matchedKey]);
-                    status.innerText = "Online";
-                }, 600);
-                return; 
-            }
-        }
-
-        // --- API CALL TO BACKEND ---
-        status.innerText = "Consulting AI...";
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/chatbot', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userText })
-            });
-            
-            const data = await response.json();
-            
-            if (response.ok) {
-                addBotMessage(data.reply);
-                status.innerText = "Online";
-            } else {
-                throw new Error(data.reply || "Server Error");
-            }
-
-        } catch (e) {
-            console.error("Chat Error:", e);
-            status.innerText = "Offline";
-            body.innerHTML += `<div style="color:red; font-size:0.7rem; text-align:center; padding:10px;">Connection issue. Is the Python backend running?</div>`;
-        }
-    }
-
-    // --- 3. UI HELPERS ---
-    // --- Updated User Message Logic --
-
-// --- Updated Officer Message Logic ---
-function addBotMessage(text) {
-    const body = document.getElementById('chat-body');
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
-    
-    // Use the officer's photo URL
-    const officerPhoto = "https://interviewtimes.net/wp-content/uploads/2025/01/448250365_481414594396194_3557635209793538322_n.jpg";
-
-    body.innerHTML += `
-        <div class="message-row bot-row">
-            <img src="${officerPhoto}" class="chat-avatar">
-            <div class="bot-bubble">
-                <strong class="officer-name">Officer</strong><br>
-                ${text}
-                <div class="chat-time">${time}</div>
-            </div>
-        </div>`;
-    body.scrollTop = body.scrollHeight;
-}
-    body.innerHTML += `
-        <div class="message-row" style="display: flex; justify-content: flex-start; align-items: flex-end; gap: 8px; margin-bottom: 15px;">
-            <img src="${officerPhoto}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd;">
-            <div style="background: #ffffff; padding: 8px 12px; border-radius: 15px 15px 15px 0; font-size: 0.85rem; max-width: 70%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); border: 1px solid #eaeaea;">
-                <strong style="color: #075e54; font-size: 0.75rem;">Officer</strong><br>
-                ${text}
-                <div style="font-size: 0.65rem; color: #999; margin-top: 4px;">${time}</div>
-            </div>
-        </div>`;
-    body.scrollTop = body.scrollHeight;
-        typeWriter(text, messageId);
-        body.scrollTop = body.scrollHeight;
-
-    function typeWriter(text, elementId) {
-        let i = 0;
-        const speed = 20; // Lower is faster
-        const element = document.getElementById(elementId);
-        function type() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(type, speed);
-                const body = document.getElementById('chat-body');
-                body.scrollTop = body.scrollHeight;
-            }
-        }
-        type();
-    }
-
-    function toggleChat(show) {
-        document.getElementById('chat-window').style.display = show ? 'flex' : 'none';
-        document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex';
-    }
-    function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    // Initializing Water Tracker
 let totalWater = parseFloat(localStorage.getItem('dailyWater')) || 0;
-const goal = 3.0;
 
-document.addEventListener('DOMContentLoaded', () => {
-    updateWaterUI();
-});
-
-function addWater(amount) {
-    totalWater += amount;
-    if (totalWater > goal) totalWater = goal; // Cap at goal
-    localStorage.setItem('dailyWater', totalWater);
-    updateWaterUI();
+function checkAuth() {
+    if (!ACTIVE_USER) {
+        window.location.href = 'index.html';
+        return false;
+    }
+    return true;
 }
 
-function resetWater() {
-    if(confirm("Reset today's water intake?")) {
-        totalWater = 0;
-        localStorage.setItem('dailyWater', 0);
-        updateWaterUI();
+function logout() {
+    sessionStorage.removeItem('activeUser');
+    window.location.href = 'index.html';
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value;
+}
+
+function updateStressBars(distribution) {
+    const low = Number(distribution.low || 0);
+    const moderate = Number(distribution.moderate || 0);
+    const high = Number(distribution.high || 0);
+
+    setText('low-percent', `${low}%`);
+    setText('moderate-percent', `${moderate}%`);
+    setText('high-percent', `${high}%`);
+
+    const lowBar = document.getElementById('low-bar');
+    const moderateBar = document.getElementById('moderate-bar');
+    const highBar = document.getElementById('high-bar');
+
+    if (lowBar) lowBar.style.height = `${Math.max(6, low * 1.5)}px`;
+    if (moderateBar) moderateBar.style.height = `${Math.max(6, moderate * 1.5)}px`;
+    if (highBar) highBar.style.height = `${Math.max(6, high * 1.5)}px`;
+}
+
+function applyLocalProfile() {
+    const data = localStorage.getItem(ACTIVE_USER);
+    if (!data) return;
+
+    try {
+        const user = JSON.parse(data);
+        const name = user.name || 'User';
+        setText('display-name', name);
+        setText('display-phone', user.phone || '+91 00000 00000');
+        setText('display-address', user.address || 'Address not updated');
+        setText('user-name', name.split(' ')[0]);
+    } catch (error) {
+        console.warn('Failed to parse local profile:', error);
+    }
+}
+
+async function loadUserProfile() {
+    applyLocalProfile();
+    if (!ACTIVE_USER) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/user-details/${encodeURIComponent(ACTIVE_USER)}`);
+        if (!response.ok) return;
+        const user = await response.json();
+        setText('display-name', user.name || 'User');
+        setText('display-phone', user.phone || '+91 00000 00000');
+        setText('display-address', user.address || 'Address not updated');
+        setText('user-name', (user.name || 'User').split(' ')[0]);
+        const photo = document.getElementById('user-photo');
+        if (photo && user.photo) photo.src = user.photo;
+    } catch (error) {
+        console.warn('Could not fetch profile from API:', error);
+    }
+}
+
+async function loadDashboardSummary() {
+    if (!ACTIVE_USER) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/dashboard-summary?user_email=${encodeURIComponent(ACTIVE_USER)}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const summary = await response.json();
+        setText('total-count', summary.total ?? '--');
+        setText('avg-stress', summary.avg_stress ?? '--');
+        setText('dom-emotion', summary.dominant_emotion ?? '--');
+        setText('last-check', summary.last_check ?? '--');
+        updateStressBars(summary.distribution || {});
+    } catch (error) {
+        console.error('Failed to load dashboard summary:', error);
+        setText('total-count', '--');
+        setText('avg-stress', '--');
+        setText('dom-emotion', '--');
+        setText('last-check', '--');
+        updateStressBars({ low: 0, moderate: 0, high: 0 });
     }
 }
 
 function updateWaterUI() {
-    const percent = Math.floor((totalWater / goal) * 100);
-    document.getElementById('current-water').innerText = totalWater.toFixed(2) + "L";
-    document.getElementById('water-bar').style.width = percent + "%";
-    document.getElementById('water-percentage').innerText = percent + "%";
-    
-    // Pro Tip: Change color when goal is reached
-    if(percent >= 100) {
-        document.getElementById('water-bar').style.background = "#22c55e";
-        document.getElementById('water-percentage').innerText = "GOAL REACHED! 🎉";
+    const percent = Math.min(100, Math.round((totalWater / WATER_GOAL_LITERS) * 100));
+    const currentWater = document.getElementById('current-water');
+    const waterBar = document.getElementById('water-bar');
+    const waterPercent = document.getElementById('water-percentage');
+
+    if (currentWater) currentWater.innerText = `${totalWater.toFixed(2)}L`;
+    if (waterBar) {
+        waterBar.style.width = `${percent}%`;
+        waterBar.style.background = percent >= 100
+            ? '#22c55e'
+            : 'linear-gradient(90deg, #00adef, #0077b6)';
+    }
+    if (waterPercent) {
+        waterPercent.innerText = percent >= 100 ? 'GOAL REACHED!' : `${percent}%`;
     }
 }
+
+function resolveStressScore() {
+    const label = (document.getElementById('avg-stress')?.innerText || '').toLowerCase();
+    if (label.includes('high')) return 80;
+    if (label.includes('moderate')) return 55;
+    if (label.includes('low')) return 25;
+    return 0;
+}
+
+async function syncWellness() {
+    if (!ACTIVE_USER) return;
+
+    const payload = {
+        user_email: ACTIVE_USER,
+        water: totalWater,
+        stress: resolveStressScore(),
+        emotion: document.getElementById('dom-emotion')?.innerText || 'Unknown',
+        name: document.getElementById('display-name')?.innerText || undefined,
+        phone: document.getElementById('display-phone')?.innerText || undefined,
+        address: document.getElementById('display-address')?.innerText || undefined,
+    };
+
+    try {
+        await fetch(`${API_BASE}/api/save-wellness`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+    } catch (error) {
+        console.warn('Wellness sync failed:', error);
+    }
+}
+
+function addWater(amount) {
+    totalWater = Math.min(WATER_GOAL_LITERS, totalWater + Number(amount || 0));
+    localStorage.setItem('dailyWater', totalWater);
+    updateWaterUI();
+    syncWellness();
+}
+
+function resetWater() {
+    if (!confirm("Reset today's water intake?")) return;
+    totalWater = 0;
+    localStorage.setItem('dailyWater', '0');
+    updateWaterUI();
+    syncWellness();
+}
+
 const paragraphs = [
     "I am focused on my well-being today. Taking a few deep breaths helps me stay calm and grounded.",
     "Mental health is just as important as physical health. I am committed to taking small steps for my peace of mind.",
@@ -1300,6 +1303,7 @@ const paragraphs = [
 
 function changeText() {
     const display = document.getElementById('reading-paragraph');
+    if (!display) return;
     const randomIndex = Math.floor(Math.random() * paragraphs.length);
     display.style.opacity = 0;
     setTimeout(() => {
@@ -1307,16 +1311,17 @@ function changeText() {
         display.style.opacity = 1;
     }, 300);
 }
+
 function togglePlay(id) {
     const audio = document.getElementById(id);
-    const icon = document.getElementById('icon-' + id);
-    
-    // Pause all other tracks first
-    document.querySelectorAll('audio').forEach(el => {
-        if(el.id !== id) {
-            el.pause();
-            const otherIcon = document.getElementById('icon-' + el.id);
-            if(otherIcon) otherIcon.className = 'fas fa-play';
+    const icon = document.getElementById(`icon-${id}`);
+    if (!audio || !icon) return;
+
+    document.querySelectorAll('audio').forEach((track) => {
+        if (track.id !== id) {
+            track.pause();
+            const otherIcon = document.getElementById(`icon-${track.id}`);
+            if (otherIcon) otherIcon.className = 'fas fa-play';
         }
     });
 
@@ -1328,86 +1333,159 @@ function togglePlay(id) {
         icon.className = 'fas fa-play';
     }
 }
-// Function to push current UI state to MySQL
-async function autoSyncToDB() {
+
+function appendUserMessage(text) {
+    const body = document.getElementById('chat-body');
+    if (!body) return;
+    body.innerHTML += `<div style="text-align:right; margin-bottom:15px;"><div style="display:inline-block; background:#f1f1f1; padding:8px 12px; border-radius:8px; font-size:0.85rem;">${text}</div></div>`;
+    body.scrollTop = body.scrollHeight;
+}
+
+function addBotMessage(text) {
+    const body = document.getElementById('chat-body');
+    if (!body) return;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
+    const officerPhoto = "https://interviewtimes.net/wp-content/uploads/2025/01/448250365_481414594396194_3557635209793538322_n.jpg";
+    body.innerHTML += `
+        <div class="message-row" style="display:flex; gap:10px; margin-bottom:15px;">
+            <img src="${officerPhoto}" class="chat-avatar" style="width:35px; height:35px; border-radius:50%;">
+            <div class="chat-bubble-tail" style="background:#eaf6ff; padding:10px; border-radius:8px; border:1px solid #d0e8ff;">
+                <strong>Officer</strong><br>
+                ${text}
+                <div style="font-size:10px; color:#64748b; margin-top:4px;">${time}</div>
+            </div>
+        </div>`;
+    body.scrollTop = body.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const status = document.getElementById('last-msg-time');
+    const userText = (input?.value || '').trim();
+    if (!userText) return;
+
+    appendUserMessage(userText);
+    input.value = '';
+    if (status) status.innerText = 'Consulting AI...';
+
+    const lowText = userText.toLowerCase();
+    if (typeof faqData !== 'undefined' && faqData) {
+        const key = Object.keys(faqData).find((item) => lowText.includes(item.toLowerCase()));
+        if (key) {
+            setTimeout(() => addBotMessage(faqData[key]), 300);
+            if (status) status.innerText = 'Online';
+            return;
+        }
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/chatbot`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userText }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || data.reply || `HTTP ${response.status}`);
+        addBotMessage(data.reply || FALLBACK_REPLIES[0]);
+        if (status) status.innerText = 'Online';
+    } catch (error) {
+        console.error('Chat error:', error);
+        const fallback = FALLBACK_REPLIES[Math.floor(Math.random() * FALLBACK_REPLIES.length)];
+        addBotMessage(fallback);
+        if (status) status.innerText = 'Offline';
+    }
+}
+
+function toggleChat(show) {
+    document.getElementById('chat-window').style.display = show ? 'flex' : 'none';
+    document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex';
+}
+
+function handleKey(event) {
+    if (event.key === 'Enter') sendMessage();
+}
+
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = 'none';
+}
+
+function getBrowserLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(null);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => resolve({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+            }),
+            () => resolve(null),
+            { timeout: 5000 }
+        );
+    });
+}
+
+async function sendSOS() {
+    const statusEl = document.getElementById('sos-status');
+    if (statusEl) statusEl.innerText = 'Sending alert...';
+
+    const location = await getBrowserLocation();
     const payload = {
-        user_id: 1, // Default user for now
-        water: parseFloat(localStorage.getItem('dailyWater')) || 0,
-        stress: parseInt(document.getElementById('total-count').innerText) || 0,
-        emotion: document.getElementById('dom-emotion').innerText || "Unknown"
+        user_email: ACTIVE_USER || 'guest@stress-tone.local',
+        latitude: location ? location.latitude : null,
+        longitude: location ? location.longitude : null,
     };
 
     try {
-        await fetch('http://127.0.0.1:8000/api/save-wellness', {
+        const response = await fetch(`${API_BASE}/api/sos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
         });
-        console.log("📊 MySQL Auto-Sync Complete");
-    } catch (err) {
-        console.warn("MySQL Sync Offline");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
+        if (statusEl) statusEl.innerText = 'SOS alert submitted successfully.';
+    } catch (error) {
+        console.error('SOS error:', error);
+        if (statusEl) statusEl.innerText = 'Could not send SOS. Please call emergency services directly.';
     }
 }
 
-// Update your existing addWater function to trigger sync
-function addWater(amount) {
-    totalWater += amount;
-    if (totalWater > goal) totalWater = goal;
-    localStorage.setItem('dailyWater', totalWater);
-    updateWaterUI();
-    autoSyncToDB(); // <--- ADD THIS LINE
+function toggleTheme() {
+    const body = document.body;
+    if (!body) return;
+    const dark = body.dataset.theme === 'dark';
+    body.dataset.theme = dark ? 'light' : 'dark';
+    body.style.filter = dark ? 'none' : 'saturate(0.9) brightness(0.95)';
 }
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Fetch User Data from MySQL via Python API
-    const userId = 1; 
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/api/user-details/${userId}`);
-        if (response.ok) {
-            const userData = await response.json();
-            
-            // Update Sidebar with fetched data
-            document.getElementById('display-name').innerText = userData.name;
-            document.getElementById('display-phone').innerText = userData.phone;
-            document.getElementById('display-address').innerText = userData.address;
-            document.getElementById('user-photo').src = userData.photo;
-            
-            // Also update the welcome message in main content
-            document.getElementById('user-name').innerText = userData.name.split(' ')[0];
-        }
-    } catch (error) {
-        console.error("Could not load user profile:", error);
-    }
-    
-    // 2. Load existing stress data (your previous logic)
-    // updateEl('total-count', data.total); ... etc
-    function toggleTheme() {
-    const mainContent = document.querySelector('.main-content');
-    const isDarkMode = mainContent.style.background === 'rgb(30, 41, 59)'; // #1e293b
-    
-    if (!isDarkMode) {
-        // Switch to Dark Style
-        mainContent.style.background = '#1e293b';
-        mainContent.style.color = '#f1f5f9';
-        alert("Dark Mode Activated!");
-    } else {
-        // Switch to Light Style
-        mainContent.style.background = '#f4f7f9';
-        mainContent.style.color = '#334155';
-        alert("Light Mode Activated!");
-    }
-}
+    if (!checkAuth()) return;
+    updateWaterUI();
+    await loadUserProfile();
+    await loadDashboardSummary();
+    setInterval(loadDashboardSummary, 60000);
 });
 </script>
 <script>
 function checkPrice() {
-    const med = document.getElementById('med-search').value.toLowerCase();
+    const medInput = document.getElementById('med-search');
     const result = document.getElementById('price-result');
+    if (!medInput || !result) return;
+    const med = medInput.value.toLowerCase();
     
     // Example logic
     if(med.includes("paracetamol")) {
-        result.innerText = "Jan Aushadhi Price: ₹10.25 | Save approx 75%!";
+        result.innerText = "Jan Aushadhi Price: Rs 10.25 | Save approx 75%!";
     } else if(med.includes("metformin")) {
-        result.innerText = "Jan Aushadhi Price: ₹12.50 | Save approx 80%!";
+        result.innerText = "Jan Aushadhi Price: Rs 12.50 | Save approx 80%!";
     } else {
         result.innerText = "Medicine details available at nearest Jan Aushadhi Kendra.";
     }
@@ -1416,3 +1494,5 @@ function checkPrice() {
 
 </body>
 </html>
+
+
