@@ -554,8 +554,8 @@
 
 <div style="display: flex; min-height: 100vh; background: #f0f4f7;">
 
-    <aside class="sidebar">
-        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+    <aside class="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0;">
             <div style="position: relative; display: inline-block; margin-bottom: 15px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 60px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
                 <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
@@ -568,7 +568,7 @@
             </div>
         </div>
 
-        <div style="padding: 20px; background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
+        <div style="padding: 20px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 55px; height: 55px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
                 <div style="overflow: hidden;">
@@ -581,12 +581,55 @@
             </p>
         </div>
 
-        <nav style="flex: 1; padding: 15px 0;">
-            <a href="dashboard.html" class="gov-nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="record.html" class="gov-nav-link active"><i class="fas fa-microphone-alt"></i> Voice Analysis</a>
-            <a href="history.html" class="gov-nav-link"><i class="fas fa-history"></i> My Reports</a>
-            <a href="#" class="gov-nav-link" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i>Logout</a>
-        </nav>
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+            <nav style="padding: 20px 0; background: #ffffff; display: flex; flex-direction: column; flex-shrink: 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 0;">
+                <div style="padding: 10px 15px; font-size: 0.75rem; font-weight: 700; color: #0055a4; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                    <i class="fas fa-bars"></i> Navigation
+                </div>
+                <a href="dashboard.html" class="gov-nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="record.html" class="gov-nav-link active"><i class="fas fa-microphone-alt"></i> Voice Analysis</a>
+                <a href="history.html" class="gov-nav-link"><i class="fas fa-history"></i> My Reports</a>
+                <a href="#" class="gov-nav-link" onclick="logout(); return false;" style="color: #dc2626; border-left: 4px solid transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+
+            <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+                <!-- Announcements Section -->
+                <div style="padding: 15px; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%); flex-shrink: 0;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                        <i class="fas fa-megaphone"></i> Announcements
+                    </div>
+                    <div style="font-size: 0.8rem; color: #b45309; line-height: 1.4;">
+                        <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
+                            <strong>New Feature:</strong> AI Voice Analysis now available!
+                        </div>
+                        <div style="font-size: 0.75rem; color: #a16207;">
+                            <i class="fas fa-info-circle"></i> Check your wellness progress regularly for best results.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div style="padding: 15px; border-top: 1px solid #e5e7eb; background: #f1f5f9; flex-shrink: 0;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+                        <i class="fas fa-cog"></i> Settings
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button onclick="openSettings()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
+                            <i class="fas fa-user-edit"></i> Edit Profile
+                        </button>
+                        <button onclick="openNotifications()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
+                            <i class="fas fa-bell"></i> Notifications
+                        </button>
+                        <button onclick="openPrivacy()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
+                            <i class="fas fa-shield-alt"></i> Privacy
+                        </button>
+                        <button onclick="openHelp()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
+                            <i class="fas fa-question-circle"></i> Help & Support
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -603,7 +646,7 @@
             </div>
 
             <div style="display: flex; gap: 12px; align-items: center;">
-                <img src="data:image/png;base64,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" alt="Logo 1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQks8o8bbCzbK_WPQBRLKanFEySlijZOCbVuw&s" alt="Logo 1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
                 <img src="https://thumbs.dreamstime.com/b/mental-health-concept-line-icon-simple-element-illustration-mental-health-concept-outline-symbol-mental-health-concept-line-icon-158053383.jpg" alt="Logo 2" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
             </div>
         </div>
@@ -968,6 +1011,198 @@
         } catch (error) {
             console.warn('Could not fetch profile from API:', error);
         }
+    }
+
+    // Settings Functions with Modal Support
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.remove();
+    }
+
+    function createAndShowModal(title, content, buttons) {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'modal-' + Date.now();
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        
+        const header = document.createElement('div');
+        header.className = 'modal-header';
+        header.innerHTML = `<h2>${title}</h2><button class="modal-close" onclick="closeModal('${overlay.id}')">✕</button>`;
+        
+        const body = document.createElement('div');
+        body.className = 'modal-body';
+        body.innerHTML = content;
+        
+        const footer = document.createElement('div');
+        footer.className = 'modal-footer';
+        footer.innerHTML = buttons;
+        
+        modalContent.appendChild(header);
+        modalContent.appendChild(body);
+        modalContent.appendChild(footer);
+        overlay.appendChild(modalContent);
+        
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) closeModal(overlay.id);
+        });
+        
+        document.body.appendChild(overlay);
+        return overlay.id;
+    }
+
+    function openSettings() {
+        const content = `
+            <div class="photo-upload">
+                <div class="photo-preview" id="photoPreview">
+                    <i class="fas fa-user" style="font-size: 3rem; color: #cbd5e1;"></i>
+                </div>
+                <div class="file-input-wrapper">
+                    <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
+                    <label for="photoInput" class="file-input-label">📷 Upload Photo</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="fullName" placeholder="Enter your full name" value="User Name">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phoneNumber" placeholder="Enter phone number" value="+91 98765 43210">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <textarea id="address" placeholder="Enter your address">Government Office, New Delhi</textarea>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="Enter email" value="user@govt.in">
+            </div>
+        `;
+        
+        const buttons = `
+            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
+            <button class="btn-save" onclick="saveProfile()">💾 Save Changes</button>
+        `;
+        
+        createAndShowModal('✏️ Edit Profile', content, buttons);
+    }
+
+    function handlePhotoUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('photoPreview');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Profile Photo">`;
+                localStorage.setItem('userPhoto', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function saveProfile() {
+        const fullName = document.getElementById('fullName').value;
+        const phoneNumber = document.getElementById('phoneNumber').value;
+        const address = document.getElementById('address').value;
+        const email = document.getElementById('email').value;
+        
+        localStorage.setItem('userProfile', JSON.stringify({
+            fullName, phoneNumber, address, email
+        }));
+        
+        alert('✅ Profile updated successfully!');
+        closeModal(document.querySelector('.modal-overlay').id);
+    }
+
+    function openNotifications() {
+        const content = `
+            <div style="padding: 10px 0;">
+                <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Notification Preferences</h3>
+                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
+                        <input type="checkbox" checked> <strong>Email Notifications</strong>
+                    </label>
+                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Receive important updates via email</small>
+                </div>
+                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
+                        <input type="checkbox" checked> <strong>SMS Alerts</strong>
+                    </label>
+                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Get critical alerts via SMS</small>
+                </div>
+                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
+                        <input type="checkbox"> <strong>Push Notifications</strong>
+                    </label>
+                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Browser notifications for real-time updates</small>
+                </div>
+                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
+                        <input type="checkbox" checked> <strong>Analysis Reports</strong>
+                    </label>
+                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Weekly wellness analysis summary</small>
+                </div>
+            </div>
+        `;
+        
+        const buttons = `
+            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
+            <button class="btn-save" onclick="alert('✅ Notification settings saved!'); closeModal(this.closest('.modal-overlay').id);">💾 Save</button>
+        `;
+        
+        createAndShowModal('🔔 Notification Settings', content, buttons);
+    }
+
+    function openPrivacy() {
+        const content = `
+            <div style="padding: 10px 0;">
+                <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Privacy & Data Settings</h3>
+                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
+                        <input type="checkbox" checked> <strong>Share Analysis with Ministry</strong>
+                    </label>
+                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Help improve the national health program</small>
+                </div>
+                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
+                        <input type="checkbox"> <strong>Allow Third-party Apps</strong>
+                    </label>
+                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Allow connected apps to access your data</small>
+                </div>
+                <div class="form-group" style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9933; margin-bottom: 12px;">
+                    <strong>⚠️ Danger Zone</strong>
+                    <button style="display: block; width: 100%; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 4px; margin-top: 8px; cursor: pointer; font-weight: 600;" onclick="alert('Download feature coming soon!');">📥 Download My Data</button>
+                </div>
+            </div>
+        `;
+        
+        const buttons = `
+            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
+            <button class="btn-save" onclick="alert('✅ Privacy settings updated!'); closeModal(this.closest('.modal-overlay').id);">💾 Save</button>
+        `;
+        
+        createAndShowModal('🔐 Privacy Settings', content, buttons);
+    }
+
+    function openHelp() {
+        const content = `
+            <div style="padding: 10px 0;">
+                <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Help & Support Resources</h3>
+                <button style="width: 100%; background: #e0f2fe; color: #0369a1; border: 1px solid #0369a1; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('📚 FAQ\n\nQ: How do I upload a voice file?\nA: Click the Record button and speak into your microphone.\n\nQ: How is stress detected?\nA: Using AI analysis of voice tone and stress indicators.\n\nQ: Is my data private?\nA: Yes, all data is encrypted and secure.');">❓ Frequently Asked Questions</button>
+                <button style="width: 100%; background: #dcfce7; color: #15803d; border: 1px solid #15803d; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🎥 Video Tutorials\n\nAvailable tutorials:\n1. Getting Started Guide\n2. Recording Your First Analysis\n3. Understanding Your Results\n4. Wellness Tips\n\nVisit our YouTube channel for more content!');">🎥 Video Tutorials</button>
+                <button style="width: 100%; background: #fce7f3; color: #be123c; border: 1px solid #be123c; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('☎️ Contact Support\n\nEmail: support@mentalhealthindia.gov.in\nPhone: 1800-HEALTH-1 (ext. 5432)\nChat: Available Mon-Fri 9AM-6PM IST');">☎️ Contact Support</button>
+                <button style="width: 100%; background: #fef3c7; color: #b45309; border: 1px solid #b45309; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🐛 Report an Issue\n\nDescribe the problem you encountered and we will investigate it shortly.');">🐛 Report an Issue</button>
+            </div>
+        `;
+        
+        const buttons = `
+            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Close</button>
+        `;
+        
+        createAndShowModal('❓ Help & Support', content, buttons);
     }
 </script>
 
