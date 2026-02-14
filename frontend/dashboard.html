@@ -61,17 +61,18 @@
         .nav-links a:hover, .nav-links a.active { color: white; background: rgba(255,255,255,0.2); }
         .nav-links a.logout { color: #ffb3b3; }
 
-        .container { max-width: 1100px; margin: 2rem auto; padding: 0 20px; flex: 1; width: 100%; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; flex: 1; width: 100%; }
 
         .welcome-section h1 { font-size: 1.8rem; font-weight: 700; color: #111827; }
         .welcome-section p { color: #6b7280; margin-bottom: 2rem; }
 
         /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card {
             background: white; padding: 1.5rem; border-radius: 12px;
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.3s;
+            min-height: 100px; border: 1px solid #e5e7eb;
         }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .stat-info .label { font-size: 0.8rem; color: #6b7280; font-weight: 500; }
@@ -84,7 +85,7 @@
         .icon-green { background: #f0fdf4; color: #22c55e; }
 
         /* Info Cards */
-        .info-card { background: var(--card-blue); border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid #c3dafe; }
+        .info-card { background: var(--card-blue); border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid #c3dafe; min-height: 120px; display: flex; flex-direction: column; }
         .info-header { font-weight: 700; font-size: 1.1rem; color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; width: fit-content; padding-bottom: 3px; }
         .tips-content { display: flex; justify-content: space-between; gap: 20px; }
         .tip-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.9rem; font-weight: 500; }
@@ -92,7 +93,7 @@
 
         /* Chart */
         .probability-card { background: var(--card-blue); border-radius: 12px; padding: 20px; margin-bottom: 2rem; border: 1px solid #c3dafe; }
-        .chart-container { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; margin-top: 20px; border-bottom: 2px solid white; padding-bottom: 10px; }
+        .chart-container { display: flex; align-items: flex-end; justify-content: space-around; height: 180px; margin-top: 20px; border-bottom: 2px solid white; padding-bottom: 15px; background: linear-gradient(to top, #f8fafc 0%, transparent 100%); border-radius: 8px; }
         .bar-group { display: flex; flex-direction: column; align-items: center; width: 60px; }
         .bar-value { font-size: 0.85rem; font-weight: 700; color: #1e40af; margin-bottom: 5px; }
         .bar { width: 100%; border-radius: 4px 4px 0 0; transition: 1s ease-in-out; min-height: 5px; }
@@ -101,42 +102,46 @@
         .bar.high { background: #ef4444; }
 
         /* Ticker */
-    /* Ticker ko content ke upar laane ke liye */
-.news-ticker {
-    background: #e0f2fe; /* Light Blue Gov style */
-    color: #003366;
-    padding: 10px 0;
-    overflow: hidden;
-    position: sticky; /* Taaki scroll karne par bhi dikhta rahe */
-    top: 0; 
-    z-index: 99;
-    border-bottom: 1px solid #bae6fd;
-    width: 100%;
-}
+        .news-ticker {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            color: #003366;
+            padding: 14px 0;
+            overflow: hidden;
+            border: 1px solid #bae6fd;
+            border-left: 4px solid #ff9933;
+            width: 100%;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-.scrolling-text {
-    display: inline-block;
-    white-space: nowrap;
-    padding-left: 100%;
-    animation: ticker 25s linear infinite;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
+        .scrolling-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 40s linear infinite;
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            padding-left: 100%;
+        }
 
-@keyframes ticker {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(-100%, 0); }
-}
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
 
-/* Icons in ticker */
-.news-ticker i {
-    margin: 0 15px;
-    color: #ff9933; /* Saffron color for highlights */
-}
-/* --- Ticker --- */
-        .news-ticker { background: var(--gov-blue); color: white; padding: 8px 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; }
-        .scrolling-text { display: inline-block; animation: scroll 20s linear infinite; }
-        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        /* Icons in ticker */
+        .news-ticker i {
+            margin: 0 12px;
+            color: #ff9933;
+            font-size: 1rem;
+        }
+
+        .news-ticker strong {
+            color: #003366;
+            font-weight: 700;
+        }
 
         /* Modals */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
@@ -548,8 +553,8 @@
 }
 .reading-box {
     background: #ffffff;
-    border: 1px dashed #003d82;
-    padding: 20px;
+    border: 2px dashed #003d82;
+    padding: 25px;
     margin: 15px 0;
     font-size: 1.1rem;
     line-height: 1.6;
@@ -557,6 +562,10 @@
     border-radius: 8px;
     font-style: italic;
     text-align: center;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .scan-instructions {
@@ -792,6 +801,69 @@ main {
     height: 100vh;
     overflow-y: auto;
 }
+
+/* Footer hover effects */
+footer a:hover {
+    color: #f0f4f7 !important;
+    transform: translateY(-1px);
+}
+
+footer .social-links a:hover {
+    transform: translateY(-2px) scale(1.1);
+    background: rgba(255,255,255,0.2) !important;
+}
+
+footer .footer-links a:hover {
+    color: #f0f4f7 !important;
+    text-decoration: underline;
+}
+    .stats-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    main { margin-left: 250px; }
+    .sidebar { width: 250px; }
+
+    /* Footer responsive */
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .container { padding: 0 15px; max-width: 100%; }
+    main { margin-left: 0; }
+    .sidebar { width: 100%; height: auto; position: relative; box-shadow: none; }
+    .news-ticker { font-size: 0.8rem; padding: 12px 0; min-height: 42px; }
+    .dashboard-wrapper { flex-direction: column; }
+    .info-card { min-height: auto; }
+    .stat-card { min-height: auto; }
+
+    /* Footer responsive */
+    .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+    footer.dashboard-footer { padding: 2.5rem 1.5rem 1.5rem; }
+    footer h3 { font-size: 1.2rem; }
+    footer h4 { font-size: 1rem; }
+    footer .social-links { justify-content: center; }
+    footer .emergency-contacts > div { padding: 10px; }
+    footer .services-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .welcome-section h1 { font-size: 1.5rem; }
+    .stat-card { padding: 1rem; }
+    .info-card { padding: 15px; }
+    .news-ticker { padding: 10px 0; min-height: 38px; }
+    .scrolling-text { font-size: 0.8rem; }
+    .reading-box { padding: 20px; font-size: 1rem; min-height: 70px; }
+    .chart-container { height: 150px; }
+
+    /* Footer responsive */
+    footer.dashboard-footer { padding: 2rem 1rem 1rem; }
+    .footer-grid { gap: 1.5rem; }
+    footer h3 { font-size: 1.1rem; }
+    footer h4 { font-size: 0.95rem; margin-bottom: 12px; }
+    footer .social-links { gap: 12px; }
+    footer .emergency-contacts > div { padding: 8px; font-size: 0.85rem; }
+    footer .services-grid > div { padding: 10px; }
+    footer .bottom-footer { flex-direction: column; text-align: center; gap: 1rem; }
+    footer .footer-links { justify-content: center; gap: 12px; flex-wrap: wrap; }
+    footer .footer-links a { font-size: 0.8rem; }
+}
 </style>
     
 </head>
@@ -800,12 +872,18 @@ main {
 <div class="official-header"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness</div>
 <div class="dashboard-wrapper" style="display: flex; min-height: 100vh; background: #f0f4f7;">
     
-    <aside class="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000;">
+    <aside class="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1);">
         
-        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 55px; margin-bottom: 12px;">
-            <div style="font-size: 0.65rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px;">
+        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+            <div style="position: relative; display: inline-block; margin-bottom: 15px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 60px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
+                <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
+            </div>
+            <div style="font-size: 0.7rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
                 Ministry of Health &<br>Family Welfare
+            </div>
+            <div style="font-size: 0.6rem; color: #64748b; font-weight: 600;">
+                Government of India
             </div>
         </div>
 
@@ -832,36 +910,55 @@ main {
        
     </aside>
 
-    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column;">
+    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: #f8fafc;">
 
         <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ef4444; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: sans-serif;">
     
     <div style="display:flex; align-items:center; gap:15px;">
-        <i class="fas fa-brain" style="font-size: 2rem; color: #ffffff;"></i>
+        <div style="position: relative;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Government Seal" style="height: 50px; width: 50px; border-radius: 50%; border: 3px solid #ffffff; background: #ffffff; padding: 5px;">
+            <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">OFFICIAL</div>
+        </div>
         <div>
             <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Mental Wellness & Tone Analysis</h2>
-            <span style="font-size: 0.75rem; color: #64748b;">An AI-Powered Digital India Initiative</span>
+            <span style="font-size: 0.75rem; color: #64748b;">An AI-Powered Digital India Initiative | Ministry of Health & Family Welfare</span>
         </div>
     </div>
 
     <div style="display: flex; gap: 12px; align-items: center;">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEYEI5nU2R_FOfpmEBKHJW7TXrT7PKTdmtAw&s" alt="Logo 1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/Mohan_Charan_Majhi_%282024_Image%29.jpg" alt="Logo 2" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+        <img src="data:image/png;base64,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" alt="Logo 1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+        <img src="https://thumbs.dreamstime.com/b/mental-health-concept-line-icon-simple-element-illustration-mental-health-concept-outline-symbol-mental-health-concept-line-icon-158053383.jpg" alt="Logo 2" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
     </div>
 
 </div>
         <div class="news-ticker">
     <div class="scrolling-text">
-        <i class="fas fa-bell"></i> Inhale for 4s, hold for 4s, and exhale for 4s to reset your nervous system.
-        <i class="fas fa-bullhorn"></i> A quick 5-minute walk can reduce vocal tension.
-        <i class="fas fa-check-circle"></i> Hydration helps maintain a steady, stress-free tone.
+        <i class="fas fa-bullhorn"></i> <strong>Official Government Service:</strong> This portal is operated by the Ministry of Health & Family Welfare, Government of India.
+        <i class="fas fa-shield-alt"></i> Your data is protected under national cybersecurity standards.
+        <i class="fas fa-heartbeat"></i> Mental health is a priority - access 24/7 support services.
+        <i class="fas fa-users"></i> Join thousands of citizens benefiting from AI-powered wellness monitoring.
     </div>
 </div>
-<div class="container">
+<div class="container" style="padding-bottom: 2rem;">
     <section class="welcome-section">
         <h1>Welcome back, <span id="user-name">User</span>!</h1>
         <p>Your mental wellness dashboard</p>
     </section>
+
+    <div class="info-card" style="background: linear-gradient(135deg, #fff3cd 0%, #ffffff 100%); border: 2px solid #ffc107; margin-bottom: 20px;">
+        <div class="info-header" style="color: #856404; background: #fff3cd;">
+            <i class="fas fa-exclamation-triangle"></i> Official Government Disclaimer
+        </div>
+        <div style="padding: 15px; font-size: 0.85rem; color: #856404; line-height: 1.5;">
+            <p><strong>This is an official Government of India portal.</strong> The information provided here is for educational and wellness purposes only. This service does not constitute medical advice, diagnosis, or treatment. Always consult qualified healthcare professionals for medical concerns.</p>
+            <p style="margin-top: 10px;"><i class="fas fa-shield-alt"></i> <strong>Data Privacy:</strong> All voice data is processed securely and complies with HIPAA and Indian data protection regulations. Your information is confidential and used solely for wellness analysis.</p>
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;"><i class="fas fa-lock"></i> HIPAA Compliant</span>
+                <span style="background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;"><i class="fas fa-globe"></i> Govt. Certified</span>
+                <span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;"><i class="fas fa-user-shield"></i> Secure Portal</span>
+            </div>
+        </div>
+    </div>
 
     <div class="stats-grid">
         <div class="stat-card">
@@ -1000,12 +1097,12 @@ main {
             <i class="fas fa-microphone-alt pulse-mic"></i> START VOICE SCAN
         </a>
     </div>
-    <div class="info-card music-section" style="border-left: 5px solid #8b5cf6;">
+    <div class="info-card music-section" style="border-left: 5px solid #8b5cf6; min-height: 200px;">
     <div class="info-header" style="color: #5b21b6;">
         <i class="fas fa-music"></i> Mental Wellness Soundscapes
     </div>
     
-    <div class="music-container" style="padding: 15px;">
+    <div class="music-container" style="padding: 15px; flex: 1;">
         <div class="track-item">
             <div class="track-info">
                 <strong>Morning Focus</strong>
@@ -1123,9 +1220,132 @@ main {
     <i class="fas fa-robot"></i> Ask AI
 </button>
 
-<footer class="dashboard-footer">
-    <p><strong>Mental Health Portal</strong> — Ministry of Health</p>
-    <p style="font-size:0.75rem; opacity:0.8; margin-top:10px;">&copy; 2026 | HIPAA Compliant | Emergency: 1-800-HEALTH-123</p>
+<footer class="dashboard-footer" style="background: linear-gradient(135deg, #003366 0%, #002244 100%); border-top: 4px solid #ef4444; padding: 3rem 2rem 1.5rem; color: white; margin-top: auto;">
+    <div style="max-width: 1400px; margin: 0 auto;">
+
+        <!-- Main Footer Content -->
+        <div class="footer-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 2rem;">
+
+            <!-- Ministry Section -->
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 50px; width: 50px; border-radius: 50%; border: 3px solid #ef4444; background: white; padding: 4px;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.3rem; color: #f0f4f7; font-weight: 700;">Mental Health Portal</h3>
+                        <p style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Ministry of Health & Family Welfare</p>
+                        <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Government of India</p>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 20px;">
+                    An AI-powered Digital India initiative for mental wellness monitoring through advanced voice analysis technology. Ensuring citizen well-being through innovative healthcare solutions.
+                </p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-lock"></i> HIPAA Compliant
+                    </span>
+                    <span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.3); display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-shield-alt"></i> Govt. Certified
+                    </span>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <a href="#" style="color: #3b82f6; font-size: 1.4rem; transition: all 0.3s; padding: 8px; border-radius: 50%; background: rgba(59, 130, 246, 0.1);" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" style="color: #1da1f2; font-size: 1.4rem; transition: all 0.3s; padding: 8px; border-radius: 50%; background: rgba(29, 161, 242, 0.1);" title="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" style="color: #ff0000; font-size: 1.4rem; transition: all 0.3s; padding: 8px; border-radius: 50%; background: rgba(255, 0, 0, 0.1);" title="YouTube">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="#" style="color: #e4405f; font-size: 1.4rem; transition: all 0.3s; padding: 8px; border-radius: 50%; background: rgba(228, 64, 95, 0.1);" title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+                <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #f0f4f7; font-weight: 600; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">Quick Links</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                    <li><a href="https://www.mohfw.gov.in/" target="_blank" style="color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; gap: 8px;"><i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>Ministry of Health</a></li>
+                    <li><a href="https://www.nhp.gov.in/" target="_blank" style="color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; gap: 8px;"><i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>National Health Portal</a></li>
+                    <li><a href="https://www.nimhans.ac.in/" target="_blank" style="color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; gap: 8px;"><i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>NIMHANS</a></li>
+                    <li><a href="https://www.digitalindia.gov.in/" target="_blank" style="color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; gap: 8px;"><i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>Digital India</a></li>
+                    <li><a href="https://www.india.gov.in/" target="_blank" style="color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; gap: 8px;"><i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>India.gov.in</a></li>
+                </ul>
+            </div>
+
+            <!-- Emergency Contacts -->
+            <div>
+                <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #f0f4f7; font-weight: 600; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">Emergency Contacts</h4>
+                <div class="emergency-contacts" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 3px solid #ef4444;">
+                        <i class="fas fa-phone" style="color: #ef4444; font-size: 1.2rem;"></i>
+                        <div>
+                            <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600;">Mental Health Helpline</div>
+                            <div style="font-size: 1rem; color: #94a3b8; font-weight: 700;">1800-599-0019</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 3px solid #ef4444;">
+                        <i class="fas fa-ambulance" style="color: #ef4444; font-size: 1.2rem;"></i>
+                        <div>
+                            <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600;">Emergency Services</div>
+                            <div style="font-size: 1rem; color: #94a3b8; font-weight: 700;">108 / 112</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 3px solid #3b82f6;">
+                        <i class="fas fa-envelope" style="color: #3b82f6; font-size: 1.2rem;"></i>
+                        <div>
+                            <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600;">Support Email</div>
+                            <div style="font-size: 0.85rem; color: #94a3b8;">support@mentalhealth.gov.in</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About & Services -->
+            <div>
+                <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #f0f4f7; font-weight: 600; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">Services & Support</h4>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600; margin-bottom: 5px;">AI Voice Analysis</div>
+                        <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">Advanced AI technology for stress detection through voice patterns</div>
+                    </div>
+                    <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600; margin-bottom: 5px;">24/7 Support</div>
+                        <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">Round-the-clock mental health assistance and counseling</div>
+                    </div>
+                    <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600; margin-bottom: 5px;">Data Security</div>
+                        <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">End-to-end encryption with government-grade security</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Footer -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="font-size: 0.85rem; color: #94a3b8;">
+                    &copy; 2026 Government of India | Ministry of Health & Family Welfare | All Rights Reserved
+                </div>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; font-size: 0.85rem; transition: 0.3s;">Privacy Policy</a>
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; font-size: 0.85rem; transition: 0.3s;">Terms of Use</a>
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; font-size: 0.85rem; transition: 0.3s;">Accessibility</a>
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; font-size: 0.85rem; transition: 0.3s;">Sitemap</a>
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; font-size: 0.85rem; transition: 0.3s;">Contact Us</a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                <p style="font-size: 0.8rem; color: #64748b; margin: 0;">
+                    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                    This website is best viewed in modern browsers. Last updated: February 14, 2026 |
+                    <span style="color: #10b981;">Version 2.1.0</span>
+                </p>
+            </div>
+        </div>
+    </div>
 </footer>
 <script src="faq-data.js"></script>
 

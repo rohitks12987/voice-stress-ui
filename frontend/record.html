@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Stress Detection Using Voice Tone Analysis | Record Voice </title>
+    <title>Mental Stress Detection Using Voice Tone Analysis | Voice Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -127,15 +127,23 @@
             border-radius: 15px;
             padding: 2.5rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 2rem;
         }
 
-        .record-card h2 { 
-            font-size: 1.5rem; 
-            margin-bottom: 1.5rem; 
+        .record-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
             color: #111827;
             display: flex;
             align-items: center;
             gap: 10px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .record-card h2 i {
+            color: #003d82;
         }
 
         /* Timer */
@@ -368,11 +376,14 @@
 
         /* Footer */
         .record-footer {
-            padding: 1.25rem 0.5rem;
+            background: linear-gradient(135deg, #003366 0%, #002244 100%);
+            color: white;
+            padding: 2rem 1rem 1rem;
             text-align: center;
+            margin-top: auto;
+            border-top: 4px solid #ef4444;
             width: 100%;
             box-sizing: border-box;
-            margin-top: auto;
         }
 
         .record-footer .footer-content {
@@ -381,17 +392,18 @@
             padding: 0 20px;
         }
 
-        .footer-line { 
-            height: 1px; 
-            background: rgba(255,255,255,0.2); 
-            max-width: 900px; 
-            margin: 0 auto 1rem; 
+        .footer-line {
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+            max-width: 900px;
+            margin: 0 auto 1rem;
         }
 
-        .record-footer p { 
-            font-size: 0.9rem; 
-            margin-bottom: 0.25rem; 
-            opacity: 0.95; 
+        .record-footer p {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            opacity: 0.95;
+            color: #cbd5e1;
         }
         
         .hidden { display: none !important; }
@@ -402,79 +414,267 @@
             .button-group { flex-direction: column; }
             .mic-btn { width: 70px; height: 70px; }
         }
-        .news-ticker { background: #8888e6; color: var(--primary); padding: 8px 0; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; border-top: 2px solid #004080; border-bottom: 2px solid #004080; }
-        .scrolling-text { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
-        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        /* Updated Ticker Styles like Dashboard */
+        .news-ticker {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            color: #003366;
+            padding: 14px 0;
+            overflow: hidden;
+            border: 1px solid #bae6fd;
+            border-left: 4px solid #ff9933;
+            width: 100%;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 40s linear infinite;
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            padding-left: 100%;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Icons in ticker */
+        .news-ticker i {
+            margin: 0 12px;
+            color: #ff9933;
+            font-size: 1rem;
+        }
+
+        .news-ticker strong {
+            color: #003366;
+            font-weight: 700;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            border-right: 2px solid #d1d5db;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .gov-nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s;
+        }
+
+        .sidebar .gov-nav-link:hover {
+            background: #f8fafc;
+            color: #003d82;
+        }
+
+        .sidebar .gov-nav-link.active {
+            background: #e0f2fe;
+            color: #003d82;
+            border-left: 4px solid #003d82;
+        }
+
+        .sidebar .gov-nav-link i {
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        /* Main content adjustment */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .main-content .container {
+            margin: 2rem auto;
+            max-width: 800px;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 250px; }
+            .main-content { margin-left: 250px; }
+            .news-ticker { font-size: 0.8rem; padding: 12px 0; min-height: 42px; }
+            .record-card { padding: 1.5rem; }
+            .record-card h2 { font-size: 1.3rem; }
+            .waveform-box { height: 140px; }
+            .button-group { gap: 10px; }
+            .mic-btn { width: 70px; height: 70px; }
+            .control-btn { padding: 10px 18px; font-size: 0.9rem; }
+        }
+
+        @media (max-width: 640px) {
+            .sidebar { width: 100%; height: auto; position: relative; box-shadow: none; }
+            .main-content { margin-left: 0; }
+            .sidebar .gov-nav-link { padding: 15px 20px; }
+            .record-card { padding: 1.25rem; }
+            .upload-area { padding: 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            .news-ticker { padding: 10px 0; min-height: 38px; }
+            .scrolling-text { font-size: 0.8rem; }
+            .record-card h2 { font-size: 1.2rem; flex-direction: column; gap: 8px; }
+            .waveform-box { height: 120px; }
+            .timer { font-size: 2rem; }
+            .button-group { flex-direction: column; align-items: center; }
+            .mic-btn { width: 60px; height: 60px; margin-bottom: 10px; }
+            .control-btn { width: 100%; max-width: 200px; }
+            .upload-area { padding: 1rem; }
+            .upload-area i { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
 
 <div style="width:100%; background:#003d82; color:white; padding:0.6rem 2rem; border-bottom:4px solid #d32f2f; text-align:center; font-size:0.8rem; font-weight:600;"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal</div>
 
-<nav class="navbar">
-    <div class="logo"><i class="fas fa-brain"></i>Mental Stress Detection Using Voice Tone Analysis</div>
-    <div class="nav-links">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="record.html" class="active">Record</a>
-        <a href="history.html">History</a>
-        <a href="#" onclick="logout(); return false;" class="logout">Logout</a>
-    </div>
-</nav>
-<div class="news-ticker">
-    <div class="scrolling-text">
-        <i class="fas fa-bell"></i> Inhale for 4s, hold for 4s, and exhale for 4s to reset your nervous system. | 
-        <i class="fas fa-bullhorn"></i> A quick 5-minute walk can reduce vocal tension. | 
-        <i class="fas fa-check-circle"></i> Hydration helps maintain a steady, stress-free tone.
-    </div>
-</div>
+<div style="display: flex; min-height: 100vh; background: #f0f4f7;">
 
-<div class="container">
-    <div id="error-msg" class="message error-msg"></div>
-    <div id="success-msg" class="message success-msg"></div>
-    <div id="info-msg" class="message info-msg"></div>
-
-    <div class="record-card">
-        <h2><i class="fas fa-microphone"></i> Record Your Voice</h2>
-        
-        <div class="waveform-box" id="waveform-container">
-            <i class="fas fa-wave-square"></i>
-            <p id="wave-text">Ready to listen...</p>
-        </div>
-
-        <div class="timer" id="timer">00:00</div>
-
-        <div class="button-group">
-            <button class="mic-btn" id="record-btn" title="Click to start recording">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button class="control-btn btn-analyze" id="analyze-btn" onclick="submitAudio()">
-                <i class="fas fa-check"></i> Analyze
-            </button>
-            <button class="control-btn btn-reset" id="reset-btn" onclick="resetRecording()">
-                <i class="fas fa-redo"></i> Reset
-            </button>
-        </div>
-
-        <p id="status-msg"></p>
-
-        <div class="upload-section">
-            <h3>Or upload an existing audio file</h3>
-            <div class="upload-area" onclick="document.getElementById('file-input').click()">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Click to upload audio file</p>
-                <small>WAV, MP3, M4A (Max 10MB)</small>
-                <input type="file" id="file-input" class="hidden" accept="audio/*">
+    <aside class="sidebar">
+        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+            <div style="position: relative; display: inline-block; margin-bottom: 15px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 60px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
+                <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
+            </div>
+            <div style="font-size: 0.7rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+                Ministry of Health &<br>Family Welfare
+            </div>
+            <div style="font-size: 0.6rem; color: #64748b; font-weight: 600;">
+                Government of India
             </div>
         </div>
-    </div>
-</div>
 
-<footer class="record-footer">
-    <div class="footer-line"></div>
-    <div class="footer-content">
-        <p><i class="fas fa-shield-alt"></i> Your voice data is processed securely and used only for analysis.</p>
-    </div>
-</footer>
+        <div style="padding: 20px; background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 55px; height: 55px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
+                <div style="overflow: hidden;">
+                    <h4 id="display-name" style="font-size: 0.95rem; margin: 0; color: #1e293b; font-weight: 700;">Loading...</h4>
+                    <p id="display-phone" style="font-size: 0.75rem; color: #64748b; margin: 0;"></p>
+                </div>
+            </div>
+            <p id="display-address" style="font-size: 0.7rem; color: #64748b; margin-top: 10px; line-height: 1.4;">
+                <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i> Loading...
+            </p>
+        </div>
+
+        <nav style="flex: 1; padding: 15px 0;">
+            <a href="dashboard.html" class="gov-nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="record.html" class="gov-nav-link active"><i class="fas fa-microphone-alt"></i> Voice Analysis</a>
+            <a href="history.html" class="gov-nav-link"><i class="fas fa-history"></i> My Reports</a>
+            <a href="#" class="gov-nav-link" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i>Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ef4444; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: sans-serif;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="position: relative;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Government Seal" style="height: 50px; width: 50px; border-radius: 50%; border: 3px solid #ffffff; background: #ffffff; padding: 5px;">
+                    <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">OFFICIAL</div>
+                </div>
+                <div>
+                    <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Mental Wellness & Tone Analysis</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">An AI-Powered Digital India Initiative | Ministry of Health & Family Welfare</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <img src="data:image/png;base64,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" alt="Logo 1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+                <img src="https://thumbs.dreamstime.com/b/mental-health-concept-line-icon-simple-element-illustration-mental-health-concept-outline-symbol-mental-health-concept-line-icon-158053383.jpg" alt="Logo 2" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+            </div>
+        </div>
+
+        <div class="news-ticker">
+            <div class="scrolling-text">
+                <i class="fas fa-bullhorn"></i> <strong>Official Government Service:</strong> This portal is operated by the Ministry of Health & Family Welfare, Government of India.
+                <i class="fas fa-shield-alt"></i> Your data is protected under national cybersecurity standards.
+                <i class="fas fa-heartbeat"></i> Mental health is a priority - access 24/7 support services.
+                <i class="fas fa-users"></i> Join thousands of citizens benefiting from AI-powered wellness monitoring.
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="error-msg" class="message error-msg"></div>
+            <div id="success-msg" class="message success-msg"></div>
+            <div id="info-msg" class="message info-msg"></div>
+
+            <div class="record-card">
+                <h2><i class="fas fa-microphone"></i> Record Your Voice</h2>
+                
+                <div class="waveform-box" id="waveform-container">
+                    <i class="fas fa-wave-square"></i>
+                    <p id="wave-text">Ready to listen...</p>
+                </div>
+
+                <div class="timer" id="timer">00:00</div>
+
+                <div class="button-group">
+                    <button class="mic-btn" id="record-btn" title="Click to start recording">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="control-btn btn-analyze" id="analyze-btn" onclick="submitAudio()">
+                        <i class="fas fa-check"></i> Analyze
+                    </button>
+                    <button class="control-btn btn-reset" id="reset-btn" onclick="resetRecording()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+
+                <p id="status-msg"></p>
+
+                <div class="upload-section">
+                    <h3>Or upload an existing audio file</h3>
+                    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload audio file</p>
+                        <small>WAV, MP3, M4A (Max 10MB)</small>
+                        <input type="file" id="file-input" class="hidden" accept="audio/*">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="record-footer">
+            <div class="footer-content">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 40px; width: 40px; border-radius: 50%; border: 2px solid #ef4444; background: white; padding: 3px;">
+                    <div>
+                        <div style="font-size: 0.9rem; color: #f0f4f7; font-weight: 600;">Mental Health Portal</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">Ministry of Health & Family Welfare</div>
+                    </div>
+                </div>
+                <div class="footer-line"></div>
+                <p><i class="fas fa-shield-alt"></i> Your voice data is processed securely and used only for analysis. All information is protected under government cybersecurity standards.</p>
+                <p style="font-size: 0.8rem; opacity: 0.8;">© 2025 Government of India. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+</div>
 
 <script>
     const API_BASE = window.location.origin;
@@ -729,7 +929,53 @@
     }
 
     // Check authentication on page load
-    window.addEventListener('load', checkAuth);
+    window.addEventListener('load', () => {
+        checkAuth();
+        loadUserProfile();
+    });
+
+    // User profile functions
+    function setText(id, text) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = text;
+    }
+
+    function applyLocalProfile() {
+        const ACTIVE_USER = sessionStorage.getItem('activeUser');
+        if (!ACTIVE_USER) return;
+
+        const data = localStorage.getItem(ACTIVE_USER);
+        if (!data) return;
+
+        try {
+            const user = JSON.parse(data);
+            const name = user.name || 'User';
+            setText('display-name', name);
+            setText('display-phone', user.phone || '+91 00000 00000');
+            setText('display-address', user.address || 'Address not updated');
+        } catch (error) {
+            console.warn('Failed to parse local profile:', error);
+        }
+    }
+
+    async function loadUserProfile() {
+        applyLocalProfile();
+        const ACTIVE_USER = sessionStorage.getItem('activeUser');
+        if (!ACTIVE_USER) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/api/user-details/${encodeURIComponent(ACTIVE_USER)}`);
+            if (!response.ok) return;
+            const user = await response.json();
+            setText('display-name', user.name || 'User');
+            setText('display-phone', user.phone || '+91 00000 00000');
+            setText('display-address', user.address || 'Address not updated');
+            const photo = document.getElementById('user-photo');
+            if (photo && user.photo) photo.src = user.photo;
+        } catch (error) {
+            console.warn('Could not fetch profile from API:', error);
+        }
+    }
 </script>
 
 </body>

@@ -167,7 +167,7 @@ def get_db_config(include_database=True):
         "host": os.getenv("DB_HOST", "127.0.0.1").strip(),
         "port": parse_int(os.getenv("DB_PORT", "3306"), 3306),
         "user": os.getenv("DB_USER", "root").strip(),
-        "password": os.getenv("DB_PASSWORD", "chin1987"),
+        "password": os.getenv("DB_PASSWORD", "root").strip(),
         "charset": "utf8mb4",
         "cursorclass": pymysql.cursors.DictCursor,
         "autocommit": False,
