@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Stress Detection Using Voice Tone Anlaysis | Dashboard</title>
+    <title>Mental Stress Detection Using Voice Tone Analysis | Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -941,9 +941,164 @@
     box-shadow: 0 4px 15px rgba(211,47,47,0.3);
 }
 
-/* Scrollbar for Sidebar */
-.sidebar-nav::-webkit-scrollbar { width: 4px; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+/* Enhanced Sidebar Styles */
+.sidebar {
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 70px !important;
+}
+
+.sidebar.collapsed .sidebar-header .sidebar-toggle {
+    right: 50%;
+    transform: translateX(50%);
+}
+
+.sidebar.collapsed .sidebar-profile,
+.sidebar.collapsed .sidebar-section {
+    padding: 10px;
+}
+
+.sidebar.collapsed .gov-nav-link span,
+.sidebar.collapsed .section-header span,
+.sidebar.collapsed .announcement-content,
+.sidebar.collapsed .wellness-stats,
+.sidebar.collapsed .settings-btn span,
+.sidebar.collapsed .quick-action-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .gov-nav-link,
+.sidebar.collapsed .settings-btn,
+.sidebar.collapsed .quick-action-btn {
+    justify-content: center;
+    padding: 12px;
+}
+
+.sidebar.collapsed .sidebar-header div:not(.sidebar-toggle) {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-profile div:not(img) {
+    display: none;
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: #f1f1f5;
+    border-radius: 10px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Sidebar Section Headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.section-header i {
+    color: inherit;
+}
+
+/* Quick Action Buttons */
+.quick-action-btn {
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.emergency-btn {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Wellness Tracker */
+.wellness-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.wellness-item span:first-child {
+    font-size: 0.75rem;
+    color: #166534;
+}
+
+.wellness-item span:last-child {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #166534;
+}
+
+/* Settings Buttons */
+.settings-btn:hover {
+    background: #0369a1 !important;
+    transform: translateY(-1px);
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.logout-btn:hover {
+    background: #b91c1c !important;
+    transform: translateY(-1px);
+}
+
+/* Responsive Sidebar */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        box-shadow: none !important;
+        max-height: 300px;
+    }
+
+    .sidebar.collapsed {
+        width: 100% !important;
+        max-height: 60px;
+    }
+
+    .sidebar.collapsed .sidebar-content {
+        display: none;
+    }
+
+    main {
+        margin-left: 0 !important;
+    }
+}
 /* GOV OF INDIA COLOR PALETTE */
 :root {
     --nic-blue: #0055a4;
@@ -1035,6 +1190,9 @@ footer .footer-links a:hover {
     main { margin-left: 250px; }
     .sidebar { width: 250px; }
 
+    /* Sidebar responsive adjustments */
+    .sidebar.collapsed ~ main { margin-left: 70px; }
+
     /* Footer responsive */
     .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
 @media (max-width: 768px) {
@@ -1086,87 +1244,150 @@ footer .footer-links a:hover {
 <div class="official-header"><i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness</div>
 <div class="dashboard-wrapper" style="display: flex; min-height: 100vh; background: #f0f4f7;">
     
-    <aside class="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden;">
-        
-        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0;">
-            <div style="position: relative; display: inline-block; margin-bottom: 15px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 60px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
-                <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
+    <aside class="sidebar" id="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden; transition: width 0.3s ease;">
+
+        <!-- Sidebar Header -->
+        <div class="sidebar-header" style="padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0;">
+            <div style="position: relative; display: inline-block; margin-bottom: 10px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 50px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
+                <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
             </div>
-            <div style="font-size: 0.7rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+            <div style="font-size: 0.65rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
                 Ministry of Health &<br>Family Welfare
             </div>
-            <div style="font-size: 0.6rem; color: #64748b; font-weight: 600;">
+            <div style="font-size: 0.55rem; color: #64748b; font-weight: 600;">
                 Government of India
             </div>
+            <button onclick="toggleSidebar()" class="sidebar-toggle" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #64748b; font-size: 1.2rem; cursor: pointer; padding: 5px;">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
 
-        <div style="padding: 20px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 55px; height: 55px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
-                <div style="overflow: hidden;">
-                    <h4 id="display-name" style="font-size: 0.95rem; margin: 0; color: #1e293b; font-weight: 700;">Loading...</h4>
-                    <p id="display-phone" style="font-size: 0.75rem; color: #64748b; margin: 0;"></p>
+        <!-- User Profile Section -->
+        <div class="sidebar-profile" style="padding: 15px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 45px; height: 45px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
+                <div style="overflow: hidden; flex: 1;">
+                    <h4 id="display-name" style="font-size: 0.85rem; margin: 0; color: #1e293b; font-weight: 700;">Loading...</h4>
+                    <p id="display-phone" style="font-size: 0.7rem; color: #64748b; margin: 0;"></p>
                 </div>
             </div>
-            <p id="display-address" style="font-size: 0.7rem; color: #64748b; margin-top: 10px; line-height: 1.4;">
+            <p id="display-address" style="font-size: 0.65rem; color: #64748b; margin-top: 8px; line-height: 1.3;">
                 <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i> Loading...
             </p>
         </div>
 
-        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
-            <nav style="padding: 15px 0; background: #ffffff; display: flex; flex-direction: column; flex-shrink: 0; border-bottom: 2px solid #e5e7eb;">
-                <div style="padding: 10px 15px; font-size: 0.75rem; font-weight: 700; color: #0055a4; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;">
-                    <i class="fas fa-bars"></i> Navigation
-                </div>
-                <a href="#" class="gov-nav-link active" style="margin: 3px 10px;"><i class="fas fa-th-large"></i> Dashboard</a>
-                <a href="record.html" class="gov-nav-link" style="margin: 3px 10px;"><i class="fas fa-microphone-alt"></i> Voice Analysis</a>
-                <a href="history.html" class="gov-nav-link" style="margin: 3px 10px;"><i class="fas fa-history"></i> My Reports</a>
-                <a href="#" class="gov-nav-link" onclick="logout(); return false;" style="margin: 3px 10px; color: #dc2626;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </nav>
+        <!-- Scrollable Content Area -->
+        <div class="sidebar-content" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
 
-            <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
-                <!-- Announcements Section -->
-                <div style="padding: 15px; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%); flex-shrink: 0;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-                        <i class="fas fa-megaphone"></i> Announcements
-                    </div>
-                    <div style="font-size: 0.8rem; color: #b45309; line-height: 1.4;">
-                        <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
-                            <strong>New Feature:</strong> AI Voice Analysis now available!
-                        </div>
-                        <div style="font-size: 0.75rem; color: #a16207;">
-                            <i class="fas fa-info-circle"></i> Check your wellness progress regularly for best results.
-                        </div>
-                    </div>
-                </div>
+            <!-- Navigation Section -->
 
-                <!-- Settings Section -->
-                <div style="padding: 15px; border-top: 1px solid #e5e7eb; background: #f1f5f9; flex-shrink: 0;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
-                        <i class="fas fa-cog"></i> Settings
+
+            <!-- Quick Actions Section -->
+            <div class="sidebar-section" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f8fafc;">
+                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                     <button onclick="quickAction('Dashboard')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i class="fas fa-home"></i> Dashboard
+                    </button>
+
+                    <button onclick="quickAction('record')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i class="fas fa-microphone"></i> Quick Record
+                    </button>
+                    <button onclick="quickAction('wellness')" class="quick-action-btn" style="width: 100%; background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i class="fas fa-heart"></i> Wellness Check
+                    </button>
+                    <button onclick="quickAction('emergency')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; animation: pulse 2s infinite;">
+                        <i class="fas fa-exclamation-triangle"></i> Emergency SOS
+                    </button>
+                    <button onclick="quickAction('history')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i class="fas fa-history"></i> History 
+                    </button>
+                    <button onclick="quickAction('Logout')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; animation: pulse 2s infinite;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Announcements Section -->
+            <div class="sidebar-section announcements" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%);">
+                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-megaphone"></i> Announcements
+                </div>
+                <div class="announcement-content" style="font-size: 0.75rem; color: #b45309; line-height: 1.4;">
+                    <div class="announcement-item" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
+                        <strong>New Feature:</strong> AI Voice Analysis now available!
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <button onclick="openSettings()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
-                            <i class="fas fa-user-edit"></i> Edit Profile
-                        </button>
-                        <button onclick="openNotifications()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
-                            <i class="fas fa-bell"></i> Notifications
-                        </button>
-                        <button onclick="openPrivacy()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
-                            <i class="fas fa-shield-alt"></i> Privacy
-                        </button>
-                        <button onclick="openHelp()" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0c4a6e'">
-                            <i class="fas fa-question-circle"></i> Help & Support
-                        </button>
+                    <div class="announcement-item" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
+                        <strong>Update:</strong> Enhanced privacy controls added.
+                    </div>
+                    <div class="announcement-item" style="font-size: 0.7rem; color: #a16207;">
+                        <i class="fas fa-info-circle"></i> Check your wellness progress regularly for best results.
                     </div>
                 </div>
             </div>
+
+            <!-- Wellness Tracker -->
+            <div class="sidebar-section wellness-tracker" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f0fdf4;">
+                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-line"></i> Today's Wellness
+                </div>
+                <div class="wellness-stats" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; color: #166534;">Water Intake</span>
+                        <span id="sidebar-water" style="font-size: 0.75rem; font-weight: 600; color: #166534;">0.0L</span>
+                    </div>
+                    <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; color: #166534;">Stress Level</span>
+                        <span id="sidebar-stress" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
+                    </div>
+                    <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; color: #166534;">Mood</span>
+                        <span id="sidebar-mood" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
+                    </div>
+                </div>
+                <button onclick="updateWellness()" style="width: 100%; margin-top: 10px; background: #166534; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="sidebar-section settings" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f1f5f9;">
+                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cog"></i> Settings
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <button onclick="openSettings()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                        <i class="fas fa-user-edit"></i> Profile
+                    </button>
+                    <button onclick="openNotifications()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                        <i class="fas fa-bell"></i> Notifications
+                    </button>
+                    <button onclick="openPrivacy()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                        <i class="fas fa-shield-alt"></i> Privacy
+                    </button>
+                    <button onclick="openHelp()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                        <i class="fas fa-question-circle"></i> Help
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            <div class="sidebar-footer" style="padding: 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 8px;">
+                        <i class="fas fa-shield-alt"></i> Secure Government Portal
+                    </div>
+                </div>
+            </div>
+
         </div>
-       
+
     </aside>
 
-    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: #f8fafc;">
+    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: #f8fafc; transition: margin-left 0.3s ease;">
 
         <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ef4444; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: sans-serif;">
     
@@ -1615,8 +1836,31 @@ function checkAuth() {
 }
 
 function logout() {
-    sessionStorage.removeItem('activeUser');
-    window.location.href = 'index.html';
+    // Show confirmation dialog
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear user session data
+        sessionStorage.removeItem('activeUser');
+        sessionStorage.removeItem('userToken');
+
+        // Clear any user-related localStorage data
+        localStorage.removeItem('dailyWater');
+        localStorage.removeItem('lastWellnessUpdate');
+        localStorage.removeItem('userPreferences');
+
+        // Clear any running intervals
+        if (window.wellnessUpdateInterval) {
+            clearInterval(window.wellnessUpdateInterval);
+        }
+        if (window.stressUpdateInterval) {
+            clearInterval(window.stressUpdateInterval);
+        }
+
+        // Show logout message
+        alert('You have been logged out successfully.');
+
+        // Redirect to login page
+        window.location.href = 'index.html';
+    }
 }
 
 function setText(id, value) {
@@ -2129,33 +2373,114 @@ function openHelp() {
     createAndShowModal('❓ Help & Support', content, buttons);
 }
 
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('main');
+    const isCollapsed = sidebar.classList.contains('collapsed');
+
+    if (isCollapsed) {
+        sidebar.classList.remove('collapsed');
+        main.style.marginLeft = '280px';
+    } else {
+        sidebar.classList.add('collapsed');
+        main.style.marginLeft = '70px';
+    }
+
+    // Save sidebar state
+    localStorage.setItem('sidebarCollapsed', !isCollapsed);
+}
+
+function navigateTo(page) {
+    // Update active navigation link
+    document.querySelectorAll('.gov-nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    if (page === 'dashboard') {
+        window.location.href = '#';
+        document.querySelector('.gov-nav-link:first-child').classList.add('active');
+    } else if (page === 'record') {
+        window.location.href = 'record.html';
+    } else if (page === 'history') {
+        window.location.href = 'history.html';
+    } else if (page === 'admin') {
+        window.location.href = 'admin.html';
+    }
+}
+
+function quickAction(action) {
+    switch(action) {
+        case 'record':
+            window.location.href = 'record.html';
+            break;
+        case 'wellness':
+            // Scroll to wellness section or open modal
+            document.querySelector('.probability-card')?.scrollIntoView({ behavior: 'smooth' });
+            break;
+        case 'emergency':
+            sendSOS();
+            break;
+        case 'history':
+            window.location.href = 'history.html';
+            break;
+        case 'Logout':
+            logout();
+            break;
+    }
+}
+
+function updateWellness() {
+    // Update sidebar wellness stats
+    const waterElement = document.getElementById('sidebar-water');
+    const stressElement = document.getElementById('sidebar-stress');
+    const moodElement = document.getElementById('sidebar-mood');
+
+    if (waterElement) {
+        const currentWater = parseFloat(localStorage.getItem('dailyWater')) || 0;
+        waterElement.textContent = `${currentWater.toFixed(1)}L`;
+    }
+
+    if (stressElement) {
+        const stressLevel = resolveStressScore();
+        let stressText = '--';
+        if (stressLevel >= 70) stressText = 'High';
+        else if (stressLevel >= 40) stressText = 'Moderate';
+        else if (stressLevel > 0) stressText = 'Low';
+        stressElement.textContent = stressText;
+    }
+
+    if (moodElement) {
+        const mood = document.getElementById('dom-emotion')?.textContent || '--';
+        moodElement.textContent = mood;
+    }
+}
+
+function initSidebar() {
+    // Load sidebar state
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('main');
+
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        main.style.marginLeft = '70px';
+    }
+
+    // Update wellness stats on load
+    updateWellness();
+
+    // Auto-update wellness stats every 30 seconds
+    setInterval(updateWellness, 30000);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (!checkAuth()) return;
     updateWaterUI();
     await loadUserProfile();
     await loadDashboardSummary();
+    initSidebar();
     setInterval(loadDashboardSummary, 60000);
 });
-</script>
-<function_calls>
-<invoke name="replace_string_in_file">
-<parameter name="filePath">c:\Users\potta\OneDrive\Desktop\voice-stress-ui\frontend\dashboard.html
-<script>
-function checkPrice() {
-    const medInput = document.getElementById('med-search');
-    const result = document.getElementById('price-result');
-    if (!medInput || !result) return;
-    const med = medInput.value.toLowerCase();
-    
-    // Example logic
-    if(med.includes("paracetamol")) {
-        result.innerText = "Jan Aushadhi Price: Rs 10.25 | Save approx 75%!";
-    } else if(med.includes("metformin")) {
-        result.innerText = "Jan Aushadhi Price: Rs 12.50 | Save approx 80%!";
-    } else {
-        result.innerText = "Medicine details available at nearest Jan Aushadhi Kendra.";
-    }
-}
 </script>
 
 </body>
