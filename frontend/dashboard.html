@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Stress Detection Using Voice Tone Analysis | Dashboard</title>
+    <title>Mental Stress Detection | Wellness Overview & Trends</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -1359,21 +1359,24 @@ footer .footer-links a:hover {
             <!-- Wellness Tracker -->
             <div class="sidebar-section wellness-tracker" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f0fdf4;">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-chart-line"></i> Today's Wellness
+                    <i class="fas fa-chart-line"></i> Current Status
                 </div>
                 <div class="wellness-stats" style="display: flex; flex-direction: column; gap: 8px;">
                     <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: #166534;">Water Intake</span>
+                        <span style="font-size: 0.75rem; color: #166534;">Today's Water</span>
                         <span id="sidebar-water" style="font-size: 0.75rem; font-weight: 600; color: #166534;">0.0L</span>
                     </div>
                     <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: #166534;">Stress Level</span>
+                        <span style="font-size: 0.75rem; color: #166534;">Latest Stress</span>
                         <span id="sidebar-stress" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
                     </div>
                     <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: #166534;">Mood</span>
+                        <span style="font-size: 0.75rem; color: #166534;">Current Mood</span>
                         <span id="sidebar-mood" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
                     </div>
+                </div>
+                <div style="font-size: 0.6rem; color: #166534; margin-top: 8px; text-align: center; opacity: 0.8;">
+                    <i class="fas fa-info-circle"></i> Shows your most recent analysis
                 </div>
                 <button onclick="updateWellness()" style="width: 100%; margin-top: 10px; background: #166534; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;">
                     <i class="fas fa-sync"></i> Refresh
@@ -1446,7 +1449,7 @@ footer .footer-links a:hover {
 <div class="container" style="padding-bottom: 2rem;">
     <section class="welcome-section">
         <h1>Welcome back, <span id="user-name">User</span>!</h1>
-        <p>Your mental wellness dashboard</p>
+        <p>Your mental wellness overview & trends</p>
     </section>
 
     <div class="info-card" style="background: linear-gradient(135deg, #fff3cd 0%, #ffffff 100%); border: 2px solid #ffc107; margin-bottom: 20px;">
@@ -1470,17 +1473,25 @@ footer .footer-links a:hover {
             <div class="stat-icon icon-purple"><i class="fas fa-microphone"></i></div>
         </div>
         <div class="stat-card">
-            <div class="stat-info"><span class="label">Avg. Stress</span><span class="value" id="avg-stress">--</span></div>
+            <div class="stat-info"><span class="label">Overall Avg Stress</span><span class="value" id="avg-stress">--</span></div>
             <div class="stat-icon icon-red"><i class="fas fa-heartbeat"></i></div>
         </div>
         <div class="stat-card">
-            <div class="stat-info"><span class="label">Emotion</span><span class="value" id="dom-emotion">--</span></div>
+            <div class="stat-info"><span class="label">Most Common Emotion</span><span class="value" id="dom-emotion">--</span></div>
             <div class="stat-icon icon-yellow"><i class="fas fa-smile"></i></div>
         </div>
         <div class="stat-card">
-            <div class="stat-info"><span class="label">Last Check</span><span class="value" id="last-check">--</span></div>
+            <div class="stat-info"><span class="label">Latest Analysis</span><span class="value" id="last-check">--</span></div>
             <div class="stat-icon icon-green"><i class="fas fa-calendar-check"></i></div>
         </div>
+    </div>
+
+    <div style="text-align: center; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+        <small style="color: #6c757d; font-size: 0.8rem;">
+            <i class="fas fa-info-circle"></i> <strong>Dashboard shows overall trends</strong> | 
+            <strong>Sidebar shows current status</strong> | 
+            <strong>History shows detailed records</strong>
+        </small>
     </div>
 
     <div class="info-card">

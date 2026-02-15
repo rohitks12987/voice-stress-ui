@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Stress Detection Using Voice Tone Analysis | Voice Analysis</title>
+    <title>Mental Stress Detection Using Voice Tone Analysis | Voice Recording & Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -824,8 +824,8 @@
                     <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">OFFICIAL</div>
                 </div>
                 <div>
-                    <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Mental Wellness & Tone Analysis</h2>
-                    <span style="font-size: 0.75rem; color: #64748b;">An AI-Powered Digital India Initiative | Ministry of Health & Family Welfare</span>
+                    <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Voice Recording & Analysis</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">Record or upload voice samples for AI-powered wellness analysis | Ministry of Health & Family Welfare</span>
                 </div>
             </div>
 
@@ -844,13 +844,24 @@
             </div>
         </div>
 
+        <!-- Info Banner for Record Page -->
+        <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #bae6fd; border-left: 4px solid #ff9933; padding: 12px 20px; margin: 0 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-microphone" style="color: #ff9933; font-size: 1.2rem;"></i>
+                <div>
+                    <strong style="color: #003366; font-weight: 600;">Voice Recording & Analysis:</strong>
+                    <span style="color: #64748b; font-size: 0.9rem; margin-left: 8px;">Record your voice or upload an audio file to get instant AI-powered stress and emotion analysis. Results will be saved to your history for tracking wellness trends.</span>
+                </div>
+            </div>
+        </div>
+
         <div class="container" style="padding-bottom: 2rem;">
             <div id="error-msg" class="message error-msg"></div>
             <div id="success-msg" class="message success-msg"></div>
             <div id="info-msg" class="message info-msg"></div>
 
             <div class="record-card">
-                <h2><i class="fas fa-microphone"></i> Record Your Voice</h2>
+                <h2><i class="fas fa-microphone"></i> Record New Voice Sample</h2>
                 
                 <div class="waveform-box" id="waveform-container">
                     <i class="fas fa-wave-square"></i>
