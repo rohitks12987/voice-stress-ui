@@ -470,6 +470,33 @@
     transform: scale(1.05);
 }
 
+.voice-control-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+.voice-control-btn:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.voice-control-btn.listening {
+    background: #f59e0b;
+    animation: pulse 1s infinite;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
 .agent-profile-area {
     background: #f4f4f4;
     padding: 10px 15px;
@@ -1473,6 +1500,32 @@ footer .footer-links a:hover {
             <div class="bar-group"><div class="bar-value" id="high-percent">--</div><div class="bar high" id="high-bar"></div><div class="bar-label">High</div></div>
         </div>
     </div>
+    
+    <!-- Emergency Alert Card -->
+    <div class="emergency-alert-card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border: 2px solid #dc2626; border-radius: 12px; padding: 20px; margin-bottom: 2rem; text-align: center; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCBmaWxsPSJyZ2JhKDIyMCwzOCwzOCwwLjEpIiBmb250LXNpemU9IjYwIiB5PSI3MCUiPu+4j+CfmjwvdGV4dD48L3N2Zz4=') no-repeat center; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+            <h3 style="color: #dc2626; margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 700;">🚨 EMERGENCY ASSISTANCE</h3>
+            <p style="color: #7f1d1d; margin: 0 0 15px 0; font-size: 0.9rem;">If you're feeling overwhelmed or in crisis, help is just one click away.</p>
+            <button onclick="openModal('panic-modal')" 
+                    style="background: #dc2626; color: white; border: none; padding: 12px 25px; 
+                           border-radius: 25px; font-size: 1rem; font-weight: bold; cursor: pointer; 
+                           box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); transition: 0.3s;
+                           animation: pulse 3s infinite;">
+                🚨 GET HELP NOW
+            </button>
+            <div id="sos-status" style="margin-top: 10px; padding: 8px; border-radius: 8px; font-size: 0.9rem; display: none; text-align: center;"></div>
+            <div id="delivery-details" style="margin-top: 10px; display: none;">
+                <div style="font-size: 0.8rem; color: #7f1d1d; margin-bottom: 5px;"><strong>📋 Message Delivery Status:</strong></div>
+                <div id="delivery-list" style="font-size: 0.8rem; max-height: 100px; overflow-y: auto;"></div>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #7f1d1d;">
+                <strong>Voice activated:</strong> Say "HELP" or "EMERGENCY" to activate automatically
+                <br><small>Voice detection starts when you open the app</small>
+            </div>
+        </div>
+    </div>
+    
     <div class="info-card" style="margin-top: 20px;">
     <div class="info-header" style="background-color: white;">
         <i class="fas fa-pills"></i> Jan Aushadhi (Generic) vs Branded Price List
@@ -1645,11 +1698,53 @@ footer .footer-links a:hover {
         </div>
     </div>
 </div>
+
+<!-- Panic Modal -->
+<div id="panic-modal" class="modal">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+        <div class="modal-header" style="background: #dc2626; color: white; border-radius: 8px 8px 0 0;">
+            <h3 style="margin: 0; color: white;">🚨 EMERGENCY ALERT</h3>
+            <span class="close-btn" onclick="closeModal('panic-modal')" style="color: white; font-size: 24px;">&times;</span>
+        </div>
+        <div class="modal-body" style="padding: 30px;">
+            <div style="font-size: 18px; margin-bottom: 20px; color: #374151;">
+                If you're in immediate danger or need urgent help, press the button below.
+            </div>
+            
+            <button onclick="sendSOS(); closeModal('panic-modal');" 
+                    style="background: #dc2626; color: white; border: none; padding: 20px 40px; 
+                           border-radius: 50px; font-size: 20px; font-weight: bold; cursor: pointer; 
+                           box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); margin-bottom: 20px;
+                           animation: pulse 2s infinite;">
+                🚨 ACTIVATE EMERGENCY SOS
+            </button>
+            
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="color: #dc2626; font-weight: bold; margin-bottom: 10px;">What happens when you press this button:</div>
+                <ul style="text-align: left; color: #374151; margin: 0; padding-left: 20px;">
+                    <li>📱 SMS/WhatsApp sent to your emergency contacts</li>
+                    <li>📍 Your location is shared automatically</li>
+                    <li>🚨 Help will arrive as soon as possible</li>
+                    <li>💬 Friends will receive: "EMERGENCY ALERT: [Your Name] has activated SOS. Please check on them immediately."</li>
+                </ul>
+            </div>
+            
+            <div style="font-size: 14px; color: #6b7280;">
+                <strong>Voice Commands:</strong> You can also say "HELP", "EMERGENCY", or "PANIC" to activate
+                <br><small>Make sure microphone permission is granted and voice detection is ON</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="consultant-chat-window" id="chat-window" style="display:none; flex-direction:column;">
     <div class="chat-top-bar" onclick="toggleChat(false)">
         <span>Chat with us</span>
         <button class="emergency-btn-chat" onclick="openModal('panic-modal'); event.stopPropagation();">
             <i class="fas fa-exclamation-triangle"></i> EMERGENCY
+        </button>
+        <button class="voice-control-btn" onclick="toggleVoiceDetection(); event.stopPropagation();" id="voice-btn">
+            <i class="fas fa-microphone"></i> VOICE
         </button>
         <i class="fas fa-caret-down"></i>
     </div>
@@ -1745,8 +1840,14 @@ footer .footer-links a:hover {
 
             <!-- Emergency Contacts -->
             <div>
-                <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #f0f4f7; font-weight: 600; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">Emergency Contacts</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4 style="margin: 0; font-size: 1.1rem; color: #f0f4f7; font-weight: 600; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">Emergency Contacts</h4>
+                    <button onclick="openEmergencyContactsModal()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <i class="fas fa-plus"></i> Manage
+                    </button>
+                </div>
                 <div class="emergency-contacts" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div id="personal-contacts" style="display: flex; flex-direction: column; gap: 10px;"></div>
                     <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 3px solid #ef4444;">
                         <i class="fas fa-phone" style="color: #ef4444; font-size: 1.2rem;"></i>
                         <div>
@@ -2149,7 +2250,19 @@ function getBrowserLocation() {
 
 async function sendSOS() {
     const statusEl = document.getElementById('sos-status');
-    if (statusEl) statusEl.innerText = 'Sending alert...';
+    const deliveryEl = document.getElementById('delivery-details');
+    const deliveryListEl = document.getElementById('delivery-list');
+
+    if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerText = '📤 Sending emergency alert...';
+        statusEl.style.backgroundColor = '#fef3c7';
+        statusEl.style.color = '#92400e';
+        statusEl.style.border = '1px solid #f59e0b';
+    }
+
+    if (deliveryEl) deliveryEl.style.display = 'none';
+    if (deliveryListEl) deliveryListEl.innerHTML = '';
 
     const location = await getBrowserLocation();
     const payload = {
@@ -2166,10 +2279,78 @@ async function sendSOS() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
-        if (statusEl) statusEl.innerText = 'SOS alert submitted successfully.';
+
+        const notified = data.contacts_notified || 0;
+        const failed = data.contacts_failed || 0;
+
+        // Update status display
+        if (statusEl) {
+            if (failed === 0) {
+                statusEl.innerText = `✅ SOS alert sent to ${notified} contact${notified !== 1 ? 's' : ''}!`;
+                statusEl.style.backgroundColor = '#d1fae5';
+                statusEl.style.color = '#065f46';
+                statusEl.style.border = '1px solid #10b981';
+            } else {
+                statusEl.innerText = `⚠️ SOS sent to ${notified} contact${notified !== 1 ? 's' : ''}, ${failed} failed.`;
+                statusEl.style.backgroundColor = '#fee2e2';
+                statusEl.style.color = '#991b1b';
+                statusEl.style.border = '1px solid #ef4444';
+            }
+        }
+
+        // Show delivery details
+        if (deliveryEl && data.delivery_details && data.delivery_details.length > 0) {
+            deliveryEl.style.display = 'block';
+            let detailsHtml = '';
+            data.delivery_details.forEach(detail => {
+                const icon = detail.status === 'sent' ? '✅' : '❌';
+                const method = detail.method ? ` <small>(${detail.method})</small>` : '';
+                const error = detail.error ? `<br><small style="color: #dc2626;">Error: ${detail.error}</small>` : '';
+                detailsHtml += `<div>${icon} <strong>${detail.name}</strong>: ${detail.status}${method}${error}</div>`;
+            });
+            if (deliveryListEl) deliveryListEl.innerHTML = detailsHtml;
+        }
+
+        // Create detailed alert message
+        let alertMessage = `🚨 EMERGENCY ALERT SENT!\n\n`;
+        alertMessage += `✅ Successfully sent to ${notified} contact${notified !== 1 ? 's' : ''}\n`;
+
+        if (data.delivery_details && data.delivery_details.length > 0) {
+            alertMessage += `\n📋 Delivery Details:\n`;
+            data.delivery_details.forEach(detail => {
+                const icon = detail.status === 'sent' ? '✅' : '❌';
+                const method = detail.method ? ` (${detail.method})` : '';
+                alertMessage += `${icon} ${detail.name}: ${detail.status}${method}\n`;
+                if (detail.error) {
+                    alertMessage += `   Error: ${detail.error}\n`;
+                }
+            });
+        }
+
+        if (failed > 0) {
+            alertMessage += `\n⚠️ Some messages failed to send. Please contact emergency services if needed.`;
+        } else {
+            alertMessage += `\n📍 Location shared with contacts. Help is on the way. Stay calm.`;
+        }
+
+        alert(alertMessage);
+
+        // Auto-hide delivery details after 30 seconds
+        setTimeout(() => {
+            if (statusEl) statusEl.style.display = 'none';
+            if (deliveryEl) deliveryEl.style.display = 'none';
+        }, 30000);
+
     } catch (error) {
         console.error('SOS error:', error);
-        if (statusEl) statusEl.innerText = 'Could not send SOS. Please call emergency services directly.';
+        if (statusEl) {
+            statusEl.innerText = '❌ Could not send SOS. Please call emergency services directly.';
+            statusEl.style.backgroundColor = '#fee2e2';
+            statusEl.style.color = '#991b1b';
+            statusEl.style.border = '1px solid #ef4444';
+            statusEl.style.display = 'block';
+        }
+        alert('❌ Failed to send emergency alert. Please contact emergency services manually.\n\nError: ' + error.message);
     }
 }
 
@@ -2373,6 +2554,405 @@ function openHelp() {
     createAndShowModal('❓ Help & Support', content, buttons);
 }
 
+async function openEmergencyContactsModal() {
+    const content = `
+        <div style="padding: 10px 0;">
+            <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Emergency Contacts</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">Add trusted contacts who will receive SMS/WhatsApp alerts when you activate the emergency button.</p>
+            
+            <div id="contacts-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                <!-- Contacts will be loaded here -->
+            </div>
+            
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                <h4 style="color: #0c4a6e; margin-bottom: 10px; font-size: 0.9rem;">Add New Contact</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="contact-name" placeholder="Full Name" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <input type="tel" id="contact-phone" placeholder="Phone Number (with country code)" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <input type="text" id="contact-relationship" placeholder="Relationship (e.g., Family, Friend)" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <button onclick="addEmergencyContact()" style="background: #10b981; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: 600;">➕ Add Contact</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const buttons = `
+        <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Close</button>
+    `;
+    
+    createAndShowModal('🚨 Emergency Contacts', content, buttons);
+    await loadEmergencyContacts();
+}
+
+async function loadEmergencyContacts() {
+    const listEl = document.getElementById('contacts-list');
+    if (!listEl) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/emergency-contacts?user_email=${encodeURIComponent(ACTIVE_USER || 'guest@stress-tone.local')}`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            listEl.innerHTML = data.contacts.map(contact => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
+                    <div>
+                        <div style="font-weight: 600; color: #0c4a6e;">${contact.name}</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">${contact.phone} ${contact.relationship ? `(${contact.relationship})` : ''}</div>
+                    </div>
+                    <button onclick="deleteEmergencyContact(${contact.id})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">🗑️</button>
+                </div>
+            `).join('');
+            
+            // Also update the sidebar
+            updateSidebarContacts(data.contacts);
+        } else {
+            listEl.innerHTML = '<p style="color: #64748b; text-align: center;">No emergency contacts added yet.</p>';
+        }
+    } catch (error) {
+        console.error('Error loading contacts:', error);
+        listEl.innerHTML = '<p style="color: #ef4444; text-align: center;">Failed to load contacts.</p>';
+    }
+}
+
+async function addEmergencyContact() {
+    const name = document.getElementById('contact-name').value.trim();
+    const phone = document.getElementById('contact-phone').value.trim();
+    const relationship = document.getElementById('contact-relationship').value.trim();
+    
+    if (!name || !phone) {
+        alert('Please enter both name and phone number.');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/emergency-contacts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_email: ACTIVE_USER || 'guest@stress-tone.local',
+                name,
+                phone,
+                relationship
+            })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            document.getElementById('contact-name').value = '';
+            document.getElementById('contact-phone').value = '';
+            document.getElementById('contact-relationship').value = '';
+            await loadEmergencyContacts();
+            alert('Emergency contact added successfully!');
+        } else {
+            alert(data.message || 'Failed to add contact.');
+        }
+    } catch (error) {
+        console.error('Error adding contact:', error);
+        alert('Failed to add contact.');
+    }
+}
+
+async function deleteEmergencyContact(contactId) {
+    if (!confirm('Are you sure you want to delete this emergency contact?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/emergency-contacts/${contactId}?user_email=${encodeURIComponent(ACTIVE_USER || 'guest@stress-tone.local')}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            await loadEmergencyContacts();
+            alert('Emergency contact deleted.');
+        } else {
+            alert(data.message || 'Failed to delete contact.');
+        }
+    } catch (error) {
+        console.error('Error deleting contact:', error);
+        alert('Failed to delete contact.');
+    }
+}
+
+function updateSidebarContacts(contacts) {
+    const container = document.getElementById('personal-contacts');
+    if (!container) return;
+    
+    container.innerHTML = contacts.slice(0, 3).map(contact => `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; border-left: 3px solid #10b981;">
+            <i class="fas fa-user-friends" style="color: #10b981; font-size: 1rem;"></i>
+            <div>
+                <div style="font-size: 0.8rem; color: #f0f4f7; font-weight: 600;">${contact.name}</div>
+                <div style="font-size: 0.7rem; color: #94a3b8;">${contact.relationship || 'Contact'}</div>
+            </div>
+        </div>
+    `).join('');
+    
+    if (contacts.length > 3) {
+        container.innerHTML += `<div style="font-size: 0.7rem; color: #94a3b8; text-align: center; margin-top: 5px;">+${contacts.length - 3} more</div>`;
+    }
+}
+
+// Voice Emergency Detection Helper Functions
+function updateVoiceButton(listening) {
+    const btn = document.getElementById('voice-btn');
+    if (btn) {
+        if (listening) {
+            btn.classList.add('listening');
+            btn.innerHTML = '<i class="fas fa-microphone"></i> VOICE ON';
+        } else {
+            btn.classList.remove('listening');
+            if (!window.voiceDetectionStopped) {
+                btn.innerHTML = '<i class="fas fa-microphone"></i> VOICE';
+            } else {
+                btn.innerHTML = '<i class="fas fa-microphone-slash"></i> VOICE OFF';
+            }
+        }
+    }
+}
+
+function updateVoiceStatus(message) {
+    const statusEl = document.getElementById('voice-status');
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.display = 'block';
+
+        // Auto-hide after 3 seconds unless it's a listening message
+        if (!message.includes('Listening') && !message.includes('🎤')) {
+            setTimeout(() => {
+                if (statusEl.textContent === message) {
+                    statusEl.style.display = 'none';
+                }
+            }, 3000);
+        }
+    }
+}
+
+// Voice Emergency Detection
+let voiceRecognition = null;
+let isVoiceListening = false;
+let voiceRestartTimeout = null;
+let isVoiceDetectionStarting = false;
+
+function startVoiceEmergencyDetection() {
+    if (isVoiceDetectionStarting || isVoiceListening) {
+        console.log('Voice detection already starting or active');
+        return;
+    }
+
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.log('Voice recognition not supported');
+        if (typeof updateVoiceStatus === 'function') {
+            updateVoiceStatus('❌ Voice recognition not supported in this browser');
+        }
+        return;
+    }
+
+    isVoiceDetectionStarting = true;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    voiceRecognition = new SpeechRecognition();
+
+    // Configure for better continuous listening
+    voiceRecognition.continuous = false; // Set to false for more control
+    voiceRecognition.interimResults = true; // Get interim results
+    voiceRecognition.lang = 'en-US';
+    voiceRecognition.maxAlternatives = 1;
+
+    voiceRecognition.onstart = function() {
+        isVoiceListening = true;
+        isVoiceDetectionStarting = false;
+        console.log('Voice emergency detection started');
+        if (typeof updateVoiceStatus === 'function') {
+            updateVoiceStatus('🎤 Listening for emergency keywords...');
+        }
+        if (typeof updateVoiceButton === 'function') {
+            updateVoiceButton(true);
+        }
+    };
+
+    voiceRecognition.onresult = function(event) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        // Process all results
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript.toLowerCase();
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        if (finalTranscript) {
+            console.log('Final transcript:', finalTranscript);
+
+            // Emergency keywords in English and Hindi/Urdu
+            const emergencyKeywords = [
+                'help', 'emergency', 'panic', 'danger', 'help me', 'save me', 'sos',
+                'मदद', 'सहायता', 'आपत्ति', 'खतरा', 'बचाओ', 'मेरी मदद करो', 'सॉस'
+            ];
+
+            if (emergencyKeywords.some(keyword => finalTranscript.includes(keyword))) {
+                console.log('Emergency keyword detected!');
+                if (typeof updateVoiceStatus === 'function') {
+                    updateVoiceStatus('🚨 EMERGENCY DETECTED! Activating SOS...');
+                }
+                // Stop current recognition
+                stopVoiceEmergencyDetection();
+
+                setTimeout(() => {
+                    sendSOS();
+                    if (typeof updateVoiceStatus === 'function') {
+                        updateVoiceStatus('✅ Emergency alert sent!');
+                    }
+
+                    // Restart listening after emergency
+                    setTimeout(() => {
+                        if (!window.voiceDetectionStopped) {
+                            startVoiceEmergencyDetection();
+                        }
+                    }, 3000);
+                }, 1000);
+
+                return; // Don't restart immediately
+            }
+        }
+
+        // Show interim results for feedback
+        if (interimTranscript && interimTranscript.length > 3) {
+            if (typeof updateVoiceStatus === 'function') {
+                updateVoiceStatus(`🎤 "${interimTranscript}"`);
+            }
+        }
+    };
+
+    voiceRecognition.onerror = function(event) {
+        console.error('Voice recognition error:', event.error);
+        isVoiceListening = false;
+        isVoiceDetectionStarting = false;
+
+        // Handle different error types
+        if (event.error === 'no-speech') {
+            // Normal - no speech detected, restart quietly
+            if (typeof updateVoiceStatus === 'function') {
+                updateVoiceStatus('🎤 Listening...');
+            }
+            voiceRestartTimeout = setTimeout(startVoiceEmergencyDetection, 1000);
+        } else if (event.error === 'aborted') {
+            // User or system aborted, don't restart
+            if (typeof updateVoiceStatus === 'function') {
+                updateVoiceStatus('🔇 Voice detection stopped');
+            }
+        } else if (event.error === 'network') {
+            // Network error, retry after longer delay
+            if (typeof updateVoiceStatus === 'function') {
+                updateVoiceStatus('❌ Network error, retrying...');
+            }
+            voiceRestartTimeout = setTimeout(startVoiceEmergencyDetection, 5000);
+        } else {
+            // Other errors, retry after delay
+            if (typeof updateVoiceStatus === 'function') {
+                updateVoiceStatus(`❌ Voice error: ${event.error}`);
+            }
+            voiceRestartTimeout = setTimeout(startVoiceEmergencyDetection, 3000);
+        }
+    };
+
+    voiceRecognition.onend = function() {
+        isVoiceListening = false;
+        isVoiceDetectionStarting = false;
+        console.log('Voice recognition ended');
+        if (typeof updateVoiceButton === 'function') {
+            updateVoiceButton(false);
+        }
+
+        // Only restart if not manually stopped and no error timeout is set
+        if (!window.voiceDetectionStopped && !voiceRestartTimeout) {
+            if (typeof updateVoiceStatus === 'function') {
+                updateVoiceStatus('🔄 Restarting voice detection...');
+            }
+            voiceRestartTimeout = setTimeout(startVoiceEmergencyDetection, 500);
+        }
+    };
+
+    try {
+        voiceRecognition.start();
+    } catch (error) {
+        console.error('Failed to start voice recognition:', error);
+        isVoiceDetectionStarting = false;
+        if (typeof updateVoiceStatus === 'function') {
+            updateVoiceStatus('❌ Failed to start voice recognition');
+        }
+        voiceRestartTimeout = setTimeout(startVoiceEmergencyDetection, 3000);
+    }
+}
+
+function stopVoiceEmergencyDetection() {
+    if (voiceRecognition) {
+        try {
+            voiceRecognition.stop();
+        } catch (error) {
+            console.log('Error stopping voice recognition:', error);
+        }
+    }
+
+    if (voiceRestartTimeout) {
+        clearTimeout(voiceRestartTimeout);
+        voiceRestartTimeout = null;
+    }
+
+    isVoiceListening = false;
+    isVoiceDetectionStarting = false;
+    window.voiceDetectionStopped = true;
+    if (typeof updateVoiceButton === 'function') {
+        updateVoiceButton(false);
+    }
+    if (typeof updateVoiceStatus === 'function') {
+        updateVoiceStatus('🔇 Voice detection stopped');
+    }
+}
+
+function toggleVoiceDetection() {
+    const btn = document.getElementById('voice-btn');
+    if (isVoiceListening) {
+        stopVoiceEmergencyDetection();
+        btn.innerHTML = '<i class="fas fa-microphone-slash"></i> VOICE OFF';
+        btn.classList.remove('listening');
+        if (typeof updateVoiceStatus === 'function') {
+            updateVoiceStatus('🔇 Voice detection stopped');
+        }
+    } else {
+        window.voiceDetectionStopped = false;
+        startVoiceEmergencyDetection();
+        btn.innerHTML = '<i class="fas fa-microphone"></i> VOICE ON';
+        // Don't set listening class here - let onstart handle it
+    }
+}
+
+// Add voice status indicator
+function addVoiceStatusIndicator() {
+    const existing = document.getElementById('voice-status');
+    if (existing) return;
+    
+    const indicator = document.createElement('div');
+    indicator.id = 'voice-status';
+    indicator.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 10000;
+        display: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(indicator);
+}
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const main = document.querySelector('main');
@@ -2478,7 +3058,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateWaterUI();
     await loadUserProfile();
     await loadDashboardSummary();
+    await loadEmergencyContacts();
     initSidebar();
+    addVoiceStatusIndicator();
+    // Set initial voice button state
+    const voiceBtn = document.getElementById('voice-btn');
+    if (voiceBtn) {
+        voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> VOICE';
+    }
+    // Start voice detection after a short delay to avoid conflicts
+    setTimeout(() => {
+        if (typeof startVoiceEmergencyDetection === 'function') {
+            startVoiceEmergencyDetection();
+        }
+    }, 1000);
     setInterval(loadDashboardSummary, 60000);
 });
 </script>

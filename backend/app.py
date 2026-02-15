@@ -27,6 +27,11 @@ try:
 except Exception:
     gemini_legacy = None
 
+try:
+    from twilio.rest import Client as TwilioClient
+except Exception:
+    TwilioClient = None
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.normpath(os.path.join(BASE_DIR, ".."))
 FRONTEND_DIR = os.path.normpath(os.path.join(PROJECT_DIR, "frontend"))
@@ -956,15 +961,180 @@ def send_sos():
     user_email = normalize_email(payload.get("user_email")) or "guest@stress-tone.local"
     latitude = payload.get("latitude")
     longitude = payload.get("longitude")
+
+    # Get emergency contacts
+    contacts = []
+    try:
+        with get_connection() as conn:
+            contacts = conn.execute(
+                "SELECT name, phone FROM emergency_contacts WHERE user_email = ?",
+                [user_email]
+            ).fetchall()
+    except Exception as e:
+        print(f"Error fetching emergency contacts: {e}")
+
+    # Send messages to contacts with detailed tracking
+    results = []
+    sent_count = 0
+    failed_count = 0
+
+    for contact in contacts:
+        contact_result = {
+            "name": contact['name'],
+            "phone": contact['phone'],
+            "status": "failed",
+            "method": None,
+            "error": None
+        }
+
+        try:
+            success, method = send_emergency_message(contact['phone'], user_email, latitude, longitude)
+            if success:
+                contact_result["status"] = "sent"
+                contact_result["method"] = method
+                sent_count += 1
+            else:
+                contact_result["error"] = "Failed to send via any method"
+                failed_count += 1
+        except Exception as e:
+            contact_result["error"] = str(e)
+            failed_count += 1
+            print(f"Failed to send to {contact['phone']}: {e}")
+
+        results.append(contact_result)
+
     return respond(
         {
             "status": "success",
-            "message": "SOS alert received. Emergency contacts should be notified immediately.",
+            "message": f"SOS alert sent to {sent_count} emergency contacts.",
             "user_email": user_email,
             "received_at": utc_now_str(),
             "location": {"latitude": latitude, "longitude": longitude},
+            "contacts_notified": sent_count,
+            "contacts_failed": failed_count,
+            "delivery_details": results,
         }
     )
+
+
+@app.route("/api/emergency-contacts", methods=["GET"])
+def get_emergency_contacts():
+    user_email = normalize_email(request.args.get("user_email")) or "guest@stress-tone.local"
+    try:
+        with get_connection() as conn:
+            contacts = conn.execute(
+                "SELECT id, name, phone, relationship FROM emergency_contacts WHERE user_email = ? ORDER BY created_at",
+                [user_email]
+            ).fetchall()
+        return respond({"status": "success", "contacts": contacts})
+    except Exception as e:
+        return respond({"status": "error", "message": str(e)}, 500)
+
+
+@app.route("/api/emergency-contacts", methods=["POST"])
+def add_emergency_contact():
+    data = request.get_json(silent=True) or {}
+    user_email = normalize_email(data.get("user_email")) or "guest@stress-tone.local"
+    name = str(data.get("name", "")).strip()
+    phone = str(data.get("phone", "")).strip()
+    relationship = str(data.get("relationship", "")).strip()
+    
+    if not name or not phone:
+        return respond({"status": "error", "message": "Name and phone are required."}, 400)
+    
+    try:
+        with get_connection() as conn:
+            conn.execute(
+                "INSERT INTO emergency_contacts (user_email, name, phone, relationship) VALUES (?, ?, ?, ?)",
+                [user_email, name, phone, relationship]
+            )
+            conn.commit()
+        return respond({"status": "success", "message": "Emergency contact added."})
+    except Exception as e:
+        return respond({"status": "error", "message": str(e)}, 500)
+
+
+@app.route("/api/emergency-contacts/<int:contact_id>", methods=["DELETE"])
+def delete_emergency_contact(contact_id):
+    user_email = normalize_email(request.args.get("user_email")) or "guest@stress-tone.local"
+    try:
+        with get_connection() as conn:
+            result = conn.execute(
+                "DELETE FROM emergency_contacts WHERE id = ? AND user_email = ?",
+                [contact_id, user_email]
+            )
+            conn.commit()
+            if result.rowcount == 0:
+                return respond({"status": "error", "message": "Contact not found."}, 404)
+        return respond({"status": "success", "message": "Emergency contact deleted."})
+    except Exception as e:
+        return respond({"status": "error", "message": str(e)}, 500)
+
+
+def send_emergency_message(phone, user_email, latitude, longitude):
+    message = f"EMERGENCY ALERT: {user_email} has activated SOS. Please check on them immediately."
+    if latitude and longitude:
+        message += f" Location: https://maps.google.com/?q={latitude},{longitude}"
+
+    # Try WhatsApp first, fallback to SMS
+    if send_whatsapp_message(phone, message):
+        return True, "whatsapp"
+    elif send_sms_message(phone, message):
+        return True, "sms"
+    else:
+        return False, None
+
+
+def send_whatsapp_message(phone, message):
+    if not TwilioClient:
+        print("Twilio not available for WhatsApp")
+        return False
+    
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    from_whatsapp = os.getenv("TWILIO_WHATSAPP_NUMBER")  # e.g. +14155238886
+    
+    if not account_sid or not auth_token or not from_whatsapp:
+        print("Twilio WhatsApp credentials not configured")
+        return False
+    
+    try:
+        client = TwilioClient(account_sid, auth_token)
+        client.messages.create(
+            body=message,
+            from_=f"whatsapp:{from_whatsapp}",
+            to=f"whatsapp:{phone}"
+        )
+        return True
+    except Exception as e:
+        print(f"WhatsApp send failed: {e}")
+        return False
+
+
+def send_sms_message(phone, message):
+    if not TwilioClient:
+        print("Twilio not available for SMS")
+        return False
+    
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    from_sms = os.getenv("TWILIO_SMS_NUMBER")
+    
+    if not account_sid or not auth_token or not from_sms:
+        print("Twilio SMS credentials not configured")
+        return False
+    
+    try:
+        client = TwilioClient(account_sid, auth_token)
+        client.messages.create(
+            body=message,
+            from_=from_sms,
+            to=phone
+        )
+        return True
+    except Exception as e:
+        print(f"SMS send failed: {e}")
+        return False
 
 
 @app.route("/api/admin/login", methods=["POST"])

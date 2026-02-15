@@ -1606,7 +1606,125 @@
         
         createAndShowModal('❓ Help & Support', content, buttons);
     }
+
+    // Emergency Button
+    function openEmergencyModal() {
+        const content = `
+            <div style="padding: 20px; text-align: center;">
+                <h3 style="color: #dc2626; margin-bottom: 15px;">🚨 EMERGENCY ASSISTANCE</h3>
+                <p style="margin-bottom: 20px; color: #374151;">If you're in immediate danger or need urgent help, press the button below.</p>
+                <button onclick="sendSOS(); closeModal(this.closest('.modal-overlay').id);" 
+                        style="background: #dc2626; color: white; border: none; padding: 15px 30px; 
+                               border-radius: 25px; font-size: 18px; font-weight: bold; cursor: pointer; 
+                               box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); animation: pulse 2s infinite;">
+                    🚨 ACTIVATE EMERGENCY SOS
+                </button>
+                <div style="margin-top: 15px; font-size: 14px; color: #6b7280;">
+                    Voice commands: Say "HELP" or "EMERGENCY"
+                </div>
+            </div>
+        `;
+        
+        const buttons = `
+            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
+        `;
+        
+        createAndShowModal('🚨 Emergency Alert', content, buttons);
+    }
+
+    // Voice Emergency Detection
+    let voiceRecognition = null;
+    let isVoiceListening = false;
+
+    function startVoiceEmergencyDetection() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            console.log('Voice recognition not supported');
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        voiceRecognition = new SpeechRecognition();
+        
+        voiceRecognition.continuous = true;
+        voiceRecognition.interimResults = false;
+        voiceRecognition.lang = 'en-US';
+        
+        voiceRecognition.onstart = function() {
+            isVoiceListening = true;
+            console.log('Voice emergency detection started');
+        };
+        
+        voiceRecognition.onresult = function(event) {
+            const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+            console.log('Heard:', transcript);
+            
+            const emergencyKeywords = [
+                'help', 'emergency', 'panic', 'danger', 'help me', 'save me',
+                'मदद', 'सहायता', 'आपत्ति', 'खतरा', 'बचाओ', 'मेरी मदद करो'
+            ];
+            
+            if (emergencyKeywords.some(keyword => transcript.includes(keyword))) {
+                console.log('Emergency keyword detected!');
+                sendSOS();
+                alert('🚨 EMERGENCY DETECTED! SOS alert sent to your emergency contacts.');
+            }
+        };
+        
+        voiceRecognition.onerror = function(event) {
+            console.error('Voice recognition error:', event.error);
+            setTimeout(startVoiceEmergencyDetection, 5000);
+        };
+        
+        voiceRecognition.onend = function() {
+            isVoiceListening = false;
+            if (!window.voiceDetectionStopped) {
+                setTimeout(startVoiceEmergencyDetection, 2000);
+            }
+        };
+        
+        voiceRecognition.start();
+    }
+
+    // Start voice detection on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        startVoiceEmergencyDetection();
+    });
 </script>
+
+<!-- Floating Emergency Button -->
+<button class="floating-emergency-btn" onclick="openEmergencyModal()">
+    <i class="fas fa-exclamation-triangle"></i>
+</button>
+
+<style>
+    .floating-emergency-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #dc2626;
+        color: white;
+        border: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
+        z-index: 1000;
+        animation: pulse 3s infinite;
+        transition: 0.3s;
+    }
+    
+    .floating-emergency-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(220, 38, 38, 0.6);
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+</style>
 
 </body>
 </html>

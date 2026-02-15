@@ -4,3 +4,4 @@ google-genai>=0.7.0
 pymysql>=1.1.1
 python-dotenv>=1.0.1
 google-generativeai>=0.8.5
+twilio>=9.0.0

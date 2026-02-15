@@ -113,6 +113,21 @@ def create_db():
                 """
             )
 
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS emergency_contacts (
+                    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                    user_email VARCHAR(255) NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    phone VARCHAR(64) NOT NULL,
+                    relationship VARCHAR(64) NULL,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    INDEX idx_emergency_user (user_email)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """
+            )
+
         conn.commit()
         print(f"MySQL database '{db_name}' and tables are ready.")
     finally:
