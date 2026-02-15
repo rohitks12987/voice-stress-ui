@@ -3010,7 +3010,7 @@ function quickAction(action) {
 }
 
 function updateWellness() {
-    // Update sidebar wellness stats
+    // Update sidebar wellness stats with today's latest data
     const waterElement = document.getElementById('sidebar-water');
     const stressElement = document.getElementById('sidebar-stress');
     const moodElement = document.getElementById('sidebar-mood');
@@ -3018,20 +3018,42 @@ function updateWellness() {
     if (waterElement) {
         const currentWater = parseFloat(localStorage.getItem('dailyWater')) || 0;
         waterElement.textContent = `${currentWater.toFixed(1)}L`;
+        console.log('Updated water intake:', currentWater); // Debug log
     }
 
-    if (stressElement) {
-        const stressLevel = resolveStressScore();
-        let stressText = '--';
-        if (stressLevel >= 70) stressText = 'High';
-        else if (stressLevel >= 40) stressText = 'Moderate';
-        else if (stressLevel > 0) stressText = 'Low';
-        stressElement.textContent = stressText;
-    }
-
-    if (moodElement) {
-        const mood = document.getElementById('dom-emotion')?.textContent || '--';
-        moodElement.textContent = mood;
+    // Get today's latest analysis data from dashboard summary
+    if (stressElement || moodElement) {
+        fetch(`${API_BASE}/api/dashboard-summary?user_email=${encodeURIComponent(ACTIVE_USER)}`)
+            .then(response => response.json())
+            .then(summary => {
+                console.log('Dashboard summary:', summary); // Debug log
+                if (summary.latest_analysis) {
+                    // Use the latest analysis for today's wellness
+                    const latest = summary.latest_analysis;
+                    console.log('Latest analysis:', latest); // Debug log
+                    if (stressElement) {
+                        const stressLevel = (latest.stress_level || '').toLowerCase();
+                        let stressText = '--';
+                        if (stressLevel.includes('high')) stressText = 'High';
+                        else if (stressLevel.includes('moderate')) stressText = 'Moderate';
+                        else if (stressLevel.includes('low')) stressText = 'Low';
+                        stressElement.textContent = stressText;
+                    }
+                    if (moodElement) {
+                        moodElement.textContent = latest.emotion || '--';
+                    }
+                } else {
+                    // No analysis data yet
+                    console.log('No latest analysis found'); // Debug log
+                    if (stressElement) stressElement.textContent = '--';
+                    if (moodElement) moodElement.textContent = '--';
+                }
+            })
+            .catch(error => {
+                console.warn('Could not fetch dashboard summary:', error);
+                if (stressElement) stressElement.textContent = '--';
+                if (moodElement) moodElement.textContent = '--';
+            });
     }
 }
 

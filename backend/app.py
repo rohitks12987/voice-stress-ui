@@ -11,6 +11,12 @@ import wave
 from datetime import datetime
 from decimal import Decimal
 from hashlib import sha256
+from pathlib import Path
+
+try:
+    import numpy as np
+except Exception:
+    np = None
 
 import pymysql
 from dotenv import load_dotenv
@@ -26,6 +32,11 @@ try:
     import google.generativeai as gemini_legacy
 except Exception:
     gemini_legacy = None
+
+try:
+    import joblib
+except Exception:
+    joblib = None
 
 try:
     from twilio.rest import Client as TwilioClient
@@ -561,8 +572,58 @@ def build_analysis_result(filename, audio_bytes):
     seed = int(digest[:16], 16)
     rng = random.Random(seed)
 
-    score = round(rng.uniform(22, 92), 1)
-    stress_level = classify_stress(score)
+    # Try ML prediction first
+    if ML_MODEL_DATA:
+        # Save temp audio file for feature extraction
+        temp_path = f"/tmp/{digest}.wav"
+        try:
+            with open(temp_path, 'wb') as f:
+                f.write(audio_bytes)
+
+            # Extract features and predict
+            features = ML_MODEL_DATA['model'].extract_features(temp_path)
+            if features:
+                # Prepare feature vector
+                import pandas as pd
+                feature_df = pd.DataFrame([features])
+                feature_df = feature_df.fillna(feature_df.mean())
+                features_scaled = ML_MODEL_DATA['scaler'].transform(feature_df)
+
+                # Predict using the trained model
+                prediction = ML_MODEL_DATA['model'].predict(features_scaled)[0]
+                stress_level = ML_MODEL_DATA['label_encoder'].inverse_transform([prediction])[0]
+
+                # Get prediction probabilities
+                probabilities = ML_MODEL_DATA['model'].predict_proba(features_scaled)[0]
+                confidence = np.max(probabilities)
+
+                # Convert stress level to score (0-100 scale)
+                score_map = {'low': 35, 'moderate': 55, 'high': 75}
+                base_score = score_map.get(stress_level, 55)
+                # Add some variation based on confidence
+                score = round(base_score + (confidence - 0.5) * 20, 1)
+                score = max(20, min(90, score))  # Keep within reasonable bounds
+            else:
+                # Fallback to random if feature extraction fails
+                score = round(rng.uniform(22, 92), 1)
+                stress_level = classify_stress(score)
+
+        except Exception as e:
+            print(f"ML prediction failed: {e}")
+            # Fallback to random scoring
+            score = round(rng.uniform(22, 92), 1)
+            stress_level = classify_stress(score)
+        finally:
+            # Clean up temp file
+            try:
+                os.remove(temp_path)
+            except:
+                pass
+    else:
+        # Original random scoring
+        score = round(rng.uniform(22, 92), 1)
+        stress_level = classify_stress(score)
+
     emotion_map = {
         "low": ["Calm", "Relaxed", "Focused"],
         "moderate": ["Alert", "Anxious", "Concerned"],
@@ -688,6 +749,22 @@ elif API_KEY:
 if not API_KEY:
     print("AI disabled: GEMINI_API_KEY is not configured in .env.")
 
+# Load ML model for voice stress analysis
+ML_MODEL_DATA = None
+if joblib:
+    try:
+        model_path = Path(__file__).parent / "models" / "voice_stress_model.pkl"
+        if model_path.exists():
+            ML_MODEL_DATA = joblib.load(model_path)
+            print("ML model loaded for voice stress analysis")
+        else:
+            print("ML model not found, using random scoring for voice analysis")
+    except Exception as exc:
+        print(f"ML model loading failed: {exc}")
+        ML_MODEL_DATA = None
+else:
+    print("joblib not available, using random scoring for voice analysis")
+
 
 @app.route("/api/health", methods=["GET"])
 def health():
@@ -700,6 +777,7 @@ def health():
             "ai_enabled": bool(client and ACTIVE_MODEL),
             "ai_provider": AI_PROVIDER,
             "gemini_key_loaded": bool(API_KEY),
+            "ml_model_loaded": ML_MODEL_DATA is not None,
             "timestamp": utc_now_str(),
         }
     )
@@ -895,6 +973,13 @@ def dashboard_summary():
             "dominant_emotion": dominant_emotion,
             "last_check": last_check,
             "distribution": distribution,
+            "latest_analysis": {
+                "stress_level": rows[0].get("stress_level", "--"),
+                "emotion": rows[0].get("emotion", "--"),
+                "score": rows[0].get("score", 0),
+                "date": rows[0].get("date", "--"),
+                "time": rows[0].get("time", "--")
+            } if rows else None
         }
     )
 
