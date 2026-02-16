@@ -70,11 +70,10 @@ class CursorWrapper:
         self._cursor = cursor
 
     def execute(self, query, params=None):
-        normalized = query.replace("?", "%s")
         if params is None:
-            self._cursor.execute(normalized)
+            self._cursor.execute(query)
         else:
-            self._cursor.execute(normalized, tuple(params))
+            self._cursor.execute(query, tuple(params))
         return self
 
     def fetchone(self):
@@ -207,7 +206,7 @@ def ensure_column(cursor, table_name, column_name, definition):
         """
         SELECT COUNT(*) AS count_value
         FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?
+        WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s
         """,
         (db_name, table_name, column_name),
     ).fetchone()
@@ -221,7 +220,7 @@ def ensure_index(cursor, index_name, table_name, column_expr):
         """
         SELECT COUNT(*) AS count_value
         FROM information_schema.STATISTICS
-        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND INDEX_NAME = ?
+        WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND INDEX_NAME = %s
         """,
         (db_name, table_name, index_name),
     ).fetchone()
@@ -403,12 +402,12 @@ def ensure_user_exists(conn, email, full_name=None, age=None, phone=None, addres
     if not email:
         return
     cur = conn.cursor()
-    row = cur.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    row = cur.execute("SELECT * FROM users WHERE email = %s", (email,)).fetchone()
     if row is None:
         cur.execute(
             """
             INSERT INTO users (full_name, email, age, phone, address, photo_url, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 full_name or display_name_from_email(email),
@@ -435,22 +434,22 @@ def ensure_user_exists(conn, email, full_name=None, age=None, phone=None, addres
         updates["photo_url"] = photo_url
 
     if updates:
-        set_clause = ", ".join([f"`{k}` = ?" for k in updates.keys()])
+        set_clause = ", ".join([f"`{k}` = %s" for k in updates.keys()])
         values = list(updates.values()) + [email]
-        cur.execute(f"UPDATE users SET {set_clause} WHERE email = ?", values)
+        cur.execute(f"UPDATE users SET {set_clause} WHERE email = %s", values)
 
 
 def fetch_user_payload(conn, email=None, user_id=None):
     cur = conn.cursor()
     row = None
     if user_id is not None:
-        row = cur.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+        row = cur.execute("SELECT * FROM users WHERE id = %s", (user_id,)).fetchone()
     elif email:
-        row = cur.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        row = cur.execute("SELECT * FROM users WHERE email = %s", (email,)).fetchone()
 
     if row is None and email:
         ensure_user_exists(conn, email)
-        row = cur.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        row = cur.execute("SELECT * FROM users WHERE email = %s", (email,)).fetchone()
 
     if row is None:
         return None
@@ -473,9 +472,9 @@ def get_user_analyses(conn, user_email, limit=200):
         """
         SELECT id, date, time, duration, stress_level, emotion, score, audio_file, user_email, created_at
         FROM analysis_history
-        WHERE user_email = ?
+        WHERE user_email = %s
         ORDER BY id DESC
-        LIMIT ?
+        LIMIT %s
         """,
         (user_email, limit),
     ).fetchall()
@@ -488,9 +487,9 @@ def get_user_wellness_logs(conn, user_email, limit=200):
         """
         SELECT id, user_email, water_intake, stress_score, emotion, recorded_at
         FROM wellness_logs
-        WHERE user_email = ?
+        WHERE user_email = %s
         ORDER BY id DESC
-        LIMIT ?
+        LIMIT %s
         """,
         (user_email, limit),
     ).fetchall()
@@ -851,7 +850,7 @@ def upload_audio():
                 """
                 INSERT INTO analysis_history
                 (date, time, duration, stress_level, emotion, score, audio_file, user_email, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     analysis["date"],
@@ -892,9 +891,9 @@ def get_history():
     """
     params = []
     if user_email:
-        query += " WHERE user_email = ?"
+        query += " WHERE user_email = %s"
         params.append(user_email)
-    query += " ORDER BY id DESC LIMIT ?"
+    query += " ORDER BY id DESC LIMIT %s"
     params.append(limit)
 
     try:
@@ -917,7 +916,7 @@ def dashboard_summary():
                 """
                 SELECT date, time, stress_level, emotion, score
                 FROM analysis_history
-                WHERE user_email = ?
+                WHERE user_email = %s
                 ORDER BY id DESC
                 """,
                 (user_email,),
@@ -1014,7 +1013,7 @@ def save_wellness():
             conn.execute(
                 """
                 INSERT INTO wellness_logs (user_email, water_intake, stress_score, emotion, recorded_at)
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s)
                 """,
                 (user_email, water, stress, emotion, utc_now_str()),
             )
@@ -1052,7 +1051,7 @@ def send_sos():
     try:
         with get_connection() as conn:
             contacts = conn.execute(
-                "SELECT name, phone FROM emergency_contacts WHERE user_email = ?",
+                "SELECT name, phone FROM emergency_contacts WHERE user_email = %s",
                 [user_email]
             ).fetchall()
     except Exception as e:
@@ -1108,7 +1107,7 @@ def get_emergency_contacts():
     try:
         with get_connection() as conn:
             contacts = conn.execute(
-                "SELECT id, name, phone, relationship FROM emergency_contacts WHERE user_email = ? ORDER BY created_at",
+                "SELECT id, name, phone, relationship FROM emergency_contacts WHERE user_email = %s ORDER BY created_at",
                 [user_email]
             ).fetchall()
         return respond({"status": "success", "contacts": contacts})
@@ -1130,7 +1129,7 @@ def add_emergency_contact():
     try:
         with get_connection() as conn:
             conn.execute(
-                "INSERT INTO emergency_contacts (user_email, name, phone, relationship) VALUES (?, ?, ?, ?)",
+                "INSERT INTO emergency_contacts (user_email, name, phone, relationship) VALUES (%s, %s, %s, %s)",
                 [user_email, name, phone, relationship]
             )
             conn.commit()
@@ -1145,7 +1144,7 @@ def delete_emergency_contact(contact_id):
     try:
         with get_connection() as conn:
             result = conn.execute(
-                "DELETE FROM emergency_contacts WHERE id = ? AND user_email = ?",
+                "DELETE FROM emergency_contacts WHERE id = %s AND user_email = %s",
                 [contact_id, user_email]
             )
             conn.commit()
@@ -1301,7 +1300,7 @@ def admin_list_users():
     where_clause = ""
 
     if query_text:
-        where_clause = "WHERE LOWER(u.email) LIKE ? OR LOWER(COALESCE(u.full_name, '')) LIKE ?"
+        where_clause = "WHERE LOWER(u.email) LIKE %s OR LOWER(COALESCE(u.full_name, '')) LIKE %s"
         q = f"%{query_text}%"
         params.extend([q, q])
 
@@ -1318,7 +1317,7 @@ def admin_list_users():
         {where_clause}
         GROUP BY u.id
         ORDER BY u.id DESC
-        LIMIT ?
+        LIMIT %s
     """
 
     try:
@@ -1345,12 +1344,12 @@ def admin_user_detail(user_email):
 
         try:
             with get_connection() as conn:
-                user_exists = conn.execute("SELECT 1 AS present FROM users WHERE email = ?", (user_email,)).fetchone()
+                user_exists = conn.execute("SELECT 1 AS present FROM users WHERE email = %s", (user_email,)).fetchone()
                 has_activity = conn.execute(
                     """
-                    SELECT 1 AS present FROM analysis_history WHERE user_email = ?
+                    SELECT 1 AS present FROM analysis_history WHERE user_email = %s
                     UNION
-                    SELECT 1 AS present FROM wellness_logs WHERE user_email = ?
+                    SELECT 1 AS present FROM wellness_logs WHERE user_email = %s
                     LIMIT 1
                     """,
                     (user_email, user_email),
@@ -1394,9 +1393,9 @@ def admin_user_detail(user_email):
         try:
             with get_connection() as conn:
                 ensure_user_exists(conn, user_email)
-                set_clause = ", ".join([f"`{k}` = ?" for k in updates.keys()])
+                set_clause = ", ".join([f"`{k}` = %s" for k in updates.keys()])
                 values = list(updates.values()) + [user_email]
-                conn.execute(f"UPDATE users SET {set_clause} WHERE email = ?", values)
+                conn.execute(f"UPDATE users SET {set_clause} WHERE email = %s", values)
                 return respond({"status": "success", "user": fetch_user_payload(conn, email=user_email)})
         except Exception as exc:
             return respond({"status": "error", "message": str(exc)}, 500)
@@ -1404,12 +1403,12 @@ def admin_user_detail(user_email):
     try:
         with get_connection() as conn:
             audio_rows = conn.execute(
-                "SELECT audio_file FROM analysis_history WHERE user_email = ? AND audio_file IS NOT NULL AND TRIM(audio_file) <> ''",
+                "SELECT audio_file FROM analysis_history WHERE user_email = %s AND audio_file IS NOT NULL AND TRIM(audio_file) <> ''",
                 (user_email,),
             ).fetchall()
-            analyses_deleted = conn.execute("DELETE FROM analysis_history WHERE user_email = ?", (user_email,)).rowcount
-            wellness_deleted = conn.execute("DELETE FROM wellness_logs WHERE user_email = ?", (user_email,)).rowcount
-            users_deleted = conn.execute("DELETE FROM users WHERE email = ?", (user_email,)).rowcount
+            analyses_deleted = conn.execute("DELETE FROM analysis_history WHERE user_email = %s", (user_email,)).rowcount
+            wellness_deleted = conn.execute("DELETE FROM wellness_logs WHERE user_email = %s", (user_email,)).rowcount
+            users_deleted = conn.execute("DELETE FROM users WHERE email = %s", (user_email,)).rowcount
     except Exception as exc:
         return respond({"status": "error", "message": str(exc)}, 500)
 
@@ -1487,9 +1486,9 @@ def admin_list_analyses():
     """
     params = []
     if user_email:
-        query += " WHERE a.user_email = ?"
+        query += " WHERE a.user_email = %s"
         params.append(user_email)
-    query += " ORDER BY a.id DESC LIMIT ?"
+    query += " ORDER BY a.id DESC LIMIT %s"
     params.append(limit)
 
     try:
