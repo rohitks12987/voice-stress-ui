@@ -30,80 +30,75 @@
             display: flex; 
             flex-direction: column; 
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden; /* Stops horizontal scrolling */
         }
 
-        /* Official Header Bar */
+        /* 1. Official Header Bar */
         .official-header {
             width: 100%;
+            height: 44px;
             background: var(--primary);
             color: white;
-            padding: 0.8rem 2rem;
-            border-bottom: 4px solid var(--accent);
-            text-align: center;
+            padding: 0 2rem;
+            border-bottom: 4px solid #d32f2f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 0.5px;
-            flex-shrink: 0;
-            z-index: 100;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
         }
 
-        /* Navbar & Footer Theme */
-        .navbar, .record-footer {
-            background: var(--primary);
-            color: var(--text-light);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .navbar {
-            padding: 1rem 3rem;
+        /* 2. Layout Wrapper (The flex container for sidebar + main) */
+        .layout-wrapper {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex: 1;
+            width: 100%;
+            background: #f0f4f7;
         }
 
-        .logo {
-            font-weight: 700;
-            font-size: 1.2rem;
+        /* 3. Sticky Sidebar (Perfect Adjustment) */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: #ffffff;
+            border-right: 2px solid #d1d5db;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            height: calc(100vh - 44px);
+            position: sticky;
+            top: 44px;
+            z-index: 1000;
+            transition: width 0.3s ease, min-width 0.3s ease;
         }
 
-        .nav-links {
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+        }
+
+        /* Sidebar Inner Scroll Area */
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* 4. Main Content Area (Automatically fills remaining space) */
+        .main-content {
+            flex: 1;
             display: flex;
-            align-items: center;
-            gap: 5px;
+            flex-direction: column;
+            background: #f8fafc;
+            min-width: 0; /* Crucial Flexbox fix to prevent overflow */
         }
 
-        .nav-links a { 
-            color: #e8dff5; 
-            text-decoration: none; 
-            margin-left: 20px; 
-            font-size: 0.9rem;
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: 0.3s;
-        }
-        
-        .nav-links a:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .nav-links a.active { 
-            color: white; 
-            font-weight: 600;
-            background: rgba(255,255,255,0.2);
-        }
-
-        .nav-links a.logout {
-            color: #fca5a5;
-        }
-
+        /* Container for center items */
         .container { 
-            max-width: 800px; 
+            max-width: 900px; 
             margin: 2rem auto; 
             padding: 0 20px; 
             flex: 1;
@@ -111,32 +106,10 @@
         }
 
         /* Messages */
-        .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            display: none;
-            font-weight: 500;
-            border-left: 4px solid;
-        }
-
-        .error-msg {
-            background: #fee2e2;
-            color: #991b1b;
-            border-color: #dc2626;
-        }
-
-        .success-msg {
-            background: #dcfce7;
-            color: #166534;
-            border-color: #16a34a;
-        }
-
-        .info-msg {
-            background: #dbeafe;
-            color: #0c4a6e;
-            border-color: #3b82f6;
-        }
+        .message { padding: 15px; border-radius: 8px; margin-bottom: 1.5rem; display: none; font-weight: 500; border-left: 4px solid; }
+        .error-msg { background: #fee2e2; color: #991b1b; border-color: #dc2626; }
+        .success-msg { background: #dcfce7; color: #166534; border-color: #16a34a; }
+        .info-msg { background: #dbeafe; color: #0c4a6e; border-color: #3b82f6; }
 
         /* Recording Card */
         .record-card {
@@ -148,293 +121,51 @@
             margin-bottom: 2rem;
         }
 
-        .record-card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: #111827;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-align: center;
-            justify-content: center;
-        }
-
-        .record-card h2 i {
-            color: #003d82;
-        }
+        .record-card h2 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #111827; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .record-card h2 i { color: #003d82; }
 
         /* Timer */
-        .timer {
-            font-size: 2.5rem;
-            font-family: 'Courier New', monospace;
-            color: var(--danger);
-            font-weight: 700;
-            text-align: center;
-            margin: 1rem 0;
-            display: none;
-        }
+        .timer { font-size: 2.5rem; font-family: 'Courier New', monospace; color: var(--danger); font-weight: 700; text-align: center; margin: 1rem 0; display: none; }
 
         /* Waveform Box */
         .waveform-box {
-            background: var(--dark-card);
-            height: 180px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-            margin-bottom: 2rem;
-            transition: all 0.3s;
+            background: var(--dark-card); height: 180px; border-radius: 12px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: #94a3b8; margin-bottom: 2rem; transition: all 0.3s;
         }
-
-        .waveform-box.active {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
-            color: var(--danger);
-        }
-
-        .waveform-box i { 
-            font-size: 2.5rem; 
-            margin-bottom: 10px;
-            animation: none;
-        }
-
-        .waveform-box.active i {
-            animation: pulse-icon 1s infinite;
-        }
-
-        @keyframes pulse-icon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .waveform-box p {
-            font-size: 1rem;
-            font-weight: 500;
-        }
+        .waveform-box.active { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); color: var(--danger); }
+        .waveform-box i { font-size: 2.5rem; margin-bottom: 10px; }
+        .waveform-box.active i { animation: pulse-icon 1s infinite; }
+        @keyframes pulse-icon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .waveform-box p { font-size: 1rem; font-weight: 500; }
 
         /* Buttons Container */
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 2rem;
-            justify-content: center;
-        }
-
-        .mic-btn {
-            width: 80px;
-            height: 80px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 1.8rem;
-            cursor: pointer;
-            box-shadow: 0 6px 15px rgba(76, 58, 127, 0.3);
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mic-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(76, 58, 127, 0.4);
-        }
-
-        .mic-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .mic-btn.recording { 
-            background: var(--danger);
-            animation: pulse-btn 1.5s infinite;
-            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
-        }
-
-        @keyframes pulse-btn { 
-            0% { transform: scale(1); } 
-            50% { transform: scale(1.1); } 
-            100% { transform: scale(1); } 
-        }
-
-        .control-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            display: none;
-        }
-
-        .control-btn.show {
-            display: inline-block;
-        }
-
-        .btn-analyze {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-analyze:hover:not(:disabled) {
-            background: #059669;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-reset {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-reset:hover:not(:disabled) {
-            background: #4b5563;
-        }
-
-        .btn-play {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-play:hover:not(:disabled) {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-play:active {
-            transform: translateY(0);
-        }
-
-        .btn-play.playing {
-            background: #f59e0b;
-            animation: pulse 1.5s infinite;
-        }
-
-        .btn-play.playing:hover {
-            background: #d97706;
-        }
-
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .button-group { display: flex; gap: 15px; margin-bottom: 2rem; justify-content: center; }
+        .mic-btn { width: 80px; height: 80px; background: var(--primary); color: white; border: none; border-radius: 50%; font-size: 1.8rem; cursor: pointer; box-shadow: 0 6px 15px rgba(76, 58, 127, 0.3); transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        .mic-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 8px 20px rgba(76, 58, 127, 0.4); }
+        .mic-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .mic-btn.recording { background: var(--danger); animation: pulse-btn 1.5s infinite; box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4); }
+        @keyframes pulse-btn { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .control-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.95rem; display: none; }
+        .control-btn.show { display: inline-block; }
+        .btn-analyze { background: var(--success); color: white; }
+        .btn-analyze:hover:not(:disabled) { background: #059669; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .btn-reset { background: #6b7280; color: white; }
+        .btn-reset:hover:not(:disabled) { background: #4b5563; }
+        .btn-play { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }
+        .btn-play:hover:not(:disabled) { background: #059669; transform: translateY(-2px); }
+        .btn-play.playing { background: #f59e0b; animation: pulse 1.5s infinite; }
+        .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Upload Area */
-        .upload-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 2px solid #e5e7eb;
-        }
-
-        .upload-section h3 {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            color: #374151;
-        }
-
-        .upload-area {
-            border: 2px dashed #e5e7eb;
-            border-radius: 12px;
-            padding: 2rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .upload-area:hover { 
-            border-color: var(--primary); 
-            background: #faf9ff;
-        }
-
-        .upload-area i {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .upload-area p { 
-            font-size: 1rem; 
-            color: #374151; 
-            margin-top: 5px;
-            font-weight: 600;
-        }
-
-        .upload-area small {
-            color: #6b7280;
-            display: block;
-            margin-top: 5px;
-        }
-
-        /* Status Message */
-        #status-msg { 
-            margin-top: 20px; 
-            font-weight: 600;
-            text-align: center;
-            min-height: 24px;
-        }
-
-        .status-recording {
-            color: var(--danger);
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        .status-uploading {
-            color: var(--warning);
-        }
-
-        .status-success {
-            color: var(--success);
-        }
-
-        .status-error {
-            color: var(--danger);
-        }
-
-        .status-playing {
-            color: #10b981 !important;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-
-        .status-playing i {
-            margin-right: 8px;
-        }
-
-        /* Loading Spinner */
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(0,0,0,0.1);
-            border-top: 2px solid currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .upload-section { margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e5e7eb; text-align: center; }
+        .upload-section h3 { font-size: 1rem; margin-bottom: 1rem; color: #374151; }
+        .upload-area { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 2rem; cursor: pointer; transition: all 0.3s; }
+        .upload-area:hover { border-color: var(--primary); background: #faf9ff; }
+        .upload-area i { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        .upload-area p { font-size: 1rem; color: #374151; margin-top: 5px; font-weight: 600; }
+        .upload-area small { color: #6b7280; display: block; margin-top: 5px; }
+        .hidden { display: none !important; }
 
         /* Footer */
         .record-footer {
@@ -442,267 +173,67 @@
             color: white;
             padding: 2rem 1rem 1rem;
             text-align: center;
-            margin-top: auto;
+            margin-top: auto; /* Pushes footer to absolute bottom */
             border-top: 4px solid #ef4444;
             width: 100%;
-            box-sizing: border-box;
-            flex-shrink: 0;
-            z-index: 50;
         }
+        .record-footer .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .footer-line { height: 1px; background: rgba(255,255,255,0.2); max-width: 900px; margin: 0 auto 1rem; }
 
-        .record-footer .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+        /* Ticker */
+        .news-ticker { background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); color: #003366; padding: 14px 0; overflow: hidden; border: 1px solid #bae6fd; border-left: 4px solid #ff9933; width: 100%; min-height: 45px; display: flex; align-items: center; }
+        .scrolling-text { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; font-weight: 600; font-size: 0.95rem; padding-left: 100%; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        .footer-line {
-            height: 1px;
-            background: rgba(255,255,255,0.2);
-            max-width: 900px;
-            margin: 0 auto 1rem;
-        }
+        /* Sidebar Item Behaviors when Collapsed */
+        .sidebar.collapsed .sidebar-header .sidebar-toggle { right: 50%; transform: translateX(50%); }
+        .sidebar.collapsed .sidebar-profile, .sidebar.collapsed .sidebar-section { padding: 10px; }
+        .sidebar.collapsed .gov-nav-link span, .sidebar.collapsed .section-header span,
+        .sidebar.collapsed .announcement-content, .sidebar.collapsed .wellness-stats,
+        .sidebar.collapsed .settings-btn span, .sidebar.collapsed .quick-action-btn span { display: none; }
+        .sidebar.collapsed .gov-nav-link, .sidebar.collapsed .settings-btn,
+        .sidebar.collapsed .quick-action-btn { justify-content: center; padding: 12px; }
+        .sidebar.collapsed .sidebar-header div:not(.sidebar-toggle) { display: none; }
+        .sidebar.collapsed .sidebar-profile div:not(img) { display: none; }
 
-        .record-footer p {
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            opacity: 0.95;
-            color: #cbd5e1;
-        }
+        /* Sidebar Styling specifics */
+        .sidebar .gov-nav-link { display: block; padding: 12px 20px; color: #374151; text-decoration: none; font-weight: 500; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; }
+        .sidebar .gov-nav-link:hover { background: #f8fafc; color: #003d82; }
+        .sidebar .gov-nav-link i { margin-right: 10px; width: 16px; text-align: center; }
+        .quick-action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .quick-action-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .hidden { display: none !important; }
+        .sidebar-content::-webkit-scrollbar { width: 6px; }
+        .sidebar-content::-webkit-scrollbar-track { background: #f1f1f5; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* Enhanced Sidebar Styles */
-        .sidebar {
-            transition: width 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            width: 70px !important;
-        }
-
-        .sidebar.collapsed .sidebar-header .sidebar-toggle {
-            right: 50%;
-            transform: translateX(50%);
-        }
-
-        .sidebar.collapsed .sidebar-profile,
-        .sidebar.collapsed .sidebar-section {
-            padding: 10px;
-        }
-
-        .sidebar.collapsed .gov-nav-link span,
-        .sidebar.collapsed .section-header span,
-        .sidebar.collapsed .announcement-content,
-        .sidebar.collapsed .wellness-stats,
-        .sidebar.collapsed .settings-btn span,
-        .sidebar.collapsed .quick-action-btn span {
-            display: none;
-        }
-
-        .sidebar.collapsed .gov-nav-link,
-        .sidebar.collapsed .settings-btn,
-        .sidebar.collapsed .quick-action-btn {
-            justify-content: center;
-            padding: 12px;
-        }
-
-        .sidebar.collapsed .sidebar-header div:not(.sidebar-toggle) {
-            display: none;
-        }
-
-        .sidebar.collapsed .sidebar-profile div:not(img) {
-            display: none;
-        }
-
-        /* Custom Scrollbar for Sidebar */
-        .sidebar-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar-content::-webkit-scrollbar-track {
-            background: #f1f1f5;
-            border-radius: 10px;
-        }
-
-        .sidebar-content::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-            transition: background 0.3s ease;
-        }
-
-        .sidebar-content::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
+        /* Responsive Mobile Layout */
         @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 1rem; }
-            .nav-links { flex-wrap: wrap; }
-            .button-group { flex-direction: column; }
-            .mic-btn { width: 70px; height: 70px; }
-        }
-
-        /* Updated Ticker Styles like Dashboard */
-        .news-ticker {
-            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
-            color: #003366;
-            padding: 14px 0;
-            overflow: hidden;
-            border: 1px solid #bae6fd;
-            border-left: 4px solid #ff9933;
-            width: 100%;
-            min-height: 45px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .scrolling-text {
-            display: inline-block;
-            white-space: nowrap;
-            animation: ticker 40s linear infinite;
-            font-weight: 600;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            padding-left: 100%;
-        }
-
-        @keyframes ticker {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        /* Icons in ticker */
-        .news-ticker i {
-            margin: 0 12px;
-            color: #ff9933;
-            font-size: 1rem;
-        }
-
-        .news-ticker strong {
-            color: #003366;
-            font-weight: 700;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 280px;
-            background: #ffffff;
-            border-right: 2px solid #d1d5db;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-
-        .sidebar .gov-nav-link {
-            display: block;
-            padding: 12px 20px;
-            color: #374151;
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid #f3f4f6;
-            transition: all 0.2s;
-        }
-
-        .sidebar .gov-nav-link:hover {
-            background: #f8fafc;
-            color: #003d82;
-        }
-
-        .sidebar .gov-nav-link.active {
-            background: #e0f2fe;
-            color: #003d82;
-            border-left: 4px solid #003d82;
-        }
-
-        .sidebar .gov-nav-link i {
-            margin-right: 10px;
-            width: 16px;
-        }
-
-        /* Main content adjustment */
-        .main-content {
-            margin-left: 280px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #f8fafc;
-        }
-
-        .main-content .container {
-            margin: 2rem auto;
-            max-width: 800px;
-            padding: 0 20px;
-            flex: 1;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .sidebar { width: 250px; height: calc(100vh - 50px) !important; top: 50px !important; }
-            .main-content { margin-left: 250px; }
-            .news-ticker { font-size: 0.8rem; padding: 12px 0; min-height: 42px; }
+            .sidebar { position: fixed; left: -280px; z-index: 2000; } /* Hide sidebar completely on mobile by default */
+            .sidebar.active-mobile { left: 0; }
+            .main-content { min-width: 100vw; } /* Main content takes full width */
+            
             .record-card { padding: 1.5rem; }
-            .record-card h2 { font-size: 1.3rem; }
-            .waveform-box { height: 140px; }
-            .button-group { gap: 10px; }
-            .mic-btn { width: 70px; height: 70px; }
-            .control-btn { padding: 10px 18px; font-size: 0.9rem; }
+            .button-group { gap: 10px; flex-direction: column; align-items: center; }
+            .control-btn { width: 100%; max-width: 250px; }
+            
+            /* Add a visible toggle button in the main header for mobile */
+            .mobile-menu-btn { display: block !important; }
         }
 
-        @media (max-width: 640px) {
-            .sidebar { width: 100%; height: auto !important; position: relative !important; top: auto !important; box-shadow: none; }
-            .main-content { margin-left: 0; }
-            .sidebar .gov-nav-link { padding: 15px 20px; }
-            .record-card { padding: 1.25rem; }
-            .upload-area { padding: 1.5rem; }
-        }
-
-        @media (max-width: 480px) {
-            .news-ticker { padding: 10px 0; min-height: 38px; }
-            .scrolling-text { font-size: 0.8rem; }
-            .record-card h2 { font-size: 1.2rem; flex-direction: column; gap: 8px; }
-            .waveform-box { height: 120px; }
-            .timer { font-size: 2rem; }
-            .button-group { flex-direction: column; align-items: center; }
-            .mic-btn { width: 60px; height: 60px; margin-bottom: 10px; }
-            .control-btn { width: 100%; max-width: 200px; }
-            .upload-area { padding: 1rem; }
-            .upload-area i { font-size: 1.5rem; }
-        }
-
-        /* Quick Action Button Effects */
-        .quick-action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .quick-action-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .mobile-menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<!-- Official Header -->
 <div class="official-header">
-    <i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness
+    <i class="fas fa-shield-alt"></i> &nbsp;Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness
 </div>
 
-<div style="display: flex; flex: 1; background: #f0f4f7;">
+<div class="layout-wrapper">
 
-    <aside class="sidebar" id="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: calc(100vh - 50px); top: 50px; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden; transition: width 0.3s ease;">
-        <!-- Sidebar Header -->
-        <div class="sidebar-header" style="padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0;">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header" style="padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0; position: relative;">
             <div style="position: relative; display: inline-block; margin-bottom: 10px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 50px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
                 <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
@@ -718,7 +249,6 @@
             </button>
         </div>
 
-        <!-- User Profile Section -->
         <div class="sidebar-profile" style="padding: 15px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" alt="User Profile Photo" style="width: 45px; height: 45px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
@@ -732,40 +262,37 @@
             </p>
         </div>
 
-        <!-- Scrollable Content Area -->
-        <div class="sidebar-content" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+        <div class="sidebar-content">
 
-            <!-- Quick Actions Section -->
             <div class="sidebar-section" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f8fafc;">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-bolt"></i> Quick Actions
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                      <button onclick="quickAction('Dashboard')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-home"></i> Dashboard
+                        <i class="fas fa-home"></i> <span>Dashboard</span>
                     </button>
-
                     <button onclick="quickAction('record')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-microphone"></i> Quick Record
+                        <i class="fas fa-microphone"></i> <span>Quick Record</span>
                     </button>
                     <button onclick="quickAction('wellness')" class="quick-action-btn" style="width: 100%; background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-heart"></i> Wellness Check
+                        <i class="fas fa-heart"></i> <span>Wellness Check</span>
                     </button>
                     <button onclick="quickAction('emergency')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; animation: pulse 2s infinite;">
-                        <i class="fas fa-exclamation-triangle"></i> Emergency SOS
+                        <i class="fas fa-exclamation-triangle"></i> <span>Emergency SOS</span>
                     </button>
                     <button onclick="quickAction('history')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-history"></i> History 
+                        <i class="fas fa-history"></i> <span>History</span>
                     </button>
-                    <button onclick="quickAction('Logout')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; animation: pulse 2s infinite;">
-                        <i class="fas fa-sign-out-alt"></i> Logout
+                    <button onclick="quickAction('Logout')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                     </button>
                 </div>
             </div>
-            <!-- Wellness Tracker -->
+            
             <div class="sidebar-section wellness-tracker" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f0fdf4;">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-chart-line"></i> Today's Wellness
+                    <i class="fas fa-chart-line"></i> <span>Today's Wellness</span>
                 </div>
                 <div class="wellness-stats" style="display: flex; flex-direction: column; gap: 8px;">
                     <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
@@ -781,48 +308,8 @@
                         <span id="sidebar-mood" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
                     </div>
                 </div>
-                <button onclick="updateWellness()" style="width: 100%; margin-top: 10px; background: #166534; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;">
-                    <i class="fas fa-sync"></i> Refresh
-                </button>
             </div>
 
-            <!-- Announcements Section -->
-            <div class="sidebar-section announcements" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%);">
-                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-megaphone"></i> Announcements
-                </div>
-                <div class="announcement-content" style="font-size: 0.75rem; color: #b45309; line-height: 1.4;">
-                    <div class="announcement-item" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
-                        <strong>New Feature:</strong> AI Voice Analysis now available!
-                    </div>
-                    <div class="announcement-item" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
-                        <strong>Update:</strong> Enhanced privacy controls added.
-                    </div>
-                    <div class="announcement-item" style="font-size: 0.7rem; color: #a16207;">
-                        <i class="fas fa-info-circle"></i> Check your wellness progress regularly for best results.
-                    </div>
-                </div>
-                </div>
-
-            <!-- Settings Section -->
-            <div class="sidebar-section settings" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f1f5f9;">
-                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-cog"></i> Settings
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <button onclick="openNotifications()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-bell"></i> Notifications
-                    </button>
-                    <button onclick="openPrivacy()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-shield-alt"></i> Privacy
-                    </button>
-                    <button onclick="openHelp()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-question-circle"></i> Help
-                    </button>
-                </div>
-            </div>
-
-            <!-- Footer Section -->
             <div class="sidebar-footer" style="padding: 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
                 <div style="text-align: center;">
                     <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 8px;">
@@ -834,22 +321,22 @@
         </div>
     </aside>
 
-    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column; background: #f8fafc; transition: margin-left 0.3s ease;">
+    <main class="main-content">
         <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ef4444; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: sans-serif;">
             <div style="display:flex; align-items:center; gap:15px;">
-                <div style="position: relative;">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()"><i class="fas fa-bars"></i></button>
+                
+                <div style="position: relative; display: none; /* Hidden on mobile if needed, but left here */" class="desktop-only-logo">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Government Seal" style="height: 50px; width: 50px; border-radius: 50%; border: 3px solid #ffffff; background: #ffffff; padding: 5px;">
-                    <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">OFFICIAL</div>
                 </div>
                 <div>
                     <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Voice Recording & Analysis</h2>
-                    <span style="font-size: 0.75rem; color: #64748b;">Record or upload voice samples for AI-powered wellness analysis | Ministry of Health & Family Welfare</span>
+                    <span style="font-size: 0.75rem; color: #94a3b8;">Ministry of Health & Family Welfare</span>
                 </div>
             </div>
 
             <div style="display: flex; gap: 12px; align-items: center;">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQks8o8bbCzbK_WPQBRLKanFEySlijZOCbVuw&s" alt="Logo 1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
-                <img src="https://thumbs.dreamstime.com/b/mental-health-concept-line-icon-simple-element-illustration-mental-health-concept-outline-symbol-mental-health-concept-line-icon-158053383.jpg" alt="Logo 2" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQks8o8bbCzbK_WPQBRLKanFEySlijZOCbVuw&s" alt="Logo 1" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
             </div>
         </div>
 
@@ -858,22 +345,20 @@
                 <i class="fas fa-bullhorn"></i> <strong>Official Government Service:</strong> This portal is operated by the Ministry of Health & Family Welfare, Government of India.
                 <i class="fas fa-shield-alt"></i> Your data is protected under national cybersecurity standards.
                 <i class="fas fa-heartbeat"></i> Mental health is a priority - access 24/7 support services.
-                <i class="fas fa-users"></i> Join thousands of citizens benefiting from AI-powered wellness monitoring.
             </div>
         </div>
 
-        <!-- Info Banner for Record Page -->
-        <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #bae6fd; border-left: 4px solid #ff9933; padding: 12px 20px; margin: 0 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-microphone" style="color: #ff9933; font-size: 1.2rem;"></i>
-                <div>
-                    <strong style="color: #003366; font-weight: 600;">Voice Recording & Analysis:</strong>
-                    <span style="color: #64748b; font-size: 0.9rem; margin-left: 8px;">Record your voice or upload an audio file to get instant AI-powered stress and emotion analysis. Results will be saved to your history for tracking wellness trends.</span>
+        <div class="container">
+            <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #bae6fd; border-left: 4px solid #ff9933; padding: 16px 20px; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-microphone" style="color: #ff9933; font-size: 1.5rem;"></i>
+                    <div>
+                        <strong style="color: #003366; font-weight: 600; font-size: 1.05rem;">Voice Recording & Analysis:</strong>
+                        <p style="color: #64748b; font-size: 0.95rem; margin-top: 4px;">Record your voice or upload an audio file to get instant AI-powered stress and emotion analysis. Results will be saved to your history for tracking wellness trends.</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="container" style="padding-bottom: 2rem;">
             <div id="error-msg" class="message error-msg"></div>
             <div id="success-msg" class="message success-msg"></div>
             <div id="info-msg" class="message info-msg"></div>
@@ -921,12 +406,29 @@
             <div class="footer-content">
                 <div class="footer-line"></div>
                 <p><i class="fas fa-shield-alt"></i> Your voice data is processed securely and used only for analysis. All information is protected under government cybersecurity standards.</p>
-                <p style="font-size: 0.8rem; opacity: 0.8;">© 2025 Government of India. All rights reserved.</p>
+                <p style="font-size: 0.8rem; opacity: 0.8; margin-top: 8px;">© 2026 Government of India. All rights reserved.</p>
             </div>
         </footer>
     </main>
 
 </div>
+
+<script>
+    // Desktop Toggle: Shrinks the sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+
+    // Mobile Toggle: Slides the sidebar in and out
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active-mobile');
+    }
+</script>
+
+</body>
+</html>
 
 <script>
     const API_BASE = window.location.origin;

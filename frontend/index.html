@@ -3,1128 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stress Tone AI | Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>VocalVibe Pro | Clinical AI Voice Diagnostics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #003d82;
-            --primary-dark: #002852;
-            --primary-light: #1a5ba8;
-            --accent: #d32f2f;
-            --bg: #f5f5f5;
-            --white: #ffffff;
-            --danger: #d32f2f;
-            --success: #1976d2;
-            --text-dark: #202124;
-            --text-light: #5f6368;
-        }
-
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-        }
-
-        body { 
-            background: var(--bg); 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center;
-            padding-bottom: 120px;
-        }
-
-        /* Official Header Bar */
-        .official-header {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 0.8rem 2rem;
-            border-bottom: 4px solid var(--accent);
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .auth-container {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            padding: 3rem 20px;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .auth-card {
-            background: var(--white);
-            padding: 2.5rem;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 420px;
-            border-top: 4px solid var(--primary);
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo-section {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .logo-icon {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .gov-logo {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            gap: 1.5rem;
-        }
-
-        /* Update this existing class */
-.gov-seal {
-    width: 110px;
-    height: 110px;
-    /* Use white background for logos usually looks better than gradient */
-    background: #ffffff; 
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 24px rgba(0, 61, 130, 0.35);
-    border: 4px solid var(--accent);
-    position: relative;
-    flex-shrink: 0;
-    
-    /* VITAL: This cuts the corners of the image to make it round */
-    overflow: hidden; 
-}
-
-/* Add this NEW rule for the image */
-.gov-seal img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensures image fills circle without stretching */
-    display: block;
-}
-
-/* Remove or comment out the .gov-seal i rule since we aren't using the icon anymore */
-/* .gov-seal i {
-    display: block;
-    line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-} 
-*/
-
-        .gov-seal::after {
-            content: '';
-            position: absolute;
-            inset: -8px;
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            opacity: 0.25;
-        }
-
-        .gov-text {
-            text-align: left;
-        }
-
-        .gov-text .ministry {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--primary);
-            letter-spacing: 1px;
-            line-height: 1.3;
-        }
-
-        .gov-text .dept {
-            font-size: 0.65rem;
-            color: var(--text-light);
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        h2 { 
-            margin-bottom: 0.5rem; 
-            color: var(--text-dark); 
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-
-        p { 
-            color: var(--text-light); 
-            font-size: 0.9rem; 
-            margin-bottom: 0;
-            line-height: 1.5;
-        }
-
-        /* Messages */
-        .error-message, .success-message {
-            padding: 12px 14px;
-            border-radius: 2px;
-            margin-bottom: 1.5rem;
-            display: none;
-            font-size: 0.9rem;
-            border-left: 4px solid;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            border-color: #d32f2f;
-        }
-
-        .success-message {
-            background: #e3f2fd;
-            color: #1565c0;
-            border-color: #1976d2;
-        }
-
-        .message-icon {
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        .message-text {
-            flex: 1;
-        }
-
-        /* Form */
-        .input-group { 
-            margin-bottom: 1.5rem; 
-            text-align: left; 
-        }
-
-        .input-group label { 
-            display: block; 
-            font-size: 0.8rem; 
-            font-weight: 600; 
-            margin-bottom: 0.5rem; 
-            color: var(--text-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px 12px;
-            padding-left: 40px;
-            border: 1px solid #ccc;
-            border-radius: 2px;
-            outline: none;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-            background: var(--white);
-            color: var(--text-dark);
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary);
-            background: var(--white);
-            box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.08);
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 12px;
-            color: #9ca3af;
-            font-size: 0.95rem;
-            pointer-events: none;
-        }
-
-        .input-group input:focus ~ .input-icon {
-            color: var(--primary);
-        }
-
-        .btn-auth {
-            width: 100%;
-            padding: 11px 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 2px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 1.5rem;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .btn-auth:hover:not(:disabled) { 
-            background: var(--primary-dark);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-auth:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn-auth:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .auth-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 1.5rem;
-        }
-
-        .auth-actions .btn-auth {
-            margin-top: 0;
-            flex: 1;
-        }
-
-        .btn-admin-side {
-            flex: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 11px 16px;
-            border: 1px solid var(--primary);
-            border-radius: 2px;
-            text-decoration: none;
-            color: var(--primary);
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            transition: all 0.2s;
-            background: #ffffff;
-        }
-
-        .btn-admin-side:hover {
-            background: #eef4fb;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .toggle-text { 
-            margin-top: 1.5rem; 
-            font-size: 0.85rem; 
-            color: var(--text-light);
-            text-align: center;
-        }
-
-        .toggle-text span { 
-            color: var(--primary); 
-            cursor: pointer; 
-            font-weight: 600;
-            transition: 0.2s;
-            text-decoration: none;
-        }
-
-        .toggle-text span:hover {
-            text-decoration: underline;
-        }
-
-        /* Form Features */
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            color: #9ca3af;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.2s;
-            padding: 4px 8px;
-        }
-
-        .password-toggle:hover {
-            color: var(--primary);
-        }
-
-        .send-code-btn {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: 0.2s;
-            padding: 6px 12px;
-            font-weight: 600;
-            border-radius: 2px;
-        }
-
-        .send-code-btn:hover:not(:disabled) {
-            background: rgba(0, 61, 130, 0.08);
-            color: var(--primary-dark);
-        }
-
-        .send-code-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .verification-timer {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-top: 6px;
-            text-align: center;
-            font-style: italic;
-        }
-
-        #verification-code {
-            letter-spacing: 4px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        /* Demo Credentials */
-        .demo-info {
-            background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
-            border: 2px solid var(--primary-light);
-            border-radius: 2px;
-            padding: 12px 14px;
-            margin-top: 1.5rem;
-            font-size: 0.8rem;
-            color: var(--text-dark);
-            text-align: center;
-        }
-
-        .demo-info strong {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            font-size: 0.75rem;
-        }
-
-        .demo-info em {
-            font-style: normal;
-            color: var(--primary);
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-        }
-
-        /* Footer Styles */
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--primary);
-            border-top: 2px solid var(--accent);
-            padding: 1.5rem 2rem;
-            z-index: 100;
-            color: white;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
-
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .footer-left strong {
-            color: white;
-            font-weight: 600;
-        }
-
-        .footer-center {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .footer-center a {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            transition: 0.2s;
-            font-weight: 500;
-        }
-
-        .footer-center a:hover {
-            color: white;
-            text-decoration: underline;
-        }
-
-        .footer-right {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-            font-size: 0.8rem;
-        }
-
-        .footer-divider {
-            width: 1px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .footer-info {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.9);
-            white-space: nowrap;
-        }
-
-        .compliance-badge {
-            display: inline-block;
-            font-size: 0.75rem;
-            color: #10b981;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 4px 8px;
-            border-radius: 2px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        @media (max-width: 768px) {
-            footer {
-                padding: 1rem 1.5rem;
-            }
-
-            .footer-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .footer-center {
-                justify-content: center;
-                gap: 1.5rem;
-            }
-
-            .footer-right {
-                justify-content: center;
-                flex-direction: column;
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            footer {
-                padding: 1rem;
-            }
-
-            .footer-left {
-                font-size: 0.75rem;
-                justify-content: center;
-                width: 100%;
-                text-align: center;
-            }
-
-            .footer-center {
-                gap: 1rem;
-                font-size: 0.75rem;
-            }
-
-            .footer-center a {
-                font-size: 0.75rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding-bottom: 140px;
-            }
-
-            .auth-actions {
-                flex-direction: column;
-            }
+            --primary: #0ea5e9;
+            --secondary: #6366f1;
+            --dark: #0f172a;
+            --bg: #020617;
+            --glass: rgba(15, 23, 42, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { background-color: var(--bg); color: #f8fafc; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* --- BACKGROUND BLOBS --- */
+        .blob {
+            position: fixed; width: 500px; height: 500px; background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
+            z-index: -1; filter: blur(80px); animation: move 20s infinite alternate;
+        }
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
+
+        /* --- NAVBAR --- */
+        nav {
+            padding: 1.2rem 8%; display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass); backdrop-filter: blur(15px); position: fixed;
+            width: 100%; top: 0; z-index: 2000; border-bottom: 1px solid var(--card-border);
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; font-size: 0.9rem; border: none; }
+        .btn-ghost { color: white; background: transparent; border: 1px solid var(--card-border); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.05); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(14, 165, 233, 0.4); }
+
+        /* --- HERO SECTION --- */
+        .hero { padding: 180px 8% 100px; display: flex; align-items: center; min-height: 100vh; gap: 40px; }
+        .hero-content { flex: 1; }
+        .hero-tag { background: rgba(14, 165, 233, 0.1); color: var(--primary); padding: 8px 16px; border-radius: 100px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(14, 165, 233, 0.2); margin-bottom: 20px; display: inline-block; }
+        .hero-content h1 { font-size: 4.8rem; line-height: 1.1; margin-bottom: 1.5rem; font-weight: 800; }
+        .hero-content p { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2.5rem; max-width: 600px; }
+
+        /* --- WAVE ANIMATION --- */
+        .hero-visual { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; }
+        .wave-container { width: 100%; height: 300px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .bar { width: 6px; height: 20px; background: var(--primary); border-radius: 10px; animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { height: 20px; background: var(--primary); } 50% { height: 150px; background: var(--secondary); } }
+
+        /* --- STATS SECTION --- */
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 50px 8%; background: rgba(255,255,255,0.02); border-top: 1px solid var(--card-border); }
+        .stat-item { text-align: center; }
+        .stat-item h2 { font-size: 2.5rem; color: white; }
+        .stat-item p { color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
+
+        /* --- FEATURES SECTION --- */
+        .features { padding: 100px 8%; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 60px; }
+        .card { background: var(--glass); padding: 40px; border-radius: 24px; border: 1px solid var(--card-border); transition: 0.4s; text-align: left; }
+        .card:hover { border-color: var(--primary); transform: translateY(-10px); background: rgba(255,255,255,0.05); }
+        .card i { font-size: 2.5rem; margin-bottom: 20px; color: var(--primary); }
+        .card h3 { margin-bottom: 15px; font-size: 1.4rem; }
+        .card p { color: #94a3b8; line-height: 1.6; }
+
+        /* --- MODAL --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        .modal-card { background: var(--dark); padding: 50px; border-radius: 32px; width: 95%; max-width: 600px; position: relative; border: 1px solid var(--card-border); text-align: center; }
+        .close-modal { position: absolute; top: 25px; right: 25px; color: white; font-size: 1.5rem; cursor: pointer; background: none; border: none; }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .choice-card { padding: 30px; border-radius: 20px; border: 1px solid var(--card-border); cursor: pointer; transition: 0.3s; }
+        .choice-card:hover { background: var(--primary); border-color: var(--primary); }
+        .choice-card i { font-size: 2rem; margin-bottom: 15px; }
+
+        /* --- FOOTER --- */
+        footer { padding: 80px 8% 40px; border-top: 1px solid var(--card-border); display: flex; flex-direction: column; align-items: center; gap: 30px; }
+        .socials { display: flex; gap: 20px; }
+        .socials a { color: #64748b; font-size: 1.5rem; transition: 0.3s; }
+        .socials a:hover { color: var(--primary); }
+        .copyright { color: #475569; font-size: 0.85rem; }
+
+        @media (max-width: 1024px) {
+            .hero { flex-direction: column; text-align: center; }
+            .hero-content h1 { font-size: 3.5rem; }
+            .hero-visual { margin-top: 40px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Official Header -->
-<div class="official-header">
-    <i class="fas fa-shield-alt"></i> Official Government Health Service Portal | Ministry of Mental Health & Wellness
+<div class="blob"></div>
+
+<nav>
+    <a href="#" class="logo"><i class="fas fa-microchip"></i> Vocal<span>Vibe.</span></a>
+    <div class="nav-actions">
+        <button class="btn btn-ghost" onclick="setModal(true)">Sign In</button>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Get Started</button>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-tag">✨ Advanced Clinical Biomarkers</div>
+        <h1>Mental Health, <span>Decoded</span> by Voice.</h1>
+        <p>Using proprietary AI vocal modeling to detect stress, anxiety, and early signs of depression for hospital-grade accuracy in seconds.</p>
+        <div style="display: flex; gap: 20px; justify-content: inherit;">
+            <button class="btn btn-primary" style="padding: 18px 40px;" onclick="setModal(true)">Run Instant Scan</button>
+            <button class="btn btn-ghost" style="padding: 18px 40px;">Request Demo</button>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="wave-container" id="waveform">
+            </div>
+    </div>
+</section>
+
+<div class="stats">
+    <div class="stat-item">
+        <h2>98.4%</h2>
+        <p>Clinical Accuracy</p>
+    </div>
+    <div class="stat-item">
+        <h2>&lt;10s</h2>
+        <p>Analysis Speed</p>
+    </div>
+    <div class="stat-item">
+        <h2>25k+</h2>
+        <p>Scans Analyzed</p>
+    </div>
 </div>
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="logo-section">
-            <div class="gov-logo">
-                <div class="gov-seal">
-                    <img src="https://odisha.gov.in/sites/default/files/styles/medium/public/2021-02/national-emblem1.png?itok=34RE5eSc" alt="Government Seal" />
-                    <i class="fas fa-shield-check">
-                    </i>
-                </div>
-                <div class="gov-text">
-                    <div class="ministry">Ministry of<br>Mental Health</div>
-                    <div class="dept">Government Health Service</div>
-                </div>
-            </div>
-            <h2 id="auth-title">Welcome Back</h2>
-            <p id="auth-desc">Secure Access to Your Mental Health Records</p>
+
+<section class="features" id="features">
+    <div class="hero-tag">How it works</div>
+    <h2>Precision diagnostics for the mind</h2>
+    <div class="grid">
+        <div class="card">
+            <i class="fas fa-wave-square"></i>
+            <h3>Spectral Mapping</h3>
+            <p>Our AI maps over 200 vocal features including pitch variance, jitter, and frequency micro-tremors.</p>
         </div>
-
-        <div class="error-message" id="error-msg">
-            <span class="message-text"></span>
+        <div class="card">
+            <i class="fas fa-brain"></i>
+            <h3>Neural Logic</h3>
+            <p>Custom-built neural networks process voice prints locally to ensure patient data never leaves your facility.</p>
         </div>
-        <div class="success-message" id="success-msg">
-            <span class="message-text"></span>
+        <div class="card">
+            <i class="fas fa-file-medical"></i>
+            <h3>Dynamic Reporting</h3>
+            <p>Automated clinical reports for doctors with stress probability and emotional trend analysis.</p>
         </div>
+    </div>
+</section>
 
-        <form id="auth-form" onsubmit="handleAuth(event)">
-            <div class="input-group" id="name-group">
-                <label for="name">Full Name</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-user input-icon"></i>
-                    <input 
-                        type="text" 
-                        id="name" 
-                        placeholder="Name" 
-                        autocomplete="name"
-                    >
-                </div>
-            </div>
+<footer>
+    <div class="logo"><i class="fas fa-microchip"></i> Vocal<span>Vibe.</span></div>
+    <div class="socials">
+        <a href="#"><i class="fab fa-linkedin"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-github"></i></a>
+    </div>
+    <p class="copyright">&copy; 2026 VocalVibe Health Solutions. Powered by Gemini AI Intelligence.</p>
+</footer>
 
-            <div class="input-group">
-                <label for="email">Email Address</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        placeholder="your@email.com" 
-                        required
-                        autocomplete="email"
-                    >
-                </div>
+<div class="modal-overlay" id="choiceModal">
+    <div class="modal-card">
+        <button class="close-modal" onclick="setModal(false)">&times;</button>
+        <h2 style="font-size: 2.2rem; margin-bottom: 10px;">Select Entry Point</h2>
+        <p style="color: #94a3b8;">Welcome to the Hospital Diagnostic System</p>
+        
+        <div class="choice-grid">
+            <div class="choice-card" onclick="nav('user')">
+                <i class="fas fa-user-injured"></i>
+                <h3 style="margin-bottom: 5px;">Patient Portal</h3>
+                <p style="font-size: 0.8rem; color: #cbd5e1;">View your wellness metrics</p>
             </div>
-            <div class="input-group">
-                <label for="contact">Contact Number</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-phone input-icon"></i>
-                    <input 
-                        type="tel" 
-                        id="contact" 
-                        placeholder="your contact number" 
-                        required
-                        autocomplete="tel"
-                    >
-                </div>
+            <div class="choice-card" onclick="nav('admin')">
+                <i class="fas fa-user-md"></i>
+                <h3 style="margin-bottom: 5px;">Clinical Staff</h3>
+                <p style="font-size: 0.8rem; color: #cbd5e1;">Hospital administration</p>
             </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        placeholder="••••••••" 
-                        required
-                        autocomplete="current-password"
-                    >
-                    <button 
-                        type="button" 
-                        class="password-toggle" 
-                        onclick="togglePasswordVisibility(this)"
-                        title="Show/hide password"
-                    >
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="input-group" id="age-group" style="display: none;">
-                <label for="age">Age</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-user input-icon"></i>
-                    <input
-                        type="number"
-                        id="age"
-                        placeholder="Your age"
-                        min="13"
-                        max="120"
-                        autocomplete="off"
-                    >
-                </div>
-            </div>
-
-            <div class="input-group" id="captcha-group" style="display: none;">
-                <label for="captcha-answer">Captcha</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-shield-alt input-icon"></i>
-                    <div style="width:100%; display:flex; gap:8px; align-items:center;">
-                        <div id="captcha-question" style="padding:10px 12px; border:2px solid #e5e7eb; border-radius:8px; background:#f9fafb; min-width:120px; text-align:center;"></div>
-                        <input
-                            type="text"
-                            id="captcha-answer"
-                            placeholder="Answer"
-                            autocomplete="off"
-                            style="flex:1; padding:10px 12px; border:2px solid #e5e7eb; border-radius:8px;"
-                        >
-                        <button type="button" class="send-code-btn" onclick="generateCaptcha()" title="Refresh captcha">⟳</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-group" style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" id="remember-me" />
-                <label for="remember-me" style="margin:0; font-size:0.9rem; color:#374151;">Remember me</label>
-            </div>
-
-            <div class="auth-actions">
-                <button type="submit" class="btn-auth" id="auth-btn">
-                    <span id="btn-text">Login Now</span>
-                </button>
-                <a href="admin.html" class="btn-admin-side" id="admin-side-link">
-                    <i class="fas fa-user-shield"></i> Admin Panel
-                </a>
-            </div>
-        </form>
-
-        <div class="demo-info" id="demo-info">
-            <strong>Demo Account</strong>
-            <div style="margin-top:6px; font-size:0.85rem;">Email: <em>test@example.com</em> | Password: <em>password123</em></div>
-            <div style="margin-top:10px; display:flex; gap:8px; justify-content:center;">
-                <button type="button" class="send-code-btn" onclick="useDemoLogin(false)" style="position:static; font-weight:700; padding:8px 12px; background:rgba(0,61,130,0.1); border:1px solid var(--primary-light); color:var(--primary);">Fill Demo</button>
-                <button type="button" class="send-code-btn" onclick="useDemoLogin(true)" style="position:static; font-weight:700; padding:8px 12px; background:rgba(0,61,130,0.1); border:1px solid var(--primary-light); color:var(--primary);">Use Demo</button>
-            </div>
-        </div>
-
-        <div class="toggle-text">
-            <span id="toggle-link" onclick="toggleMode()">Don't have an account? Sign Up</span>
         </div>
     </div>
 </div>
 
 <script>
-    let isLoginMode = true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let currentCaptchaAnswer = null;
-
-    function showError(message) {
-        const errorEl = document.getElementById('error-msg');
-        const textEl = errorEl.querySelector('.message-text');
-        textEl.textContent = message;
-        errorEl.style.display = 'block';
-        document.getElementById('success-msg').style.display = 'none';
+    // Generate Waveform bars
+    const wave = document.getElementById('waveform');
+    for (let i = 0; i < 20; i++) {
+        let bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.animationDelay = `${i * 0.1}s`;
+        wave.appendChild(bar);
     }
 
-    function showSuccess(message) {
-        const successEl = document.getElementById('success-msg');
-        const textEl = successEl.querySelector('.message-text');
-        textEl.textContent = message;
-        successEl.style.display = 'block';
-        document.getElementById('error-msg').style.display = 'none';
+    function setModal(show) {
+        document.getElementById('choiceModal').style.display = show ? 'flex' : 'none';
     }
 
-    function clearMessages() {
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('success-msg').style.display = 'none';
-    }
-
-    function showInfo(message) {
-        // reuse success message styling for lightweight info
-        const successEl = document.getElementById('success-msg');
-        const textEl = successEl.querySelector('.message-text');
-        textEl.textContent = message;
-        successEl.style.display = 'block';
-        document.getElementById('error-msg').style.display = 'none';
-        // auto-hide after short time
-        setTimeout(() => { try { successEl.style.display = 'none'; } catch(e){} }, 2500);
-    }
-
-    function togglePasswordVisibility(toggle) {
-        const input = document.getElementById('password');
-        const btn = toggle || document.querySelector('.password-toggle');
-
-        if (input.type === 'password') {
-            input.type = 'text';
-            btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+    function nav(role) {
+        if(role === 'user') {
+            window.location.href = 'login.html';
         } else {
-            input.type = 'password';
-            btn.innerHTML = '<i class="fas fa-eye"></i>';
+            alert("🔒 Clinical Gateway: Secure biometric authentication required for staff access.");
+            // window.location.href = 'admin_login.html';
         }
     }
 
-    function toggleMode() {
-        clearMessages();
-        isLoginMode = !isLoginMode;
-        const title = document.getElementById('auth-title');
-        const desc = document.getElementById('auth-desc');
-        const btn = document.getElementById('auth-btn');
-        const link = document.getElementById('toggle-link');
-        const form = document.getElementById('auth-form');
-        const adminSideLink = document.getElementById('admin-side-link');
-        const nameGroup = document.getElementById('name-group');
-        const nameInput = document.getElementById('name');
-        const ageGroup = document.getElementById('age-group');
-        const ageInput = document.getElementById('age');
-
-        form.reset();
-        document.getElementById('password').type = 'password';
-        document.querySelector('.password-toggle').innerHTML = '<i class="fas fa-eye"></i>';
-
-        if (isLoginMode) {
-            title.textContent = "Welcome Back";
-            desc.textContent = "Analyze your voice, manage your stress";
-            document.getElementById('btn-text').textContent = "Login Now";
-            link.textContent = "Don't have an account? Sign Up";
-            nameInput.removeAttribute('required');
-            nameInput.placeholder = "John Doe";
-            if (ageGroup) ageGroup.style.display = 'none';
-            if (ageInput) ageInput.removeAttribute('required');
-            // hide captcha when in login mode
-            const captchaGroupHide = document.getElementById('captcha-group');
-            const captchaInputHide = document.getElementById('captcha-answer');
-            if (captchaGroupHide) captchaGroupHide.style.display = 'none';
-            if (captchaInputHide) captchaInputHide.removeAttribute('required');
-            if (adminSideLink) adminSideLink.style.display = 'inline-flex';
-        } else {
-            title.textContent = "Create Account";
-            desc.textContent = "Join us to start tracking your mental health";
-            document.getElementById('btn-text').textContent = "Register Now";
-            link.textContent = "Already have an account? Login";
-            nameInput.setAttribute('required', 'required');
-            nameInput.placeholder = "Your Full Name";
-            if (ageGroup) ageGroup.style.display = 'block';
-            if (ageInput) ageInput.setAttribute('required', 'required');
-            // show captcha for signup
-            const captchaGroup = document.getElementById('captcha-group');
-            const captchaInput = document.getElementById('captcha-answer');
-            if (captchaGroup) captchaGroup.style.display = 'block';
-            if (captchaInput) captchaInput.setAttribute('required', 'required');
-            generateCaptcha();
-            if (adminSideLink) adminSideLink.style.display = 'none';
-        }
+    window.onclick = (e) => {
+        if (e.target.id === 'choiceModal') setModal(false);
     }
-
-    
-
-    function generateCaptcha() {
-        // simple math captcha
-        const a = Math.floor(Math.random() * 12) + 3; // 3..14
-        const b = Math.floor(Math.random() * 12) + 1; // 1..12
-        const ops = ['+', '-'];
-        const op = ops[Math.floor(Math.random() * ops.length)];
-        let question = '';
-        let ans = 0;
-        if (op === '+') { question = `${a} + ${b}`; ans = a + b; }
-        else { question = `${a} - ${b}`; ans = a - b; }
-        currentCaptchaAnswer = ans;
-        const qEl = document.getElementById('captcha-question');
-        const input = document.getElementById('captcha-answer');
-        if (qEl) qEl.textContent = question;
-        if (input) input.value = '';
-    }
-
-    // Demo autofill / quick-login helper
-    function useDemoLogin(submit) {
-        const demoEmail = 'test@example.com';
-        const demoPass = 'password123';
-        document.getElementById('email').value = demoEmail;
-        document.getElementById('password').value = demoPass;
-        // show success message briefly when filling
-        if (!submit) {
-            showInfo('Demo credentials filled. Click Login to continue.');
-            return;
-        }
-
-        // Mark remember-me if user previously chose it
-        const remember = localStorage.getItem('rememberedEmail') === demoEmail;
-        document.getElementById('remember-me').checked = remember;
-
-        // submit the form programmatically
-        document.getElementById('auth-form').dispatchEvent(new Event('submit', { cancelable: true }));
-    }
-
-    // Prefill remembered email on load and handle remember-me after login
-    function applyRememberedEmail() {
-        const remembered = localStorage.getItem('rememberedEmail');
-        if (remembered) {
-            const emailEl = document.getElementById('email');
-            if (emailEl) emailEl.value = remembered;
-            const rememberCb = document.getElementById('remember-me');
-            if (rememberCb) rememberCb.checked = true;
-        }
-    }
-
-    async function handleAuth(event) {
-        event.preventDefault();
-        clearMessages();
-
-        const email = document.getElementById('email').value.trim();
-        const pass = document.getElementById('password').value;
-        const name = document.getElementById('name').value.trim();
-        const btn = document.getElementById('auth-btn');
-        const btnText = document.getElementById('btn-text');
-        const originalText = btnText.textContent;
-        const ageEl = document.getElementById('age');
-        const age = ageEl ? parseInt(ageEl.value.trim() || '0', 10) : null;
-
-        // Validation
-        if (!email || !pass) {
-            showError("Please fill in all fields!");
-            return;
-        }
-
-        if (!isLoginMode && !name) {
-            showError("Please enter your full name!");
-            return;
-        }
-
-        if (!emailRegex.test(email)) {
-            showError("Please enter a valid email address!");
-            return;
-        }
-
-        if (pass.length < 8) {
-            showError("Password must be at least 8 characters long!");
-            return;
-        }
-
-        // Validate age and captcha on signup
-        if (!isLoginMode) {
-            if (!age || isNaN(age) || age < 13) {
-                showError("Please enter a valid age (13+)");
-                return;
-            }
-            const captchaInput = document.getElementById('captcha-answer');
-            const answer = captchaInput ? captchaInput.value.trim() : '';
-            if (!answer || isNaN(Number(answer)) || Number(answer) !== currentCaptchaAnswer) {
-                showError("Captcha incorrect. Please try again.");
-                // regenerate captcha for next attempt
-                generateCaptcha();
-                return;
-            }
-        }
-
-        // Disable button during submission
-        btn.disabled = true;
-        btnText.innerHTML = '<span class="loading-spinner"></span> ' + (isLoginMode ? 'Logging in...' : 'Registering...');
-
-        setTimeout(() => {
-            try {
-                if (isLoginMode) {
-                    // Login
-                    const storedUserData = localStorage.getItem(email);
-                    
-                    // Demo account (guest) — limited to 3 uses
-                    if (email === 'test@example.com' && pass === 'password123') {
-                        const guestKey = 'guestLoginCount';
-                        let guestCount = parseInt(localStorage.getItem(guestKey) || '0', 10);
-                        if (guestCount >= 3) {
-                            showError('Guest login limit reached (3). Please register.');
-                            btn.disabled = false;
-                            btnText.textContent = originalText;
-                            return;
-                        }
-
-                        // Ensure a guest user record exists in localStorage for demo
-                        const storedGuest = localStorage.getItem(email);
-                        if (!storedGuest) {
-                            const guestData = {
-                                name: 'Guest User',
-                                email: email,
-                                password: pass,
-                                age: null,
-                                registeredAt: new Date().toISOString(),
-                                demo: true
-                            };
-                            localStorage.setItem(email, JSON.stringify(guestData));
-                        }
-
-                        guestCount += 1;
-                        localStorage.setItem(guestKey, String(guestCount));
-                        showSuccess(`Login successful! Redirecting... (guest ${guestCount}/3)`);
-                        sessionStorage.setItem('activeUser', email);
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 1200);
-                        return;
-                    }
-
-                    if (!storedUserData) {
-                        showError("Email not found. Please register first!");
-                        btn.disabled = false;
-                        btnText.textContent = originalText;
-                        return;
-                    }
-
-                    const storedUser = JSON.parse(storedUserData);
-                    if (storedUser.password === pass) {
-                        showSuccess("Login successful! Redirecting...");
-                        // store active session
-                        sessionStorage.setItem("activeUser", email);
-
-                        // apply remember-me preference
-                        try {
-                            const rememberMe = document.getElementById('remember-me');
-                            if (rememberMe && rememberMe.checked) {
-                                localStorage.setItem('rememberedEmail', email);
-                            } else {
-                                localStorage.removeItem('rememberedEmail');
-                            }
-                        } catch (e) {
-                            // ignore
-                        }
-                        setTimeout(() => {
-                            window.location.href = "dashboard.html";
-                        }, 1200);
-                    } else {
-                        showError("Invalid password!");
-                        btn.disabled = false;
-                        btnText.textContent = originalText;
-                    }
-                } else {
-                    // Register
-                    if (email === 'test@example.com') {
-                        showError("This email is reserved for demo. Please use a different email.");
-                        btn.disabled = false;
-                        btnText.textContent = originalText;
-                        return;
-                    }
-
-                    if (localStorage.getItem(email)) {
-                        showError("Email already registered! Please login or use a different email.");
-                        btn.disabled = false;
-                        btnText.textContent = originalText;
-                        return;
-                    }
-
-                    const userData = { 
-                        name: name,
-                        email: email, 
-                        password: pass, 
-                        age: age || null,
-                        registeredAt: new Date().toISOString() 
-                    };
-                    localStorage.setItem(email, JSON.stringify(userData));
-                    showSuccess("Registration successful! Switching to login...");
-                    
-                    setTimeout(() => {
-                        document.getElementById('auth-form').reset();
-                        document.getElementById('password').type = 'password';
-                        document.querySelector('.password-toggle').innerHTML = '<i class="fas fa-eye"></i>';
-                        toggleMode();
-                        // remember preference not set on fresh reg; clear remember-me
-                        try { localStorage.removeItem('rememberedEmail'); } catch(e) {}
-                        btn.disabled = false;
-                        btnText.textContent = "Login Now";
-                    }, 1500);
-                }
-            } catch (error) {
-                showError("An error occurred. Please try again.");
-                btn.disabled = false;
-                btnText.textContent = originalText;
-                console.error("Auth error:", error);
-            }
-        }, 600);
-    }
-
-    // Clear messages when user starts typing
-    document.getElementById('email').addEventListener('focus', clearMessages);
-    document.getElementById('password').addEventListener('focus', clearMessages);
-
-    // Pre-fill demo credentials
-    window.addEventListener('load', () => {
-        // Apply any remembered email and keep form ready
-        try { applyRememberedEmail(); } catch (e) { /* ignore */ }
-    });
 </script>
-
-<!-- Footer -->
-<footer>
-    <div class="footer-content">
-        <div class="footer-left">
-            <strong>Stress Tone AI Portal</strong> — Ministry of Mental Health & Wellness
-            <div class="footer-divider"></div>
-            <span class="compliance-badge"><i class="fas fa-lock"></i> HIPAA Compliant</span>
-        </div>
-        
-        <div class="footer-center">
-            <a href="#privacy">Privacy Policy</a>
-            <a href="#terms">Terms & Conditions</a>
-            <a href="#security">Security</a>
-            <a href="#accessibility">Accessibility</a>
-            <a href="#contact">Contact Us</a>
-        </div>
-
-        <div class="footer-right">
-            <div class="footer-info">
-                <i class="fas fa-phone"></i> 1-800-HEALTH-1
-            </div>
-            <div class="footer-divider"></div>
-            <div class="footer-info">
-                <i class="fas fa-globe"></i> www.health.gov
-            </div>
-        </div>
-    </div>
-</footer>
 
 </body>
 </html>

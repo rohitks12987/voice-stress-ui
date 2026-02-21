@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal | VocalVibe Pro Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --secondary: #6366f1;
+            --dark: #0f172a;
+            --bg: #020617;
+            --glass: rgba(15, 23, 42, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body { 
+            background-color: var(--bg); 
+            color: #f8fafc; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- BACKGROUND BLOBS --- */
+        .blob {
+            position: fixed; width: 600px; height: 600px; 
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            z-index: -1; filter: blur(80px); animation: move 15s infinite alternate;
+        }
+        @keyframes move { from { transform: translate(-20%, -20%); } to { transform: translate(20%, 20%); } }
+
+        /* --- AUTH CARD --- */
+        .auth-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 32px;
+            border: 1px solid var(--card-border);
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: cardAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header-section { text-align: center; margin-bottom: 2.5rem; }
+        
+        .logo { 
+            font-size: 1.8rem; font-weight: 800; color: white; text-decoration: none; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 1rem;
+        }
+        .logo i { color: var(--primary); }
+        .logo span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .header-section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .header-section p { color: #94a3b8; font-size: 0.9rem; }
+
+        /* --- FORM STYLING --- */
+        .input-group { margin-bottom: 1.2rem; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper i { position: absolute; left: 16px; color: #64748b; font-size: 1rem; transition: 0.3s; }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15);
+        }
+
+        .input-group input:focus + i { color: var(--primary); }
+
+        .pass-toggle {
+            position: absolute; right: 16px; background: none; border: none;
+            color: #64748b; cursor: pointer; font-size: 1rem;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 1.5rem;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
+
+        /* --- MESSAGES --- */
+        .msg { padding: 12px; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.85rem; display: none; border: 1px solid transparent; }
+        .msg.error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); }
+        .msg.success { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.2); }
+
+        /* --- FOOTER & MISC --- */
+        .toggle-text { text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.9rem; }
+        .toggle-text span { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: none; }
+        .toggle-text span:hover { text-decoration: underline; }
+
+        .demo-box {
+            margin-top: 2rem; padding: 15px; border-radius: 16px;
+            background: rgba(255,255,255,0.02); border: 1px dashed var(--card-border);
+            text-align: center;
+        }
+        .demo-box strong { font-size: 0.7rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        .demo-box p { font-size: 0.8rem; color: #64748b; margin-bottom: 10px; }
+        .demo-btn { background: none; border: 1px solid var(--primary); color: var(--primary); padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .demo-btn:hover { background: var(--primary); color: white; }
+
+        .back-home { position: fixed; top: 30px; left: 30px; color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .back-home:hover { color: white; }
+    </style>
+</head>
+<body>
+
+<div class="blob"></div>
+
+<a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back to Hospital Site</a>
+
+<div class="auth-card">
+    <div class="header-section">
+        <div class="logo"><i class="fas fa-microchip"></i> Vocal<span>Vibe.</span></div>
+        <h2 id="auth-title">Patient Login</h2>
+        <p id="auth-desc">Secure access to clinical diagnostics</p>
+    </div>
+
+    <div id="msg-box" class="msg"></div>
+
+    <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="input-group" id="name-group" style="display: none;">
+            <label>Full Patient Name</label>
+            <div class="input-wrapper">
+                <i class="fas fa-user-circle"></i>
+                <input type="text" id="name" placeholder="Enter full name">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Registered Email</label>
+            <div class="input-wrapper">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" required placeholder="name@hospital.com">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Security Password</label>
+            <div class="input-wrapper">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" required placeholder="••••••••">
+                <button type="button" class="pass-toggle" onclick="togglePass()">
+                    <i class="fas fa-eye" id="eye-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="auth-btn">Authorize Entry</button>
+    </form>
+
+    <div class="demo-box" id="demo-info">
+        <strong>Simulation Credentials</strong>
+        <p>Email: test@example.com | Pass: password123</p>
+        <button class="demo-btn" onclick="fillDemo()">Auto-Fill Simulation</button>
+    </div>
+
+    <div class="toggle-text">
+        <p id="toggle-p">New patient? <span onclick="toggleMode()">Create Digital Record</span></p>
+    </div>
+</div>
+
+<script>
+    let isLoginMode = true;
+
+    function toggleMode() {
+        isLoginMode = !isLoginMode;
+        const msgBox = document.getElementById('msg-box');
+        msgBox.style.display = "none";
+
+        document.getElementById('auth-title').innerText = isLoginMode ? "Patient Login" : "Register Record";
+        document.getElementById('auth-desc').innerText = isLoginMode ? "Secure access to clinical diagnostics" : "Register for AI-powered wellness monitoring";
+        document.getElementById('auth-btn').innerText = isLoginMode ? "Authorize Entry" : "Create Record";
+        document.getElementById('name-group').style.display = isLoginMode ? "none" : "block";
+        document.getElementById('toggle-p').innerHTML = isLoginMode ? 
+            'New patient? <span onclick="toggleMode()">Create Digital Record</span>' : 
+            'Already registered? <span onclick="toggleMode()">Authorize Login</span>';
+        document.getElementById('demo-info').style.display = isLoginMode ? "block" : "none";
+    }
+
+    function togglePass() {
+        const p = document.getElementById('password');
+        const i = document.getElementById('eye-icon');
+        if(p.type === "password") {
+            p.type = "text";
+            i.className = "fas fa-eye-slash";
+        } else {
+            p.type = "password";
+            i.className = "fas fa-eye";
+        }
+    }
+
+    function fillDemo() {
+        document.getElementById('email').value = "test@example.com";
+        document.getElementById('password').value = "password123";
+    }
+
+    function showMsg(text, type) {
+        const box = document.getElementById('msg-box');
+        box.innerText = text;
+        box.className = `msg ${type}`;
+        box.style.display = "block";
+    }
+
+    function handleAuth(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        const name = document.getElementById('name').value;
+
+        if (isLoginMode) {
+            const storedUser = JSON.parse(localStorage.getItem(email));
+            
+            // Simulation check
+            if (email === "test@example.com" && pass === "password123") {
+                successRedirect("test@example.com");
+                return;
+            }
+
+            if (storedUser && storedUser.password === pass) {
+                successRedirect(email);
+            } else {
+                showMsg("Authentication Failed: Invalid credentials", "error");
+            }
+        } else {
+            if(!name) { showMsg("Error: Patient name required", "error"); return; }
+            
+            const userData = { name: name, password: pass };
+            localStorage.setItem(email, JSON.stringify(userData));
+            
+            showMsg("Record created! Initializing login...", "success");
+            setTimeout(toggleMode, 1500);
+        }
+    }
+
+    function successRedirect(email) {
+        showMsg("Identity Verified. Syncing clinical data...", "success");
+        sessionStorage.setItem('activeUser', email);
+        setTimeout(() => { window.location.href = "dashboard.html"; }, 1200);
+    }
+</script>
+
+</body>
+</html>
