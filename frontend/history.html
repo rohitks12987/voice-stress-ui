@@ -384,7 +384,6 @@
             margin-top: auto;
         }
 
-        /* Keep footer content aligned with main container */
         .dashboard-footer .footer-content {
             max-width: 1200px;
             margin: 0 auto;
@@ -484,14 +483,6 @@
             100% { opacity: 1; }
         }
 
-        @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 1rem; padding: 1rem; }
-            .nav-links { flex-wrap: wrap; }
-            .header-row { flex-direction: column; align-items: flex-start; }
-            .filter-group { flex-wrap: wrap; }
-            table { font-size: 0.8rem; }
-            td, th { padding: 12px 10px; }
-        }
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
@@ -578,7 +569,6 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* Icons in ticker */
         .news-ticker i {
             margin: 0 12px;
             color: #ff9933;
@@ -608,28 +598,202 @@
             padding: 0 20px;
         }
 
-        .footer-line {
-            height: 1px;
-            background: rgba(255,255,255,0.2);
-            max-width: 900px;
-            margin: 0 auto 1rem;
-        }
-
         .history-footer p {
             font-size: 0.9rem;
             margin-bottom: 0.25rem;
             opacity: 0.95;
             color: #cbd5e1;
         }
+        
+        /* ----------------------------------
+           ADDED: MODAL AND FORM STYLES 
+           ---------------------------------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.3s;
+        }
+        
+        .modal-close:hover {
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #f8fafc;
+        }
+
+        .btn-cancel, .btn-save {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #002b5e;
+        }
+
+        /* Form elements inside modal */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="tel"],
+        .form-group input[type="email"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .photo-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-input-label {
+            background: #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: #334155;
+            font-weight: 600;
+        }
+        /* ---------------------------------- */
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 1rem; padding: 1rem; }
+            .nav-links { flex-wrap: wrap; }
             .sidebar { width: 250px; }
             .main-content { margin-left: 250px; }
             .news-ticker { font-size: 0.8rem; padding: 12px 0; min-height: 42px; }
             .container { padding: 0 15px; }
             .header-row { flex-direction: column; align-items: flex-start; gap: 20px; }
             .filter-group { flex-wrap: wrap; }
+            table { font-size: 0.8rem; }
+            td, th { padding: 12px 10px; }
         }
 
         @media (max-width: 640px) {
@@ -650,7 +814,6 @@
 </head>
 <body>
 
-<!-- Official Header -->
 <div class="official-header">
     <i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness
 </div>
@@ -658,7 +821,6 @@
 <div style="display: flex; min-height: 100vh; background: #f0f4f7;">
 
     <aside class="sidebar" id="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden; transition: width 0.3s ease;">
-        <!-- Sidebar Header -->
         <div class="sidebar-header" style="padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0;">
             <div style="position: relative; display: inline-block; margin-bottom: 10px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 50px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
@@ -675,7 +837,6 @@
             </button>
         </div>
 
-        <!-- User Profile Section -->
         <div class="sidebar-profile" style="padding: 15px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 45px; height: 45px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
@@ -689,10 +850,8 @@
             </p>
         </div>
 
-        <!-- Scrollable Content Area -->
         <div class="sidebar-content" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
 
-            <!-- Quick Actions Section -->
             <div class="sidebar-section" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f8fafc;">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-bolt"></i> Quick Actions
@@ -713,12 +872,11 @@
                     <button onclick="quickAction('history')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
                         <i class="fas fa-history"></i> History 
                     </button>
-                    <button onclick="quickAction('Logout')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; animation: pulse 2s infinite;">
+                    <button onclick="quickAction('Logout')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
             </div>
-            <!-- Wellness Tracker -->
             <div class="sidebar-section wellness-tracker" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f0fdf4;">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-chart-line"></i> Today's Wellness
@@ -742,7 +900,6 @@
                 </button>
             </div>
 
-            <!-- Announcements Section -->
             <div class="sidebar-section announcements" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%);">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-megaphone"></i> Announcements
@@ -758,17 +915,13 @@
                         <i class="fas fa-info-circle"></i> Check your wellness progress regularly for best results.
                     </div>
                 </div>
-                </div>
+            </div>
 
-            <!-- Settings Section -->
             <div class="sidebar-section settings" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f1f5f9;">
                 <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-cog"></i> Settings
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <button onclick="openSettings()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-user-edit"></i> Profile
-                    </button>
                     <button onclick="openNotifications()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
                         <i class="fas fa-bell"></i> Notifications
                     </button>
@@ -781,7 +934,6 @@
                 </div>
             </div>
 
-            <!-- Footer Section -->
             <div class="sidebar-footer" style="padding: 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
                 <div style="text-align: center;">
                     <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 8px;">
@@ -790,7 +942,6 @@
                 </div>
             </div>
 
-        </div>
         </div>
     </aside>
 
@@ -861,39 +1012,40 @@
                     <span class="value" id="avg-score" style="color: var(--primary);">--</span>
                 </div>
                 <div class="h-card">
-            <span class="label">Most Common Emotion</span>
-            <span class="value" id="common-emotion" style="color: var(--primary); font-size: 1.4rem;">--</span>
-        </div>
-    </div>
+                    <span class="label">Most Common Emotion</span>
+                    <span class="value" id="common-emotion" style="color: var(--primary); font-size: 1.4rem;">--</span>
+                </div>
+            </div>
 
-    <div class="table-container">
-        <div id="loading-state" class="loading-state hidden">
-            <span class="loading-spinner"></span> Loading history...
-        </div>
+            <div class="table-container">
+                <div id="loading-state" class="loading-state hidden">
+                    <span class="loading-spinner"></span> Loading history...
+                </div>
 
-        <table id="history-table" style="display: none;">
-            <thead>
-                <tr>
-                    <th>Date & Time</th>
-                    <th>Duration</th>
-                    <th>Stress Level</th>
-                    <th>Emotion</th>
-                    <th>Score</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="history-table-body"></tbody>
-        </table>
+                <table id="history-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Duration</th>
+                            <th>Stress Level</th>
+                            <th>Emotion</th>
+                            <th>Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body"></tbody>
+                </table>
 
-        <div id="empty-msg" class="empty-state">
-            <i class="fas fa-inbox"></i>
-            <p>No analysis history found. Start by recording your first voice sample!</p>
-            <a href="record.html" class="btn-primary">
-                <i class="fas fa-microphone"></i> Start Recording
-            </a>
+                <div id="empty-msg" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No analysis history found. Start by recording your first voice sample!</p>
+                    <a href="record.html" class="btn-primary">
+                        <i class="fas fa-microphone"></i> Start Recording
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 </div>
 
 <footer class="dashboard-footer">
@@ -919,26 +1071,19 @@
     }
 
     function logout() {
-        // Show confirmation dialog
         if (confirm('Are you sure you want to logout?')) {
-            // Clear user session data
             sessionStorage.removeItem('activeUser');
             sessionStorage.removeItem('userToken');
 
-            // Clear any user-related localStorage data
             localStorage.removeItem('dailyWater');
             localStorage.removeItem('lastWellnessUpdate');
             localStorage.removeItem('userPreferences');
 
-            // Clear any running intervals
             if (window.wellnessUpdateInterval) {
                 clearInterval(window.wellnessUpdateInterval);
             }
 
-            // Show logout message
             alert('You have been logged out successfully.');
-
-            // Redirect to login page
             window.location.href = 'index.html';
         }
     }
@@ -1119,7 +1264,6 @@
     function filterData(filterType, buttonElement) {
         currentFilter = filterType;
         
-        // Update active button
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -1133,21 +1277,17 @@
         updateStats(filteredData);
     }
 
-    // Load history on page load
     window.addEventListener('load', () => {
         if (checkAuth()) {
             loadHistory();
-            // Check saved sidebar state
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed) {
                 toggleSidebar();
             }
-            // Load initial wellness data
             updateWellness();
         }
     });
 
-    // Auto-refresh every 30 seconds
     setInterval(loadHistory, 30000);
 
     function toggleSidebar() {
@@ -1163,7 +1303,6 @@
             main.style.marginLeft = '70px';
         }
 
-        // Save sidebar state
         localStorage.setItem('sidebarCollapsed', !isCollapsed);
     }
 
@@ -1182,7 +1321,6 @@
                 alert('Emergency SOS activated! Help is on the way.');
                 break;
             case 'history':
-                // Already on history page
                 break;
             case 'Logout':
                 logout();
@@ -1191,7 +1329,6 @@
     }
 
     function updateWellness() {
-        // Simulate updating wellness data
         const water = (Math.random() * 2).toFixed(1);
         const stress = ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)];
         const moods = ['Happy', 'Neutral', 'Sad', 'Anxious'];
@@ -1201,12 +1338,9 @@
         document.getElementById('sidebar-stress').textContent = stress;
         document.getElementById('sidebar-mood').textContent = mood;
 
-        // Update colors based on values
         const stressElement = document.getElementById('sidebar-stress');
         stressElement.style.color = stress === 'High' ? '#ef4444' : stress === 'Medium' ? '#f59e0b' : '#22c55e';
     }
-
-    // Settings Functions with Modal Support
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -1223,7 +1357,7 @@
         
         const header = document.createElement('div');
         header.className = 'modal-header';
-        header.innerHTML = `<h2>${title}</h2><button class="modal-close" onclick="closeModal('${overlay.id}')">✕</button>`;
+        header.innerHTML = `<h2>${title}</h2><button class="modal-close" onclick="closeModal('${overlay.id}')"><i class="fas fa-times"></i></button>`;
         
         const body = document.createElement('div');
         body.className = 'modal-body';
@@ -1254,7 +1388,7 @@
                 </div>
                 <div class="file-input-wrapper">
                     <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
-                    <label for="photoInput" class="file-input-label">📷 Upload Photo</label>
+                    <label for="photoInput" class="file-input-label"><i class="fas fa-camera"></i> Upload Photo</label>
                 </div>
             </div>
             <div class="form-group">
@@ -1267,7 +1401,7 @@
             </div>
             <div class="form-group">
                 <label>Address</label>
-                <textarea id="address" placeholder="Enter your address">Government Office, New Delhi</textarea>
+                <textarea id="address" placeholder="Enter your address" rows="2">Government Office, New Delhi</textarea>
             </div>
             <div class="form-group">
                 <label>Email</label>
@@ -1277,10 +1411,10 @@
         
         const buttons = `
             <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
-            <button class="btn-save" onclick="saveProfile()">💾 Save Changes</button>
+            <button class="btn-save" onclick="saveProfile()"><i class="fas fa-save"></i> Save Changes</button>
         `;
         
-        createAndShowModal('✏️ Edit Profile', content, buttons);
+        createAndShowModal('<i class="fas fa-user-edit"></i> Edit Profile', content, buttons);
     }
 
     function handlePhotoUpload(event) {
@@ -1343,10 +1477,10 @@
         
         const buttons = `
             <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
-            <button class="btn-save" onclick="alert('✅ Notification settings saved!'); closeModal(this.closest('.modal-overlay').id);">💾 Save</button>
+            <button class="btn-save" onclick="alert('✅ Notification settings saved!'); closeModal(this.closest('.modal-overlay').id);"><i class="fas fa-save"></i> Save</button>
         `;
         
-        createAndShowModal('🔔 Notification Settings', content, buttons);
+        createAndShowModal('<i class="fas fa-bell"></i> Notification Settings', content, buttons);
     }
 
     function openPrivacy() {
@@ -1367,27 +1501,27 @@
                 </div>
                 <div class="form-group" style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9933; margin-bottom: 12px;">
                     <strong>⚠️ Danger Zone</strong>
-                    <button style="display: block; width: 100%; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 4px; margin-top: 8px; cursor: pointer; font-weight: 600;" onclick="alert('Download feature coming soon!');">📥 Download My Data</button>
+                    <button style="display: block; width: 100%; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 4px; margin-top: 8px; cursor: pointer; font-weight: 600;" onclick="alert('Download feature coming soon!');"><i class="fas fa-download"></i> Download My Data</button>
                 </div>
             </div>
         `;
         
         const buttons = `
             <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
-            <button class="btn-save" onclick="alert('✅ Privacy settings updated!'); closeModal(this.closest('.modal-overlay').id);">💾 Save</button>
+            <button class="btn-save" onclick="alert('✅ Privacy settings updated!'); closeModal(this.closest('.modal-overlay').id);"><i class="fas fa-save"></i> Save</button>
         `;
         
-        createAndShowModal('🔐 Privacy Settings', content, buttons);
+        createAndShowModal('<i class="fas fa-shield-alt"></i> Privacy Settings', content, buttons);
     }
 
     function openHelp() {
         const content = `
             <div style="padding: 10px 0;">
                 <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Help & Support Resources</h3>
-                <button style="width: 100%; background: #e0f2fe; color: #0369a1; border: 1px solid #0369a1; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('📚 FAQ\n\nQ: How do I upload a voice file?\nA: Click the Record button and speak into your microphone.\n\nQ: How is stress detected?\nA: Using AI analysis of voice tone and stress indicators.\n\nQ: Is my data private?\nA: Yes, all data is encrypted and secure.');">❓ Frequently Asked Questions</button>
-                <button style="width: 100%; background: #dcfce7; color: #15803d; border: 1px solid #15803d; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🎥 Video Tutorials\n\nAvailable tutorials:\n1. Getting Started Guide\n2. Recording Your First Analysis\n3. Understanding Your Results\n4. Wellness Tips\n\nVisit our YouTube channel for more content!');">🎥 Video Tutorials</button>
-                <button style="width: 100%; background: #fce7f3; color: #be123c; border: 1px solid #be123c; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('☎️ Contact Support\n\nEmail: support@mentalhealthindia.gov.in\nPhone: 1800-HEALTH-1 (ext. 5432)\nChat: Available Mon-Fri 9AM-6PM IST');">☎️ Contact Support</button>
-                <button style="width: 100%; background: #fef3c7; color: #b45309; border: 1px solid #b45309; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🐛 Report an Issue\n\nDescribe the problem you encountered and we will investigate it shortly.');">🐛 Report an Issue</button>
+                <button style="width: 100%; background: #e0f2fe; color: #0369a1; border: 1px solid #0369a1; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('📚 FAQ\\n\\nQ: How do I upload a voice file?\\nA: Click the Record button and speak into your microphone.\\n\\nQ: How is stress detected?\\nA: Using AI analysis of voice tone and stress indicators.\\n\\nQ: Is my data private?\\nA: Yes, all data is encrypted and secure.');">❓ Frequently Asked Questions</button>
+                <button style="width: 100%; background: #dcfce7; color: #15803d; border: 1px solid #15803d; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🎥 Video Tutorials\\n\\nAvailable tutorials:\\n1. Getting Started Guide\\n2. Recording Your First Analysis\\n3. Understanding Your Results\\n4. Wellness Tips\\n\\nVisit our YouTube channel for more content!');">🎥 Video Tutorials</button>
+                <button style="width: 100%; background: #fce7f3; color: #be123c; border: 1px solid #be123c; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('☎️ Contact Support\\n\\nEmail: support@mentalhealthindia.gov.in\\nPhone: 1800-HEALTH-1 (ext. 5432)\\nChat: Available Mon-Fri 9AM-6PM IST');">☎️ Contact Support</button>
+                <button style="width: 100%; background: #fef3c7; color: #b45309; border: 1px solid #b45309; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🐛 Report an Issue\\n\\nDescribe the problem you encountered and we will investigate it shortly.');">🐛 Report an Issue</button>
             </div>
         `;
         
@@ -1395,7 +1529,7 @@
             <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Close</button>
         `;
         
-        createAndShowModal('❓ Help & Support', content, buttons);
+        createAndShowModal('<i class="fas fa-question-circle"></i> Help & Support', content, buttons);
     }
 </script>
 

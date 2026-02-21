@@ -29,7 +29,9 @@
             color: #1f2937; 
             display: flex; 
             flex-direction: column; 
-            min-height: 100vh; 
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         /* Official Header Bar */
@@ -43,6 +45,8 @@
             font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 0.5px;
+            flex-shrink: 0;
+            z-index: 100;
         }
 
         /* Navbar & Footer Theme */
@@ -442,6 +446,8 @@
             border-top: 4px solid #ef4444;
             width: 100%;
             box-sizing: border-box;
+            flex-shrink: 0;
+            z-index: 50;
         }
 
         .record-footer .footer-content {
@@ -629,7 +635,6 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
             background: #f8fafc;
         }
 
@@ -642,7 +647,7 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .sidebar { width: 250px; }
+            .sidebar { width: 250px; height: calc(100vh - 50px) !important; top: 50px !important; }
             .main-content { margin-left: 250px; }
             .news-ticker { font-size: 0.8rem; padding: 12px 0; min-height: 42px; }
             .record-card { padding: 1.5rem; }
@@ -654,7 +659,7 @@
         }
 
         @media (max-width: 640px) {
-            .sidebar { width: 100%; height: auto; position: relative; box-shadow: none; }
+            .sidebar { width: 100%; height: auto !important; position: relative !important; top: auto !important; box-shadow: none; }
             .main-content { margin-left: 0; }
             .sidebar .gov-nav-link { padding: 15px 20px; }
             .record-card { padding: 1.25rem; }
@@ -693,9 +698,9 @@
     <i class="fas fa-shield-alt"></i> Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness
 </div>
 
-<div style="display: flex; min-height: 100vh; background: #f0f4f7;">
+<div style="display: flex; flex: 1; background: #f0f4f7;">
 
-    <aside class="sidebar" id="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden; transition: width 0.3s ease;">
+    <aside class="sidebar" id="sidebar" style="width: 280px; background: #ffffff; border-right: 2px solid #d1d5db; display: flex; flex-direction: column; position: fixed; height: calc(100vh - 50px); top: 50px; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow: hidden; transition: width 0.3s ease;">
         <!-- Sidebar Header -->
         <div class="sidebar-header" style="padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0;">
             <div style="position: relative; display: inline-block; margin-bottom: 10px;">
@@ -805,9 +810,6 @@
                     <i class="fas fa-cog"></i> Settings
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <button onclick="openSettings()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-user-edit"></i> Profile
-                    </button>
                     <button onclick="openNotifications()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
                         <i class="fas fa-bell"></i> Notifications
                     </button>
@@ -832,7 +834,7 @@
         </div>
     </aside>
 
-    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: #f8fafc; transition: margin-left 0.3s ease;">
+    <main style="margin-left: 280px; flex: 1; display: flex; flex-direction: column; background: #f8fafc; transition: margin-left 0.3s ease;">
         <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ef4444; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: sans-serif;">
             <div style="display:flex; align-items:center; gap:15px;">
                 <div style="position: relative;">
