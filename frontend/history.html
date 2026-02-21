@@ -3,1009 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Stress Detection | Analysis History & Detailed Reports</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Analysis History | VocalVibe Pro Clinical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #003d82;
-            --bg-body: #f8f9fd;
-            --white: #ffffff;
-            --text-muted: #6b7280;
+            --primary: #0ea5e9;
+            --secondary: #6366f1;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --bg: #020617;
+            --sidebar-bg: #0a0f1e;
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Inter', sans-serif; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body { 
-            background-color: var(--bg-body); 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-            overflow-x: hidden; /* Stops horizontal scrolling */
-        }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* 1. Official Header Bar */
-        .official-header {
-            width: 100%;
-            height: 44px;
-            background: var(--primary);
-            color: white;
-            padding: 0 2rem;
-            border-bottom: 4px solid #d32f2f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-        }
-
-        /* 2. Layout Wrapper (The flex container for sidebar + main) */
-        .layout-wrapper {
-            display: flex;
-            flex: 1;
-            width: 100%;
-            background: #f0f4f7;
-        }
-
-        /* Navbar Same Color */
-        .navbar {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 1rem 3rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-        .nav-links { display: flex; align-items: center; gap: 5px; }
-        .nav-links a { color: #e8dff5; text-decoration: none; margin-left: 20px; font-size: 0.9rem; padding: 8px 12px; border-radius: 6px; transition: 0.3s; }
-        .nav-links a:hover { color: white; background: rgba(255,255,255,0.1); }
-        .nav-links a.active { color: white; font-weight: 600; background: rgba(255,255,255,0.2); }
-        .nav-links a.logout { color: #fca5a5; }
-
-        /* 4. Main Content Area */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #f8fafc;
-            min-width: 0; /* Crucial Flexbox fix to prevent overflow */
-            min-height: calc(100vh - 44px);
-        }
-
-        .container { 
-            max-width: 1200px; 
-            margin: 2rem auto; 
-            padding: 0 20px; 
-            flex: 1; 
-            width: 100%; 
-        }
-
-        /* Messages */
-        .message { padding: 15px; border-radius: 8px; margin-bottom: 1.5rem; display: none; font-weight: 500; border-left: 4px solid; }
-        .error-msg { background: #fee2e2; color: #991b1b; border-color: #dc2626; }
-        .success-msg { background: #dcfce7; color: #166534; border-color: #16a34a; }
-        .info-msg { background: #dbeafe; color: #0c4a6e; border-color: #3b82f6; }
-
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 15px; }
-        .header-row h2 { color: #111827; font-size: 1.8rem; }
-        .filter-group { display: flex; gap: 10px; }
-        .filter-btn { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-weight: 500; font-size: 0.85rem; transition: all 0.3s; }
-        .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .refresh-btn { padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
-        .refresh-btn:hover:not(:disabled) { background: #3a2d63; box-shadow: 0 4px 12px rgba(76, 58, 127, 0.3); }
-        .refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        /* Stats Cards */
-        .history-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .h-card { background: var(--white); padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.3s, box-shadow 0.3s; }
-        .h-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .h-card .label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
-        .h-card .value { font-size: 2rem; font-weight: 700; }
-
-        /* Table Design */
-        .table-container { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 3rem; }
-        .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
-        .loading-spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid #e5e7eb; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: var(--primary); color: white; }
-        th { padding: 16px 15px; text-align: left; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
-        tbody tr { border-bottom: 1px solid #f1f1f1; transition: background 0.3s; }
-        tbody tr:hover { background: #f9fafb; }
-        td { padding: 18px 15px; font-size: 0.9rem; color: #374151; }
-        .time-text { color: var(--text-muted); font-size: 0.85rem; }
-
-        .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
-        .badge-high { background: #fee2e2; color: #991b1b; }
-        .badge-medium { background: #fef3c7; color: #92400e; }
-        .badge-low { background: #dcfce7; color: #166534; }
-
-        .action-btn { border: none; background: none; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; transition: all 0.3s; }
-        .action-btn:hover { background: rgba(76, 58, 127, 0.1); }
-
-        /* Empty State */
-        .empty-state { padding: 4rem 2rem; text-align: center; color: var(--text-muted); display: none; }
-        .empty-state.show { display: block; }
-        .empty-state i { font-size: 3rem; color: #e5e7eb; margin-bottom: 1rem; }
-        .empty-state p { font-size: 1rem; margin-bottom: 1.5rem; }
-        .empty-state .btn-primary { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; }
-        .empty-state .btn-primary:hover { background: #3a2d63; }
-
-        /* Dark Footer */
-        .dashboard-footer {
-            background: linear-gradient(135deg, #003366 0%, #002244 100%);
-            color: white;
-            padding: 2rem 1rem 1rem;
-            text-align: center;
-            margin-top: auto; /* Pushes footer to the bottom */
-            border-top: 4px solid #ef4444;
-            width: 100%;
-        }
-        .dashboard-footer .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .footer-line { height: 1px; background: rgba(255,255,255,0.2); max-width: 900px; margin: 0 auto 1rem; }
-        .footer-content p { font-size: 0.9rem; margin-bottom: 0.25rem; opacity: 0.95; }
-        .copyright { margin-top: 0.8rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; opacity: 0.8; text-transform: uppercase; }
-        .hidden { display: none !important; }
-
-        /* 3. Sticky Sidebar (Perfect Adjustment) */
+        /* --- SIDEBAR --- */
         .sidebar {
-            width: 280px;
-            min-width: 280px;
-            background: #ffffff;
-            border-right: 2px solid #d1d5db;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 44px);
-            position: sticky;
-            top: 44px;
-            z-index: 1000;
-            transition: width 0.3s ease, min-width 0.3s ease;
+            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--card-border);
+            display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: 0.3s;
         }
+        .sidebar.collapsed { width: 80px; }
 
-        .sidebar.collapsed { width: 70px; min-width: 70px; }
-        .sidebar.collapsed .sidebar-header .sidebar-toggle { right: 50%; transform: translateX(50%); }
-        .sidebar.collapsed .sidebar-profile, .sidebar.collapsed .sidebar-section { padding: 10px; }
-        .sidebar.collapsed .gov-nav-link span, .sidebar.collapsed .section-header span,
-        .sidebar.collapsed .announcement-content, .sidebar.collapsed .wellness-stats,
-        .sidebar.collapsed .settings-btn span, .sidebar.collapsed .quick-action-btn span { display: none; }
-        .sidebar.collapsed .gov-nav-link, .sidebar.collapsed .settings-btn,
-        .sidebar.collapsed .quick-action-btn { justify-content: center; padding: 12px; }
-        .sidebar.collapsed .sidebar-header div:not(.sidebar-toggle) { display: none; }
-        .sidebar.collapsed .sidebar-profile div:not(img) { display: none; }
+        .sidebar-header { padding: 30px 20px; display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; flex-shrink: 0; }
+        .logo-text { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; transition: 0.3s; }
+        .sidebar.collapsed .logo-text { display: none; }
 
-        /* Custom Scrollbar for Sidebar */
-        .sidebar-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
-        .sidebar-content::-webkit-scrollbar { width: 6px; }
-        .sidebar-content::-webkit-scrollbar-track { background: #f1f1f5; border-radius: 10px; }
-        .sidebar-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; transition: background 0.3s ease; }
-        .sidebar-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        .sidebar .gov-nav-link { display: block; padding: 12px 20px; color: #374151; text-decoration: none; font-weight: 500; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; }
-        .sidebar .gov-nav-link:hover { background: #f8fafc; color: #003d82; }
-        .sidebar .gov-nav-link.active { background: #e0f2fe; color: #003d82; border-left: 4px solid #003d82; }
-        .sidebar .gov-nav-link i { margin-right: 10px; width: 16px; text-align: center; }
-
-        /* Updated Ticker Styles like Dashboard */
-        .news-ticker { background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); color: #003366; padding: 14px 0; overflow: hidden; border: 1px solid #bae6fd; border-left: 4px solid #ff9933; width: 100%; min-height: 45px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .scrolling-text { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; font-weight: 600; font-size: 0.95rem; line-height: 1.4; padding-left: 100%; }
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .news-ticker i { margin: 0 12px; color: #ff9933; font-size: 1rem; }
-        .news-ticker strong { color: #003366; font-weight: 700; }
-
-        /* MODAL AND FORM STYLES */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .modal-content { background: white; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; animation: modalFadeIn 0.3s ease; }
-        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-        .modal-header h2 { margin: 0; font-size: 1.2rem; color: #0f172a; display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; transition: color 0.3s; }
-        .modal-close:hover { color: #ef4444; }
-        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
-        .modal-footer { padding: 15px 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
-        .btn-cancel, .btn-save { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; transition: background 0.3s; }
-        .btn-cancel { background: #e2e8f0; color: #475569; }
-        .btn-cancel:hover { background: #cbd5e1; }
-        .btn-save { background: var(--primary); color: white; }
-        .btn-save:hover { background: #002b5e; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #334155; font-size: 0.9rem; }
-        .form-group input[type="text"], .form-group input[type="tel"], .form-group input[type="email"], .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; transition: border-color 0.3s; }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
-        .photo-upload { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; gap: 10px; }
-        .photo-preview { width: 80px; height: 80px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #e2e8f0; }
-        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .file-input-wrapper input[type="file"] { display: none; }
-        .file-input-label { background: #e2e8f0; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; color: #334155; font-weight: 600; }
-
-        /* Mobile Responsive adjustments */
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -280px; z-index: 2000; } /* Hide sidebar completely on mobile by default */
-            .sidebar.active-mobile { left: 0; }
-            .main-content { min-width: 100vw; } /* Main content takes full width */
-            
-            .navbar { flex-direction: column; gap: 1rem; padding: 1rem; }
-            .nav-links { flex-wrap: wrap; }
-            .news-ticker { font-size: 0.8rem; padding: 12px 0; min-height: 42px; }
-            .container { padding: 0 15px; }
-            .header-row { flex-direction: column; align-items: flex-start; gap: 20px; }
-            .filter-group { flex-wrap: wrap; }
-            table { font-size: 0.8rem; }
-            td, th { padding: 12px 10px; }
-            
-            /* Add a visible toggle button in the main header for mobile */
-            .mobile-menu-btn { display: block !important; }
-            .desktop-only-logo { display: none !important; }
+        .nav-menu { flex: 1; padding: 10px; }
+        .nav-item { 
+            display: flex; align-items: center; gap: 15px; padding: 14px 20px; 
+            color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 5px; transition: 0.3s;
         }
+        .nav-item:hover, .nav-item.active { background: rgba(14, 165, 233, 0.1); color: var(--primary); }
+        .nav-item i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .sidebar.collapsed .nav-item span { display: none; }
 
-        .mobile-menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; margin-left: 260px; padding: 40px; transition: 0.3s; width: calc(100% - 260px); }
+        .sidebar.collapsed + .main-content { margin-left: 80px; width: calc(100% - 80px); }
 
-        @media (max-width: 480px) {
-            .news-ticker { padding: 10px 0; min-height: 38px; }
-            .scrolling-text { font-size: 0.8rem; }
-            .header-row h2 { font-size: 1.5rem; }
-            .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
-            .h-card { padding: 15px; }
-            .h-card .value { font-size: 1.2rem; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .page-title h1 { font-size: 1.8rem; font-weight: 800; }
+
+        /* --- STATS SECTION --- */
+        .history-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .h-card { background: var(--card-bg); padding: 25px; border-radius: 24px; border: 1px solid var(--card-border); backdrop-filter: blur(10px); }
+        .h-card .label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+        .h-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+
+        /* --- FILTER CONTROLS --- */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px; }
+        .filter-group { display: flex; gap: 10px; background: var(--card-bg); padding: 5px; border-radius: 14px; border: 1px solid var(--card-border); }
+        .filter-btn { padding: 8px 18px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.3s; }
+        .filter-btn:hover { color: white; }
+        .filter-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); }
+
+        .refresh-btn { padding: 10px 20px; background: var(--secondary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .refresh-btn:hover { transform: scale(1.05); }
+
+        /* --- MODERN TABLE --- */
+        .table-container { background: var(--card-bg); border-radius: 24px; border: 1px solid var(--card-border); overflow: hidden; backdrop-filter: blur(10px); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        thead { background: rgba(255, 255, 255, 0.03); }
+        th { padding: 20px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 20px; font-size: 0.9rem; border-bottom: 1px solid var(--card-border); }
+        tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
+        .badge-high { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge-medium { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .badge-low { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+
+        .time-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+        .action-btn { background: none; border: 1px solid var(--card-border); color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
+        .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Loading & Empty states */
+        .loading-state { padding: 50px; text-align: center; color: var(--text-muted); }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; display: inline-block; margin-bottom: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state { padding: 80px 20px; text-align: center; display: none; }
+        .empty-state i { font-size: 4rem; color: var(--card-border); margin-bottom: 20px; }
+        .empty-state h3 { margin-bottom: 10px; }
+        .empty-state.show { display: block; }
+
+        footer { margin-top: auto; padding: 40px; text-align: center; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--card-border); }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .main-content { margin-left: 80px; width: calc(100% - 80px); padding: 20px; }
+            .logo-text, .nav-item span { display: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="official-header">
-    <i class="fas fa-shield-alt"></i> &nbsp;Official Government Mental Health Service Portal | Ministry of Mental Health & Wellness
-</div>
-
-<div class="layout-wrapper">
-
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header" style="padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); flex-shrink: 0; position: relative;">
-            <div style="position: relative; display: inline-block; margin-bottom: 10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" style="height: 50px; border-radius: 50%; border: 3px solid #003d82; background: white; padding: 5px;">
-                <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; letter-spacing: 0.5px;">GOVT</div>
-            </div>
-            <div style="font-size: 0.65rem; font-weight: 800; color: #003366; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
-                Ministry of Health &<br>Family Welfare
-            </div>
-            <div style="font-size: 0.55rem; color: #64748b; font-weight: 600;">
-                Government of India
-            </div>
-            <button onclick="toggleSidebar()" class="sidebar-toggle" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #64748b; font-size: 1.2rem; cursor: pointer; padding: 5px;">
-                <i class="fas fa-bars"></i>
-            </button>
+        <div class="sidebar-header">
+            <div class="logo-icon"><i class="fas fa-microchip"></i></div>
+            <div class="logo-text">VocalVibe <span>Pro</span></div>
         </div>
-
-        <div class="sidebar-profile" style="padding: 15px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <img id="user-photo" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" style="width: 45px; height: 45px; border-radius: 4px; border: 2px solid #0055a4; padding: 2px; background: #fff;">
-                <div style="overflow: hidden; flex: 1;">
-                    <h4 id="display-name" style="font-size: 0.85rem; margin: 0; color: #1e293b; font-weight: 700;">Loading...</h4>
-                    <p id="display-phone" style="font-size: 0.7rem; color: #64748b; margin: 0;"></p>
-                </div>
-            </div>
-            <p id="display-address" style="font-size: 0.65rem; color: #64748b; margin-top: 8px; line-height: 1.3;">
-                <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i> Loading...
-            </p>
-        </div>
-
-        <div class="sidebar-content">
-            <div class="sidebar-section" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f8fafc;">
-                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-bolt"></i> Quick Actions
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                     <button onclick="quickAction('Dashboard')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-home"></i> <span>Dashboard</span>
-                    </button>
-                     <button onclick="quickAction('Quick Record')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-microphone"></i> <span>Quick Record</span>
-                    </button>
-                    <button onclick="quickAction('Wellness Check')" class="quick-action-btn" style="width: 100%; background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-heartbeat"></i> <span>Wellness Check</span>
-                    </button>
-                    <button onclick="quickAction('emergency')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; animation: pulse 2s infinite;">
-                        <i class="fas fa-exclamation-triangle"></i> <span>Emergency SOS</span>
-                    </button>
-                    <button onclick="quickAction('history')" class="quick-action-btn" style="width: 100%; background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-history"></i> <span>History</span>
-                    </button>
-                    <button onclick="quickAction('Logout')" class="quick-action-btn emergency-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
-                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="sidebar-section wellness-tracker" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f0fdf4;">
-                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-chart-line"></i> <span>Today's Wellness</span>
-                </div>
-                <div class="wellness-stats" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: #166534;">Water Intake</span>
-                        <span id="sidebar-water" style="font-size: 0.75rem; font-weight: 600; color: #166534;">0.0L</span>
-                    </div>
-                    <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: #166534;">Stress Level</span>
-                        <span id="sidebar-stress" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
-                    </div>
-                    <div class="wellness-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: #166534;">Mood</span>
-                        <span id="sidebar-mood" style="font-size: 0.75rem; font-weight: 600; color: #166534;">--</span>
-                    </div>
-                </div>
-                <button onclick="updateWellness()" style="width: 100%; margin-top: 10px; background: #166534; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;">
-                    <i class="fas fa-sync"></i> Refresh
-                </button>
-            </div>
-
-            <div class="sidebar-section announcements" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%);">
-                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-megaphone"></i> <span>Announcements</span>
-                </div>
-                <div class="announcement-content" style="font-size: 0.75rem; color: #b45309; line-height: 1.4;">
-                    <div class="announcement-item" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
-                        <strong>New Feature:</strong> AI Voice Analysis now available!
-                    </div>
-                    <div class="announcement-item" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #d97706;">
-                        <strong>Update:</strong> Enhanced privacy controls added.
-                    </div>
-                    <div class="announcement-item" style="font-size: 0.7rem; color: #a16207;">
-                        <i class="fas fa-info-circle"></i> Check your wellness progress regularly for best results.
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-section settings" style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f1f5f9;">
-                <div class="section-header" style="font-size: 0.7rem; font-weight: 700; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-cog"></i> <span>Settings</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <button onclick="openNotifications()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-bell"></i> <span>Notifications</span>
-                    </button>
-                    <button onclick="openPrivacy()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-shield-alt"></i> <span>Privacy</span>
-                    </button>
-                    <button onclick="openHelp()" class="settings-btn" style="width: 100%; background: #0c4a6e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                        <i class="fas fa-question-circle"></i> <span>Help</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="sidebar-footer" style="padding: 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
-                <div style="text-align: center;">
-                    <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 8px;">
-                        <i class="fas fa-shield-alt"></i> Secure Government Portal
-                    </div>
-                </div>
-            </div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> <span>Overview</span></a>
+            <a href="record.html" class="nav-item"><i class="fas fa-microphone"></i> <span>Voice Scan</span></a>
+            <a href="#" class="nav-item active"><i class="fas fa-history"></i> <span>History</span></a>
+            <a href="#" class="nav-item" onclick="toggleSidebar()"><i class="fas fa-bars"></i> <span>Toggle Menu</span></a>
+        </nav>
+        <div style="padding: 20px;">
+            <a href="#" onclick="logout()" class="nav-item" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
         </div>
     </aside>
 
     <main class="main-content">
-        <div style="background: #003366; padding: 15px 40px; border-bottom: 4px solid #ef4444; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: sans-serif;">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()"><i class="fas fa-bars"></i></button>
+        <header>
+            <div class="page-title">
+                <h1>Clinical Analysis History</h1>
+                <p style="color: var(--text-muted);">Reviewing vocal biomarker trends for <span id="user-display" style="color: white; font-weight: 700;">Patient</span></p>
+            </div>
+            <div class="user-profile">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary);">
+            </div>
+        </header>
 
-                <div style="position: relative;" class="desktop-only-logo">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Government Seal" style="height: 50px; width: 50px; border-radius: 50%; border: 3px solid #ffffff; background: #ffffff; padding: 5px;">
-                    <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">OFFICIAL</div>
-                </div>
-                <div>
-                    <h2 style="margin:0; color: #f0f4f7; font-size: 1.25rem;">Mental Wellness & Tone Analysis</h2>
-                    <span style="font-size: 0.75rem; color: #64748b;">An AI-Powered Digital India Initiative | Ministry of Health & Family Welfare</span>
-                </div>
+        <div class="history-stats">
+            <div class="h-card">
+                <span class="label">Total Analysis</span>
+                <span class="value" id="total-analyses">0</span>
+            </div>
+            <div class="h-card">
+                <span class="label">High Stress Instances</span>
+                <span class="value" id="high-count" style="color: var(--danger);">0</span>
+            </div>
+            <div class="h-card">
+                <span class="label">Mean Stress Score</span>
+                <span class="value" id="avg-score">0%</span>
+            </div>
+            <div class="h-card">
+                <span class="label">Primary Emotion</span>
+                <span class="value" id="common-emotion" style="color: var(--success);">--</span>
+            </div>
+        </div>
+
+        <div class="header-row">
+            <div class="filter-group">
+                <button class="filter-btn active" onclick="filterData('all', this)">All Records</button>
+                <button class="filter-btn" onclick="filterData('7', this)">7 Days</button>
+                <button class="filter-btn" onclick="filterData('30', this)">30 Days</button>
+            </div>
+            <button class="refresh-btn" id="refresh-btn" onclick="loadHistory()">
+                <i class="fas fa-sync-alt"></i> Sync Data
+            </button>
+        </div>
+
+        <div class="table-container">
+            <div id="loading-state" class="loading-state hidden">
+                <div class="spinner"></div>
+                <p>Retrieving encrypted clinical records...</p>
             </div>
 
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQks8o8bbCzbK_WPQBRLKanFEySlijZOCbVuw&s" alt="Logo 1" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
-                <img src="https://thumbs.dreamstime.com/b/mental-health-concept-line-icon-simple-element-illustration-mental-health-concept-outline-symbol-mental-health-concept-line-icon-158053383.jpg" alt="Logo 2" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover;">
+            <table id="history-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Date & Timestamp</th>
+                        <th>Duration</th>
+                        <th>Stress Level</th>
+                        <th>Dominant Emotion</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    </tbody>
+            </table>
+
+            <div id="empty-msg" class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <h3>No Clinical Records Found</h3>
+                <p style="color: var(--text-muted); margin-bottom: 25px;">You haven't performed any voice scans yet.</p>
+                <a href="record.html" class="refresh-btn" style="display: inline-flex; text-decoration: none;">
+                    <i class="fas fa-microphone"></i> Start New Scan
+                </a>
             </div>
         </div>
 
-        <div class="news-ticker">
-            <div class="scrolling-text">
-                <i class="fas fa-bullhorn"></i> <strong>Official Government Service:</strong> This portal is operated by the Ministry of Health & Family Welfare, Government of India.
-                <i class="fas fa-shield-alt"></i> Your data is protected under national cybersecurity standards.
-                <i class="fas fa-heartbeat"></i> Mental health is a priority - access 24/7 support services.
-                <i class="fas fa-users"></i> Join thousands of citizens benefiting from AI-powered wellness monitoring.
-            </div>
-        </div>
-
-        <div class="container">
-            <div id="error-msg" class="message error-msg"></div>
-            <div id="success-msg" class="message success-msg"></div>
-            <div id="info-msg" class="message info-msg"></div>
-
-            <div class="header-row">
-                <h2><i class="fas fa-history"></i> Analysis History & Detailed Reports</h2>
-                <div class="filter-group">
-                    <button class="filter-btn active" onclick="filterData('all', this)">All Time</button>
-                    <button class="filter-btn" onclick="filterData('7', this)">Last 7 Days</button>
-                    <button class="filter-btn" onclick="filterData('30', this)">Last 30 Days</button>
-                    <button class="refresh-btn" id="refresh-btn" onclick="loadHistory()">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin: 10px 0; padding: 8px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #6c757d;">
-                <small style="color: #6c757d; font-size: 0.75rem;">
-                    <i class="fas fa-list"></i> <strong>Detailed chronological view</strong> of all your voice analyses with timestamps and full reports
-                </small>
-            </div>
-
-            <div class="history-stats">
-                <div class="h-card">
-                    <span class="label">Total Analyses</span>
-                    <span class="value" id="total-analyses" style="color: var(--primary);">
-                        <span class="loading-spinner"></span>
-                    </span>
-                </div>
-                <div class="h-card">
-                    <span class="label">High Stress Count</span>
-                    <span class="value" id="high-count" style="color: var(--danger);">0</span>
-                </div>
-                <div class="h-card">
-                    <span class="label">Average Score</span>
-                    <span class="value" id="avg-score" style="color: var(--primary);">--</span>
-                </div>
-                <div class="h-card">
-                    <span class="label">Most Common Emotion</span>
-                    <span class="value" id="common-emotion" style="color: var(--primary); font-size: 1.4rem;">--</span>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <div id="loading-state" class="loading-state hidden">
-                    <span class="loading-spinner"></span> Loading history...
-                </div>
-
-                <table id="history-table" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Date & Time</th>
-                            <th>Duration</th>
-                            <th>Stress Level</th>
-                            <th>Emotion</th>
-                            <th>Score</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-table-body"></tbody>
-                </table>
-
-                <div id="empty-msg" class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>No analysis history found. Start by recording your first voice sample!</p>
-                    <a href="record.html" class="btn-primary">
-                        <i class="fas fa-microphone"></i> Start Recording
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <footer class="dashboard-footer">
-            <div class="footer-line"></div>
-            <div class="footer-content">
-                <p><i class="fas fa-shield-alt"></i> Your voice data is processed securely and stored for analysis only. All information is protected under government cybersecurity standards.</p>
-                <p class="copyright">&copy; 2026 Stress Tone AI. All rights reserved.</p>
-            </div>
+        <footer>
+            <p>&copy; 2026 VocalVibe Pro Clinical Systems. Data encrypted with AES-256 standard.</p>
         </footer>
     </main>
-</div>
 
-<script>
-    // Desktop Toggle: Shrinks the sidebar
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
-    }
+    <script>
+        const API_BASE = window.location.origin;
+        let allData = [];
+        let currentFilter = 'all';
 
-    // Mobile Toggle: Slides the sidebar in and out
-    function toggleMobileSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('active-mobile');
-    }
-</script>
-
-</body>
-</html>
-
-<script>
-    const API_BASE = window.location.origin;
-    let allData = [];
-    let currentFilter = 'all';
-
-    function checkAuth() {
-        const activeUser = sessionStorage.getItem('activeUser');
-        if (!activeUser) {
-            window.location.href = 'index.html';
-            return false;
+        // --- AUTH & LOGOUT ---
+        function checkAuth() {
+            const activeUser = sessionStorage.getItem('activeUser');
+            if (!activeUser) { window.location.href = 'index.html'; return false; }
+            document.getElementById('user-display').innerText = activeUser.split('@')[0];
+            return true;
         }
-        return true;
-    }
 
-    function logout() {
-        if (confirm('Are you sure you want to logout?')) {
-            sessionStorage.removeItem('activeUser');
-            sessionStorage.removeItem('userToken');
-
-            localStorage.removeItem('dailyWater');
-            localStorage.removeItem('lastWellnessUpdate');
-            localStorage.removeItem('userPreferences');
-
-            if (window.wellnessUpdateInterval) {
-                clearInterval(window.wellnessUpdateInterval);
+        function logout() {
+            if (confirm('Authorize Logout from Clinical Portal?')) {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
             }
-
-            alert('You have been logged out successfully.');
-            window.location.href = 'index.html';
-        }
-    }
-
-    function showError(message) {
-        document.getElementById('error-msg').textContent = message;
-        document.getElementById('error-msg').style.display = 'block';
-        document.getElementById('success-msg').style.display = 'none';
-        document.getElementById('info-msg').style.display = 'none';
-    }
-
-    function showSuccess(message) {
-        document.getElementById('success-msg').textContent = message;
-        document.getElementById('success-msg').style.display = 'block';
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('info-msg').style.display = 'none';
-    }
-
-    function showInfo(message) {
-        document.getElementById('info-msg').textContent = message;
-        document.getElementById('info-msg').style.display = 'block';
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('success-msg').style.display = 'none';
-    }
-
-    function clearMessages() {
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('success-msg').style.display = 'none';
-        document.getElementById('info-msg').style.display = 'none';
-    }
-
-    function getStressBadgeClass(stressText) {
-        const text = stressText.toLowerCase();
-        if (text.includes('high')) return 'badge-high';
-        if (text.includes('medium') || text.includes('moderate')) return 'badge-medium';
-        return 'badge-low';
-    }
-
-    function calculateStats(data) {
-        if (data.length === 0) {
-            return {
-                total: 0,
-                highCount: 0,
-                avgScore: '--',
-                commonEmotion: '--'
-            };
         }
 
-        const highCount = data.filter(item => item.stress_level.toLowerCase().includes('high')).length;
-        const avgScore = (data.reduce((sum, item) => sum + (parseFloat(item.score) || 0), 0) / data.length).toFixed(1);
-        
-        const emotions = {};
-        data.forEach(item => {
-            const emotion = item.emotion || 'Neutral';
-            emotions[emotion] = (emotions[emotion] || 0) + 1;
-        });
+        // --- DATA LOADING ---
+        async function loadHistory() {
+            const loadingState = document.getElementById('loading-state');
+            const table = document.getElementById('history-table');
+            const refreshBtn = document.getElementById('refresh-btn');
 
-        const emotionKeys = Object.keys(emotions);
-        const commonEmotion = emotionKeys.length > 0 ? 
-            emotionKeys.reduce((a, b) => emotions[a] > emotions[b] ? a : b) : '--';
-
-        return {
-            total: data.length,
-            highCount,
-            avgScore: avgScore + '%',
-            commonEmotion
-        };
-    }
-
-    function filterByDate(data, days) {
-        if (days === 'all') return data;
-
-        const dayCount = parseInt(days);
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - dayCount);
-
-        return data.filter(item => {
-            try {
-                const itemDate = new Date(item.date);
-                return itemDate >= cutoffDate;
-            } catch {
-                return true;
-            }
-        });
-    }
-
-    function updateTable(data) {
-        const tableBody = document.getElementById('history-table-body');
-        const table = document.getElementById('history-table');
-        const emptyMsg = document.getElementById('empty-msg');
-
-        if (data.length === 0) {
+            loadingState.classList.remove('hidden');
             table.style.display = 'none';
-            emptyMsg.classList.add('show');
-            return;
-        }
+            refreshBtn.disabled = true;
 
-        table.style.display = 'table';
-        emptyMsg.classList.remove('show');
+            try {
+                const user = sessionStorage.getItem('activeUser') || '';
+                const response = await fetch(`${API_BASE}/api/history?user_email=${encodeURIComponent(user)}`);
+                
+                if (!response.ok) throw new Error("Cloud Sync Failed");
 
-        tableBody.innerHTML = data.map(item => {
-            const score = parseFloat(item.score) || 0;
-            return `
-                <tr>
-                    <td>
-                        <strong>${item.date}</strong>
-                        <div class="time-text">${item.time || 'N/A'}</div>
-                    </td>
-                    <td>${item.duration || 'N/A'}</td>
-                    <td>
-                        <span class="badge ${getStressBadgeClass(item.stress_level)}">
-                            ${item.stress_level}
-                        </span>
-                    </td>
-                    <td>${item.emotion || 'N/A'}</td>
-                    <td><strong>${score.toFixed(1)}%</strong></td>
-                    <td>
-                        <button class="action-btn" title="View details">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
+                allData = await response.json();
+                loadingState.classList.add('hidden');
+                refreshBtn.disabled = false;
 
-    function updateStats(data) {
-        const stats = calculateStats(data);
-        document.getElementById('total-analyses').textContent = stats.total;
-        document.getElementById('high-count').textContent = stats.highCount;
-        document.getElementById('avg-score').textContent = stats.avgScore;
-        document.getElementById('common-emotion').textContent = stats.commonEmotion;
-    }
-
-    async function loadHistory() {
-        clearMessages();
-        const loadingState = document.getElementById('loading-state');
-        const table = document.getElementById('history-table');
-        const refreshBtn = document.getElementById('refresh-btn');
-
-        loadingState.classList.remove('hidden');
-        table.style.display = 'none';
-        refreshBtn.disabled = true;
-
-        try {
-            const activeUser = sessionStorage.getItem('activeUser') || '';
-            const query = activeUser ? `?user_email=${encodeURIComponent(activeUser)}` : '';
-            const response = await fetch(`${API_BASE}/api/history${query}`);
-
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-
-            allData = await response.json();
-            loadingState.classList.add('hidden');
-            refreshBtn.disabled = false;
-
-            if (!Array.isArray(allData) || allData.length === 0) {
+                if (!allData || allData.length === 0) {
+                    document.getElementById('empty-msg').classList.add('show');
+                    updateStats([]);
+                } else {
+                    document.getElementById('empty-msg').classList.remove('show');
+                    filterData(currentFilter);
+                }
+            } catch (error) {
+                console.error('History error:', error);
+                loadingState.classList.add('hidden');
+                refreshBtn.disabled = false;
                 document.getElementById('empty-msg').classList.add('show');
-                updateStats([]);
-                showInfo('No analysis records yet. Start recording to see your stats!');
-                return;
+            }
+        }
+
+        function filterData(days, btn) {
+            currentFilter = days;
+            if (btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
             }
 
-            filterData(currentFilter);
-            showSuccess('History loaded successfully!');
-
-        } catch (error) {
-            loadingState.classList.add('hidden');
-            refreshBtn.disabled = false;
-            console.error('History load error:', error);
-            showError('Failed to load history: ' + error.message);
-            document.getElementById('empty-msg').classList.add('show');
-            updateStats([]);
-        }
-    }
-
-    function filterData(filterType, buttonElement) {
-        currentFilter = filterType;
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        if (buttonElement) {
-            buttonElement.classList.add('active');
-        }
-
-        const filteredData = filterByDate(allData, filterType);
-        updateTable(filteredData);
-        updateStats(filteredData);
-    }
-
-    window.addEventListener('load', () => {
-        if (checkAuth()) {
-            loadHistory();
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                toggleSidebar();
+            let filtered = allData;
+            if (days !== 'all') {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - parseInt(days));
+                filtered = allData.filter(item => new Date(item.date) >= cutoff);
             }
-            updateWellness();
-        }
-    });
 
-    setInterval(loadHistory, 30000);
-
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const main = document.querySelector('main');
-        const isCollapsed = sidebar.classList.contains('collapsed');
-
-        if (isCollapsed) {
-            sidebar.classList.remove('collapsed');
-            main.style.marginLeft = '280px';
-        } else {
-            sidebar.classList.add('collapsed');
-            main.style.marginLeft = '70px';
+            updateTable(filtered);
+            updateStats(filtered);
         }
 
-        localStorage.setItem('sidebarCollapsed', !isCollapsed);
-    }
-
-    function quickAction(action) {
-        switch(action) {
-            case 'Dashboard':
-                window.location.href = 'dashboard.html';
-                break;
-            case 'record':
-                window.location.href = 'record.html';
-                break;
-            case 'wellness':
-                alert('Wellness Check feature coming soon!');
-                break;
-            case 'emergency':
-                alert('Emergency SOS activated! Help is on the way.');
-                break;
-            case 'history':
-                break;
-            case 'Logout':
-                logout();
-                break;
+        function updateTable(data) {
+            const body = document.getElementById('history-table-body');
+            const table = document.getElementById('history-table');
+            
+            table.style.display = data.length ? 'table' : 'none';
+            body.innerHTML = data.map(item => {
+                const score = parseFloat(item.score) || 0;
+                const stressClass = getStressClass(item.stress_level);
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 700;">${item.date}</div>
+                            <div class="time-text">${item.time || '--:--'}</div>
+                        </td>
+                        <td style="color: var(--text-muted);">${item.duration || '0s'}</td>
+                        <td><span class="badge ${stressClass}">${item.stress_level}</span></td>
+                        <td style="font-weight: 600;">${item.emotion || 'Neutral'}</td>
+                        <td style="color: var(--primary); font-weight: 800;">${score.toFixed(1)}%</td>
+                        <td>
+                            <button class="action-btn" title="Detailed Report"><i class="fas fa-file-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
-    }
 
-    function updateWellness() {
-        const water = (Math.random() * 2).toFixed(1);
-        const stress = ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)];
-        const moods = ['Happy', 'Neutral', 'Sad', 'Anxious'];
-        const mood = moods[Math.floor(Math.random() * moods.length)];
-
-        document.getElementById('sidebar-water').textContent = water + 'L';
-        document.getElementById('sidebar-stress').textContent = stress;
-        document.getElementById('sidebar-mood').textContent = mood;
-
-        const stressElement = document.getElementById('sidebar-stress');
-        stressElement.style.color = stress === 'High' ? '#ef4444' : stress === 'Medium' ? '#f59e0b' : '#22c55e';
-    }
-
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.remove();
-    }
-
-    function createAndShowModal(title, content, buttons) {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.id = 'modal-' + Date.now();
-        
-        const modalContent = document.createElement('div');
-        modalContent.className = 'modal-content';
-        
-        const header = document.createElement('div');
-        header.className = 'modal-header';
-        header.innerHTML = `<h2>${title}</h2><button class="modal-close" onclick="closeModal('${overlay.id}')"><i class="fas fa-times"></i></button>`;
-        
-        const body = document.createElement('div');
-        body.className = 'modal-body';
-        body.innerHTML = content;
-        
-        const footer = document.createElement('div');
-        footer.className = 'modal-footer';
-        footer.innerHTML = buttons;
-        
-        modalContent.appendChild(header);
-        modalContent.appendChild(body);
-        modalContent.appendChild(footer);
-        overlay.appendChild(modalContent);
-        
-        overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) closeModal(overlay.id);
-        });
-        
-        document.body.appendChild(overlay);
-        return overlay.id;
-    }
-
-    function openSettings() {
-        const content = `
-            <div class="photo-upload">
-                <div class="photo-preview" id="photoPreview">
-                    <i class="fas fa-user" style="font-size: 3rem; color: #cbd5e1;"></i>
-                </div>
-                <div class="file-input-wrapper">
-                    <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
-                    <label for="photoInput" class="file-input-label"><i class="fas fa-camera"></i> Upload Photo</label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="fullName" placeholder="Enter your full name" value="User Name">
-            </div>
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="tel" id="phoneNumber" placeholder="Enter phone number" value="+91 98765 43210">
-            </div>
-            <div class="form-group">
-                <label>Address</label>
-                <textarea id="address" placeholder="Enter your address" rows="2">Government Office, New Delhi</textarea>
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="Enter email" value="user@govt.in">
-            </div>
-        `;
-        
-        const buttons = `
-            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
-            <button class="btn-save" onclick="saveProfile()"><i class="fas fa-save"></i> Save Changes</button>
-        `;
-        
-        createAndShowModal('<i class="fas fa-user-edit"></i> Edit Profile', content, buttons);
-    }
-
-    function handlePhotoUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('photoPreview');
-                preview.innerHTML = `<img src="${e.target.result}" alt="Profile Photo">`;
-                localStorage.setItem('userPhoto', e.target.result);
-            };
-            reader.readAsDataURL(file);
+        function updateStats(data) {
+            const total = data.length;
+            const high = data.filter(i => i.stress_level.toLowerCase().includes('high')).length;
+            const avg = total ? (data.reduce((s, i) => s + (parseFloat(i.score) || 0), 0) / total).toFixed(1) : 0;
+            
+            document.getElementById('total-analyses').innerText = total;
+            document.getElementById('high-count').innerText = high;
+            document.getElementById('avg-score').innerText = avg + '%';
+            
+            // Find most common emotion
+            const emotions = data.map(i => i.emotion);
+            const common = emotions.sort((a,b) => emotions.filter(v => v===a).length - emotions.filter(v => v===b).length).pop();
+            document.getElementById('common-emotion').innerText = common || '--';
         }
-    }
 
-    function saveProfile() {
-        const fullName = document.getElementById('fullName').value;
-        const phoneNumber = document.getElementById('phoneNumber').value;
-        const address = document.getElementById('address').value;
-        const email = document.getElementById('email').value;
-        
-        localStorage.setItem('userProfile', JSON.stringify({
-            fullName, phoneNumber, address, email
-        }));
-        
-        alert('✅ Profile updated successfully!');
-        closeModal(document.querySelector('.modal-overlay').id);
-    }
+        function getStressClass(lvl) {
+            const l = lvl.toLowerCase();
+            if (l.includes('high')) return 'badge-high';
+            if (l.includes('mod')) return 'badge-medium';
+            return 'badge-low';
+        }
 
-    function openNotifications() {
-        const content = `
-            <div style="padding: 10px 0;">
-                <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Notification Preferences</h3>
-                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
-                        <input type="checkbox" checked> <strong>Email Notifications</strong>
-                    </label>
-                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Receive important updates via email</small>
-                </div>
-                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
-                        <input type="checkbox" checked> <strong>SMS Alerts</strong>
-                    </label>
-                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Get critical alerts via SMS</small>
-                </div>
-                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
-                        <input type="checkbox"> <strong>Push Notifications</strong>
-                    </label>
-                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Browser notifications for real-time updates</small>
-                </div>
-                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
-                        <input type="checkbox" checked> <strong>Analysis Reports</strong>
-                    </label>
-                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Weekly wellness analysis summary</small>
-                </div>
-            </div>
-        `;
-        
-        const buttons = `
-            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
-            <button class="btn-save" onclick="alert('✅ Notification settings saved!'); closeModal(this.closest('.modal-overlay').id);"><i class="fas fa-save"></i> Save</button>
-        `;
-        
-        createAndShowModal('<i class="fas fa-bell"></i> Notification Settings', content, buttons);
-    }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
-    function openPrivacy() {
-        const content = `
-            <div style="padding: 10px 0;">
-                <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Privacy & Data Settings</h3>
-                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
-                        <input type="checkbox" checked> <strong>Share Analysis with Ministry</strong>
-                    </label>
-                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Help improve the national health program</small>
-                </div>
-                <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0c4a6e; margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
-                        <input type="checkbox"> <strong>Allow Third-party Apps</strong>
-                    </label>
-                    <small style="color: #64748b; margin-top: 5px; display: block; margin-left: 30px;">Allow connected apps to access your data</small>
-                </div>
-                <div class="form-group" style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9933; margin-bottom: 12px;">
-                    <strong>⚠️ Danger Zone</strong>
-                    <button style="display: block; width: 100%; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 4px; margin-top: 8px; cursor: pointer; font-weight: 600;" onclick="alert('Download feature coming soon!');"><i class="fas fa-download"></i> Download My Data</button>
-                </div>
-            </div>
-        `;
-        
-        const buttons = `
-            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Cancel</button>
-            <button class="btn-save" onclick="alert('✅ Privacy settings updated!'); closeModal(this.closest('.modal-overlay').id);"><i class="fas fa-save"></i> Save</button>
-        `;
-        
-        createAndShowModal('<i class="fas fa-shield-alt"></i> Privacy Settings', content, buttons);
-    }
-
-    function openHelp() {
-        const content = `
-            <div style="padding: 10px 0;">
-                <h3 style="color: #0c4a6e; margin-bottom: 15px; font-size: 1rem;">Help & Support Resources</h3>
-                <button style="width: 100%; background: #e0f2fe; color: #0369a1; border: 1px solid #0369a1; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('📚 FAQ\\n\\nQ: How do I upload a voice file?\\nA: Click the Record button and speak into your microphone.\\n\\nQ: How is stress detected?\\nA: Using AI analysis of voice tone and stress indicators.\\n\\nQ: Is my data private?\\nA: Yes, all data is encrypted and secure.');">❓ Frequently Asked Questions</button>
-                <button style="width: 100%; background: #dcfce7; color: #15803d; border: 1px solid #15803d; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🎥 Video Tutorials\\n\\nAvailable tutorials:\\n1. Getting Started Guide\\n2. Recording Your First Analysis\\n3. Understanding Your Results\\n4. Wellness Tips\\n\\nVisit our YouTube channel for more content!');">🎥 Video Tutorials</button>
-                <button style="width: 100%; background: #fce7f3; color: #be123c; border: 1px solid #be123c; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('☎️ Contact Support\\n\\nEmail: support@mentalhealthindia.gov.in\\nPhone: 1800-HEALTH-1 (ext. 5432)\\nChat: Available Mon-Fri 9AM-6PM IST');">☎️ Contact Support</button>
-                <button style="width: 100%; background: #fef3c7; color: #b45309; border: 1px solid #b45309; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: left;" onclick="alert('🐛 Report an Issue\\n\\nDescribe the problem you encountered and we will investigate it shortly.');">🐛 Report an Issue</button>
-            </div>
-        `;
-        
-        const buttons = `
-            <button class="btn-cancel" onclick="closeModal(this.closest('.modal-overlay').id)">Close</button>
-        `;
-        
-        createAndShowModal('<i class="fas fa-question-circle"></i> Help & Support', content, buttons);
-    }
-</script>
-
+        window.onload = () => {
+            if(checkAuth()) loadHistory();
+        };
+    </script>
 </body>
 </html>

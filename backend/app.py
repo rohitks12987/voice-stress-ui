@@ -1526,7 +1526,5 @@ def serve_static(path):
     if os.path.exists(resolved):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, "index.html")
-
-
 if __name__ == "__main__":
     app.run(port=8000, debug=True)

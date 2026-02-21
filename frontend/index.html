@@ -91,6 +91,8 @@
             .hero-content h1 { font-size: 3.5rem; }
             .hero-visual { margin-top: 40px; }
         }
+
+        
     </style>
 </head>
 <body>
@@ -202,6 +204,15 @@
     function setModal(show) {
         document.getElementById('choiceModal').style.display = show ? 'flex' : 'none';
     }
+    function goTo(role) {
+    if(role === 'user') {
+        // Redirects to Patient Login
+        window.location.href = 'login.html';
+    } else {
+        // Redirects to Admin Panel
+        window.location.href = 'admin.html'; 
+    }
+}
 
     function nav(role) {
         if(role === 'user') {
