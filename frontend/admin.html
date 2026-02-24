@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clinical Gateway | Secure Staff Access</title>
+    <title>Clinical Gateway | Staff Access</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -14,7 +14,11 @@
             --danger: #ef4444;
             --success: #10b981;
             --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #1e293b;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -24,144 +28,175 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- THE SHIELD (GATEWAY OVERLAY) --- */
-        #gateway-overlay {
-            position: fixed; inset: 0; background: var(--bg);
-            display: flex; align-items: center; justify-content: center; z-index: 10000;
-            transition: 0.8s ease-in-out;
+            min-height: 100vh;
+            padding: 18px;
         }
 
         .gateway-card {
             background: var(--card-bg);
-            padding: 50px;
-            border-radius: 40px;
+            padding: 40px;
+            border-radius: 28px;
             border: 1px solid rgba(255,255,255,0.08);
             text-align: center;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 0 80px rgba(14, 165, 233, 0.1);
-        }
-
-        .fingerprint-scanner {
-            font-size: 4.5rem;
-            color: var(--primary);
-            margin-bottom: 25px;
-            cursor: pointer;
-            transition: 0.3s;
-            animation: pulse-glow 2s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { filter: drop-shadow(0 0 5px var(--primary)); opacity: 0.7; }
-            50% { filter: drop-shadow(0 0 20px var(--primary)); opacity: 1; }
+            max-width: 430px;
+            box-shadow: 0 0 60px rgba(14, 165, 233, 0.12);
         }
 
         .status-badge {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: #94a3b8;
-            border: 1px solid #1e293b;
+            color: var(--muted);
+            border: 1px solid var(--border);
             padding: 6px 16px;
             border-radius: 20px;
             display: inline-block;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
             font-weight: 800;
         }
 
-        .field { margin-bottom: 15px; text-align: left; }
-        .field label { font-size: 0.7rem; color: #64748b; font-weight: 800; margin-left: 5px; text-transform: uppercase; }
+        .field { margin-bottom: 14px; text-align: left; }
+        .field label {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 800;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
 
         input {
             width: 100%;
-            padding: 14px;
+            padding: 13px;
             background: rgba(0,0,0,0.3);
-            border: 1px solid #1e293b;
+            border: 1px solid var(--border);
             color: white;
             border-radius: 12px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-top: 5px;
             outline: none;
-            box-sizing: border-box;
         }
 
         input:focus { border-color: var(--primary); }
 
         .btn-auth {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 12px;
             font-weight: 800;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
             margin-top: 10px;
             letter-spacing: 1px;
         }
 
-        .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3); }
+        .btn-auth:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(14, 165, 233, 0.3); }
+        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        #error-msg { font-size: 0.8rem; margin-top: 15px; min-height: 20px; font-weight: 600; }
+        #error-msg { font-size: 0.82rem; margin-top: 14px; min-height: 20px; font-weight: 600; }
 
-        .hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 14px;
+        }
+        .back-link:hover { color: white; }
 
-        /* Shake Animation for Fail */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-8px); }
             75% { transform: translateX(8px); }
         }
+
+        @media (max-width: 520px) {
+            .gateway-card { padding: 26px; border-radius: 20px; }
+        }
     </style>
 </head>
 <body>
+    <div class="gateway-card" id="gate-content">
+        <div class="status-badge" id="status-tag">Secure Staff Access</div>
 
-    <div id="gateway-overlay">
-        <div class="gateway-card" id="gate-content">
-            <div class="status-badge" id="status-tag">System Encrypted</div>
-            
-            <div class="fingerprint-scanner" id="biometric-icon">
-                <i class="fas fa-fingerprint"></i>
+        <h2 style="margin-bottom: 5px; letter-spacing: -0.5px;">Clinical Gateway</h2>
+        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 26px;">Staff email and security passcode required</p>
+
+        <form id="auth-form">
+            <div class="field">
+                <label>Staff ID (Email)</label>
+                <input type="email" id="staff-email" placeholder="admin@vocalvibe.pro" autocomplete="username" required>
             </div>
-            
-            <h2 style="margin-bottom: 5px; letter-spacing: -0.5px;">Clinical Gateway</h2>
-            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 30px;">Personnel ID & Passcode Required</p>
-            
-            <div id="auth-form">
-                <div class="field">
-                    <label>Staff ID (Email)</label>
-                    <input type="email" id="staff-email" value="admin@vocalvibe.pro">
-                </div>
-                <div class="field">
-                    <label>Security Passcode</label>
-                    <input type="password" id="staff-password" placeholder="••••••••">
-                </div>
-                <button class="btn-auth" onclick="verifyAccess()">AUTHORIZE SESSION</button>
+            <div class="field">
+                <label>Security Passcode</label>
+                <input type="password" id="staff-password" placeholder="********" autocomplete="current-password" required>
             </div>
-            
-            <p id="error-msg"></p>
-        </div>
+            <button class="btn-auth" id="auth-btn" type="submit">AUTHORIZE SESSION</button>
+        </form>
+
+        <p id="error-msg" aria-live="polite"></p>
+        <a class="back-link" href="index.html"><i class="fas fa-arrow-left"></i> Back to Site</a>
     </div>
 
     <script>
         const API_BASE = window.location.origin;
+        const authForm = document.getElementById('auth-form');
+        const authButton = document.getElementById('auth-btn');
 
-        async function verifyAccess() {
-            const email = document.getElementById('staff-email').value;
+        function parseTokenPayload(token) {
+            if (!token || token.indexOf('.') < 0) return null;
+            try {
+                const part = token.split('.', 1)[0];
+                const padded = part + '='.repeat((4 - (part.length % 4)) % 4);
+                const json = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+                return JSON.parse(json);
+            } catch {
+                return null;
+            }
+        }
+
+        function hasValidAdminSession() {
+            const token = localStorage.getItem('adminToken');
+            const email = localStorage.getItem('adminEmail');
+            if (!token || !email) return false;
+
+            const payload = parseTokenPayload(token);
+            if (!payload || !payload.exp) return false;
+
+            return Number(payload.exp) > Math.floor(Date.now() / 1000);
+        }
+
+        function clearAdminSession() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminEmail');
+        }
+
+        async function verifyAccess(event) {
+            if (event) event.preventDefault();
+
+            const email = document.getElementById('staff-email').value.trim().toLowerCase();
             const password = document.getElementById('staff-password').value;
             const error = document.getElementById('error-msg');
-            const icon = document.getElementById('biometric-icon');
             const statusTag = document.getElementById('status-tag');
             const card = document.getElementById('gate-content');
 
-            // Reset UI
-            error.innerText = "";
-            error.style.color = "var(--danger)";
+            error.innerText = '';
+            error.style.color = 'var(--danger)';
+            authButton.disabled = true;
+            authButton.innerText = 'AUTHORIZING...';
+
+            if (!email || !password) {
+                error.innerText = '[ERROR] Email and passcode are required.';
+                authButton.disabled = false;
+                authButton.innerText = 'AUTHORIZE SESSION';
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/api/admin/login`, {
@@ -170,46 +205,48 @@
                     body: JSON.stringify({ email, password })
                 });
 
-                const data = await response.json();
+                const text = await response.text();
+                let data = {};
+                try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
 
-                if (response.ok) {
-                    // 1. Visual Success Feedback
-                    icon.style.color = "var(--success)";
-                    icon.style.animation = "none";
-                    statusTag.innerText = "Identity Verified";
-                    statusTag.style.color = "var(--success)";
-                    statusTag.style.borderColor = "var(--success)";
-                    
-                    error.style.color = "var(--success)";
-                    error.innerText = "✓ Clinical Token Issued. Synchronizing...";
-
-                    // 2. Store real secure token from backend
-                    localStorage.setItem('adminToken', data.token);
-                    localStorage.setItem('adminEmail', email);
-
-                    // 3. Redirect to Dashboard
-                    setTimeout(() => {
-                        window.location.href = 'admin_dashboard.html';
-                    }, 1500);
-
-                } else {
-                    // 4. Failure Feedback
-                    throw new Error(data.message || "Unauthorized Access");
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Unauthorized access');
                 }
 
+                if (!data.token) throw new Error('Invalid login response.');
+
+                statusTag.innerText = 'Identity Verified';
+                statusTag.style.color = 'var(--success)';
+                statusTag.style.borderColor = 'var(--success)';
+
+                error.style.color = 'var(--success)';
+                error.innerText = '[OK] Clinical token issued. Redirecting...';
+
+                localStorage.setItem('adminToken', data.token);
+                localStorage.setItem('adminEmail', email);
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 900);
             } catch (err) {
-                error.innerText = `✗ ${err.message}`;
-                card.style.animation = "shake 0.4s ease";
-                setTimeout(() => card.style.animation = "", 400);
+                error.innerText = `[ERROR] ${err.message || 'Unable to authorize session.'}`;
+                card.style.animation = 'shake 0.4s ease';
+                setTimeout(() => { card.style.animation = ''; }, 400);
+            } finally {
+                authButton.disabled = false;
+                authButton.innerText = 'AUTHORIZE SESSION';
             }
         }
 
-        // Auto-check if already logged in
+        authForm.addEventListener('submit', verifyAccess);
+
         window.onload = () => {
-            if (localStorage.getItem('adminToken')) {
-                window.location.href = 'admin_dashboard.html';
+            if (hasValidAdminSession()) {
+                window.location.href = 'dashboard.html';
+                return;
             }
-        }
+            clearAdminSession();
+        };
     </script>
 </body>
 </html>

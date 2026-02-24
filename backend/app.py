@@ -88,9 +88,9 @@ def init_db():
 
 try:
     init_db()
-    print("✓ Clinical Database Synchronized & Secured")
+    print("[OK] Clinical Database Synchronized & Secured")
 except Exception as e:
-    print(f"✗ Database Error: {e}")
+    print(f"[ERROR] Database Error: {e}")
 
 # --- SECURITY & AUTH HELPERS ---
 def gen_token(email):
@@ -103,10 +103,11 @@ def gen_token(email):
 def verify_token(token):
     if not token: return None
     try:
-        p_part, sig = token.split('.')
+        p_part, sig = token.split('.', 1)
         expected = hmac.new(ADMIN_SECRET.encode(), p_part.encode(), sha256).hexdigest()
         if not hmac.compare_digest(sig, expected): return None
-        payload = json.loads(base64.urlsafe_b64decode(p_part + "=="))
+        padding = "=" * (-len(p_part) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(p_part + padding))
         return payload if payload['exp'] > time.time() else None
     except: return None
 
@@ -128,7 +129,7 @@ def staff_required(f):
 
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
-    data = request.json
+    data = request.get_json(silent=True) or {}
     if data.get("email") == ADMIN_EMAIL and data.get("password") == ADMIN_PASS:
         # LOG THE SUCCESSFUL ACCESS
         db = get_db()
@@ -224,6 +225,8 @@ def get_summary():
 @app.route("/api/history", methods=["GET"])
 def get_history():
     email = request.args.get('user_email')
+    if not email:
+        return jsonify({"status": "error", "message": "user_email is required"}), 400
     db = get_db()
     with db.cursor() as cur:
         cur.execute("SELECT * FROM analysis_history WHERE user_email=%s ORDER BY id DESC", (email,))
@@ -235,6 +238,10 @@ def get_history():
 @app.route("/")
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
+
+@app.route("/admin_dashboard.html")
+def admin_dashboard_alias():
+    return send_from_directory(app.static_folder, "dashboard.html")
 
 @app.route("/<path:path>")
 def serve_static(path):

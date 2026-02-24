@@ -3,330 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis History | VocalVibe Pro Clinical</title>
+    <title>Analysis History | VocalVibe Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0ea5e9;
-            --secondary: #6366f1;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
             --bg: #020617;
-            --sidebar-bg: #0a0f1e;
-            --card-bg: rgba(15, 23, 42, 0.6);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --surface: #0f172a;
+            --surface-2: #111c31;
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
 
-        /* --- SIDEBAR --- */
         .sidebar {
-            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--card-border);
-            display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: 0.3s;
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px 14px;
+            position: fixed;
+            inset: 0 auto 0 0;
         }
-        .sidebar.collapsed { width: 80px; }
 
-        .sidebar-header { padding: 30px 20px; display: flex; align-items: center; gap: 12px; }
-        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; flex-shrink: 0; }
-        .logo-text { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; transition: 0.3s; }
-        .sidebar.collapsed .logo-text { display: none; }
-
-        .nav-menu { flex: 1; padding: 10px; }
-        .nav-item { 
-            display: flex; align-items: center; gap: 15px; padding: 14px 20px; 
-            color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 5px; transition: 0.3s;
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; margin-bottom: 24px; }
+        .brand i {
+            width: 34px; height: 34px; display: grid; place-items: center;
+            border-radius: 8px; background: linear-gradient(135deg, #0ea5e9, #6366f1);
         }
-        .nav-item:hover, .nav-item.active { background: rgba(14, 165, 233, 0.1); color: var(--primary); }
-        .nav-item i { font-size: 1.1rem; width: 20px; text-align: center; }
-        .sidebar.collapsed .nav-item span { display: none; }
 
-        /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; margin-left: 260px; padding: 40px; transition: 0.3s; width: calc(100% - 260px); }
-        .sidebar.collapsed + .main-content { margin-left: 80px; width: calc(100% - 80px); }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active { color: var(--primary); border-color: var(--border); background: var(--surface-2); }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .page-title h1 { font-size: 1.8rem; font-weight: 800; }
+        .logout-wrap { margin-top: 24px; }
 
-        /* --- STATS SECTION --- */
-        .history-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .h-card { background: var(--card-bg); padding: 25px; border-radius: 24px; border: 1px solid var(--card-border); backdrop-filter: blur(10px); }
-        .h-card .label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
-        .h-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 28px;
+        }
 
-        /* --- FILTER CONTROLS --- */
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px; }
-        .filter-group { display: flex; gap: 10px; background: var(--card-bg); padding: 5px; border-radius: 14px; border: 1px solid var(--card-border); }
-        .filter-btn { padding: 8px 18px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.3s; }
-        .filter-btn:hover { color: white; }
-        .filter-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-        .refresh-btn { padding: 10px 20px; background: var(--secondary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-        .refresh-btn:hover { transform: scale(1.05); }
+        .muted { color: var(--muted); }
 
-        /* --- MODERN TABLE --- */
-        .table-container { background: var(--card-bg); border-radius: 24px; border: 1px solid var(--card-border); overflow: hidden; backdrop-filter: blur(10px); }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        thead { background: rgba(255, 255, 255, 0.03); }
-        th { padding: 20px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 20px; font-size: 0.9rem; border-bottom: 1px solid var(--card-border); }
-        tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .user-pill {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.88rem;
+        }
 
-        /* Badges */
-        .badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
-        .badge-high { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .badge-medium { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
-        .badge-low { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
 
-        .time-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .action-btn { background: none; border: 1px solid var(--card-border); color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
-        .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+        }
 
-        /* Loading & Empty states */
-        .loading-state { padding: 50px; text-align: center; color: var(--text-muted); }
-        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; display: inline-block; margin-bottom: 10px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .value { font-size: 1.7rem; font-weight: 800; margin-top: 6px; }
 
-        .empty-state { padding: 80px 20px; text-align: center; display: none; }
-        .empty-state i { font-size: 4rem; color: var(--card-border); margin-bottom: 20px; }
-        .empty-state h3 { margin-bottom: 10px; }
-        .empty-state.show { display: block; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
 
-        footer { margin-top: auto; padding: 40px; text-align: center; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--card-border); }
+        .btn-group { display: flex; gap: 8px; }
 
-        @media (max-width: 1024px) {
-            .sidebar { width: 80px; }
-            .main-content { margin-left: 80px; width: calc(100% - 80px); padding: 20px; }
-            .logo-text, .nav-item span { display: none; }
+        .btn {
+            border: 1px solid var(--border);
+            background: #18253d;
+            color: var(--text);
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .btn:hover { border-color: #335277; }
+        .btn.active { background: var(--primary); border-color: var(--primary); }
+
+        .search {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #0e1a2f;
+            color: var(--text);
+            padding: 8px 10px;
+            min-width: 250px;
+            outline: none;
+        }
+
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 760px; }
+        th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.88rem; }
+        th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+        .pill { font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 999px; }
+        .pill.low { color: #052e1f; background: #6ee7b7; }
+        .pill.moderate { color: #3f2a00; background: #fcd34d; }
+        .pill.high { color: #450a0a; background: #fca5a5; }
+
+        .empty { text-align: center; color: var(--muted); padding: 24px; }
+
+        @media (max-width: 980px) {
+            .sidebar { position: static; width: 100%; height: auto; }
+            body { display: block; }
+            .main { margin-left: 0; width: 100%; }
+            .stats { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
-
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-icon"><i class="fas fa-microchip"></i></div>
-            <div class="logo-text">VocalVibe <span>Pro</span></div>
-        </div>
-        <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> <span>Overview</span></a>
-            <a href="record.html" class="nav-item"><i class="fas fa-microphone"></i> <span>Voice Scan</span></a>
-            <a href="#" class="nav-item active"><i class="fas fa-history"></i> <span>History</span></a>
-            <a href="#" class="nav-item" onclick="toggleSidebar()"><i class="fas fa-bars"></i> <span>Toggle Menu</span></a>
-        </nav>
-        <div style="padding: 20px;">
-            <a href="#" onclick="logout()" class="nav-item" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-microchip"></i> VocalVibe Pro</div>
+        <a class="nav-item" href="dashboard.html"><i class="fas fa-th-large"></i> Overview</a>
+        <a class="nav-item" href="record.html"><i class="fas fa-microphone"></i> Voice Scan</a>
+        <a class="nav-item active" href="history.html"><i class="fas fa-history"></i> History</a>
+        <div class="logout-wrap">
+            <a class="nav-item" href="#" onclick="logout()" style="color:#fca5a5;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
         </div>
     </aside>
 
-    <main class="main-content">
-        <header>
-            <div class="page-title">
+    <main class="main">
+        <div class="header">
+            <div>
                 <h1>Clinical Analysis History</h1>
-                <p style="color: var(--text-muted);">Reviewing vocal biomarker trends for <span id="user-display" style="color: white; font-weight: 700;">Patient</span></p>
+                <p class="muted">Records for <span id="user-display">Loading...</span></p>
             </div>
-            <div class="user-profile">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary);">
-            </div>
-        </header>
+            <div class="user-pill" id="session-pill">Session</div>
+        </div>
 
-        <div class="history-stats">
-            <div class="h-card">
-                <span class="label">Total Analysis</span>
-                <span class="value" id="total-analyses">0</span>
+        <div class="stats">
+            <div class="card"><div class="label">Total Analyses</div><div class="value" id="stat-total">0</div></div>
+            <div class="card"><div class="label">High Stress</div><div class="value" id="stat-high" style="color:var(--danger)">0</div></div>
+            <div class="card"><div class="label">Average Score</div><div class="value" id="stat-avg">0.0</div></div>
+            <div class="card"><div class="label">Top Emotion</div><div class="value" id="stat-emotion" style="font-size:1.3rem">--</div></div>
+        </div>
+
+        <div class="toolbar">
+            <div class="btn-group">
+                <button class="btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+                <button class="btn" data-filter="7" onclick="setFilter('7', this)">7 Days</button>
+                <button class="btn" data-filter="30" onclick="setFilter('30', this)">30 Days</button>
             </div>
-            <div class="h-card">
-                <span class="label">High Stress Instances</span>
-                <span class="value" id="high-count" style="color: var(--danger);">0</span>
-            </div>
-            <div class="h-card">
-                <span class="label">Mean Stress Score</span>
-                <span class="value" id="avg-score">0%</span>
-            </div>
-            <div class="h-card">
-                <span class="label">Primary Emotion</span>
-                <span class="value" id="common-emotion" style="color: var(--success);">--</span>
+            <div class="btn-group">
+                <input id="search-input" class="search" placeholder="Search emotion or stress..." oninput="applyFilters()" />
+                <button class="btn" onclick="refresh()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
         </div>
 
-        <div class="header-row">
-            <div class="filter-group">
-                <button class="filter-btn active" onclick="filterData('all', this)">All Records</button>
-                <button class="filter-btn" onclick="filterData('7', this)">7 Days</button>
-                <button class="filter-btn" onclick="filterData('30', this)">30 Days</button>
-            </div>
-            <button class="refresh-btn" id="refresh-btn" onclick="loadHistory()">
-                <i class="fas fa-sync-alt"></i> Sync Data
-            </button>
-        </div>
-
-        <div class="table-container">
-            <div id="loading-state" class="loading-state hidden">
-                <div class="spinner"></div>
-                <p>Retrieving encrypted clinical records...</p>
-            </div>
-
-            <table id="history-table" style="display: none;">
+        <div class="table-wrap">
+            <table>
                 <thead>
                     <tr>
-                        <th>Date & Timestamp</th>
-                        <th>Duration</th>
-                        <th>Stress Level</th>
-                        <th>Dominant Emotion</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Stress</th>
+                        <th>Emotion</th>
                         <th>Score</th>
-                        <th>Actions</th>
+                        <th>Audio</th>
                     </tr>
                 </thead>
-                <tbody id="history-table-body">
-                    </tbody>
+                <tbody id="history-body"></tbody>
             </table>
-
-            <div id="empty-msg" class="empty-state">
-                <i class="fas fa-folder-open"></i>
-                <h3>No Clinical Records Found</h3>
-                <p style="color: var(--text-muted); margin-bottom: 25px;">You haven't performed any voice scans yet.</p>
-                <a href="record.html" class="refresh-btn" style="display: inline-flex; text-decoration: none;">
-                    <i class="fas fa-microphone"></i> Start New Scan
-                </a>
-            </div>
+            <div id="empty" class="empty" style="display:none;">No records found.</div>
         </div>
-
-        <footer>
-            <p>&copy; 2026 VocalVibe Pro Clinical Systems. Data encrypted with AES-256 standard.</p>
-        </footer>
     </main>
 
     <script>
         const API_BASE = window.location.origin;
-        let allData = [];
+        let allRows = [];
         let currentFilter = 'all';
 
-        // --- AUTH & LOGOUT ---
-        function checkAuth() {
-            const activeUser = sessionStorage.getItem('activeUser');
-            if (!activeUser) { window.location.href = 'index.html'; return false; }
-            document.getElementById('user-display').innerText = activeUser.split('@')[0];
-            return true;
+        function getActiveEmail() {
+            const patientEmail = sessionStorage.getItem('activeUser');
+            if (patientEmail) return patientEmail;
+
+            const adminToken = localStorage.getItem('adminToken');
+            const adminEmail = localStorage.getItem('adminEmail');
+            if (adminToken && adminEmail) return adminEmail;
+
+            return null;
         }
 
         function logout() {
-            if (confirm('Authorize Logout from Clinical Portal?')) {
-                sessionStorage.clear();
-                window.location.href = 'index.html';
-            }
+            sessionStorage.removeItem('activeUser');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminEmail');
+            window.location.href = 'index.html';
         }
 
-        // --- DATA LOADING ---
-        async function loadHistory() {
-            const loadingState = document.getElementById('loading-state');
-            const table = document.getElementById('history-table');
-            const refreshBtn = document.getElementById('refresh-btn');
-
-            loadingState.classList.remove('hidden');
-            table.style.display = 'none';
-            refreshBtn.disabled = true;
-
-            try {
-                const user = sessionStorage.getItem('activeUser') || '';
-                const response = await fetch(`${API_BASE}/api/history?user_email=${encodeURIComponent(user)}`);
-                
-                if (!response.ok) throw new Error("Cloud Sync Failed");
-
-                allData = await response.json();
-                loadingState.classList.add('hidden');
-                refreshBtn.disabled = false;
-
-                if (!allData || allData.length === 0) {
-                    document.getElementById('empty-msg').classList.add('show');
-                    updateStats([]);
-                } else {
-                    document.getElementById('empty-msg').classList.remove('show');
-                    filterData(currentFilter);
-                }
-            } catch (error) {
-                console.error('History error:', error);
-                loadingState.classList.add('hidden');
-                refreshBtn.disabled = false;
-                document.getElementById('empty-msg').classList.add('show');
+        function safeDate(row) {
+            if (row.created_at) {
+                const d = new Date(row.created_at);
+                if (!Number.isNaN(d.getTime())) return d;
             }
+            if (row.date) {
+                const d = new Date(row.date);
+                if (!Number.isNaN(d.getTime())) return d;
+            }
+            return null;
         }
 
-        function filterData(days, btn) {
+        function setFilter(days, btn) {
             currentFilter = days;
-            if (btn) {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-
-            let filtered = allData;
-            if (days !== 'all') {
-                const cutoff = new Date();
-                cutoff.setDate(cutoff.getDate() - parseInt(days));
-                filtered = allData.filter(item => new Date(item.date) >= cutoff);
-            }
-
-            updateTable(filtered);
-            updateStats(filtered);
+            document.querySelectorAll('[data-filter]').forEach((b) => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilters();
         }
 
-        function updateTable(data) {
-            const body = document.getElementById('history-table-body');
-            const table = document.getElementById('history-table');
-            
-            table.style.display = data.length ? 'table' : 'none';
-            body.innerHTML = data.map(item => {
-                const score = parseFloat(item.score) || 0;
-                const stressClass = getStressClass(item.stress_level);
+        function stressPill(level) {
+            const value = String(level || '').toLowerCase();
+            if (value.includes('high')) return '<span class="pill high">High</span>';
+            if (value.includes('mod')) return '<span class="pill moderate">Moderate</span>';
+            return '<span class="pill low">Low</span>';
+        }
+
+        function updateStats(rows) {
+            const total = rows.length;
+            const highCount = rows.filter((r) => String(r.stress_level || '').toLowerCase().includes('high')).length;
+            const avg = total
+                ? rows.reduce((sum, r) => sum + (Number(r.score) || 0), 0) / total
+                : 0;
+
+            const emotionCount = {};
+            rows.forEach((r) => {
+                const key = (r.emotion || 'Unknown').trim();
+                emotionCount[key] = (emotionCount[key] || 0) + 1;
+            });
+
+            let topEmotion = '--';
+            let maxCount = 0;
+            Object.keys(emotionCount).forEach((k) => {
+                if (emotionCount[k] > maxCount) {
+                    maxCount = emotionCount[k];
+                    topEmotion = k;
+                }
+            });
+
+            document.getElementById('stat-total').innerText = String(total);
+            document.getElementById('stat-high').innerText = String(highCount);
+            document.getElementById('stat-avg').innerText = avg.toFixed(1);
+            document.getElementById('stat-emotion').innerText = topEmotion;
+        }
+
+        function renderTable(rows) {
+            const body = document.getElementById('history-body');
+            const empty = document.getElementById('empty');
+
+            if (!rows.length) {
+                body.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            body.innerHTML = rows.map((row) => {
+                const score = Number(row.score || 0).toFixed(1);
+                const audio = row.audio_file ? `<a class="btn" href="/uploads/${encodeURIComponent(row.audio_file)}" target="_blank">Open</a>` : '--';
                 return `
                     <tr>
-                        <td>
-                            <div style="font-weight: 700;">${item.date}</div>
-                            <div class="time-text">${item.time || '--:--'}</div>
-                        </td>
-                        <td style="color: var(--text-muted);">${item.duration || '0s'}</td>
-                        <td><span class="badge ${stressClass}">${item.stress_level}</span></td>
-                        <td style="font-weight: 600;">${item.emotion || 'Neutral'}</td>
-                        <td style="color: var(--primary); font-weight: 800;">${score.toFixed(1)}%</td>
-                        <td>
-                            <button class="action-btn" title="Detailed Report"><i class="fas fa-file-alt"></i></button>
-                        </td>
+                        <td>${row.date || '--'}</td>
+                        <td>${row.time || '--:--'}</td>
+                        <td>${stressPill(row.stress_level || 'Low')}</td>
+                        <td>${row.emotion || 'Unknown'}</td>
+                        <td>${score}</td>
+                        <td>${audio}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        function updateStats(data) {
-            const total = data.length;
-            const high = data.filter(i => i.stress_level.toLowerCase().includes('high')).length;
-            const avg = total ? (data.reduce((s, i) => s + (parseFloat(i.score) || 0), 0) / total).toFixed(1) : 0;
-            
-            document.getElementById('total-analyses').innerText = total;
-            document.getElementById('high-count').innerText = high;
-            document.getElementById('avg-score').innerText = avg + '%';
-            
-            // Find most common emotion
-            const emotions = data.map(i => i.emotion);
-            const common = emotions.sort((a,b) => emotions.filter(v => v===a).length - emotions.filter(v => v===b).length).pop();
-            document.getElementById('common-emotion').innerText = common || '--';
+        function applyFilters() {
+            let filtered = [...allRows];
+
+            if (currentFilter !== 'all') {
+                const days = Number(currentFilter);
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - days);
+                filtered = filtered.filter((row) => {
+                    const d = safeDate(row);
+                    return d ? d >= cutoff : false;
+                });
+            }
+
+            const term = document.getElementById('search-input').value.trim().toLowerCase();
+            if (term) {
+                filtered = filtered.filter((row) => {
+                    const stress = String(row.stress_level || '').toLowerCase();
+                    const emotion = String(row.emotion || '').toLowerCase();
+                    return stress.includes(term) || emotion.includes(term);
+                });
+            }
+
+            updateStats(filtered);
+            renderTable(filtered);
         }
 
-        function getStressClass(lvl) {
-            const l = lvl.toLowerCase();
-            if (l.includes('high')) return 'badge-high';
-            if (l.includes('mod')) return 'badge-medium';
-            return 'badge-low';
+        async function refresh() {
+            const email = getActiveEmail();
+            if (!email) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('user-display').innerText = email;
+            document.getElementById('session-pill').innerText = email;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/history?user_email=${encodeURIComponent(email)}`);
+                if (!res.ok) throw new Error('Failed to load history.');
+
+                const rows = await res.json();
+                allRows = Array.isArray(rows) ? rows : [];
+                applyFilters();
+            } catch (err) {
+                allRows = [];
+                renderTable([]);
+                updateStats([]);
+                document.getElementById('empty').innerText = err.message;
+                document.getElementById('empty').style.display = 'block';
+            }
         }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-
-        window.onload = () => {
-            if(checkAuth()) loadHistory();
-        };
+        window.onload = refresh;
     </script>
 </body>
 </html>
