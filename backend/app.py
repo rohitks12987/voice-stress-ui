@@ -4,6 +4,7 @@ import time
 import random
 import hmac
 import base64
+import functools # Needed for the security guard
 from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
@@ -15,7 +16,6 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 # --- PATH CONFIGURATION ---
-# This locates your folders correctly even if you run from /backend
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
@@ -31,7 +31,7 @@ CORS(app)
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
     "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""), # Default XAMPP/WAMP is empty
+    "password": os.getenv("DB_PASSWORD", ""), 
     "database": os.getenv("DB_NAME", "vocalvibe_db"),
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor
@@ -46,14 +46,13 @@ def get_db():
     return pymysql.connect(**DB_CONFIG)
 
 def init_db():
-    # Ensure database exists
     conn = pymysql.connect(host=DB_CONFIG["host"], user=DB_CONFIG["user"], password=DB_CONFIG["password"])
     conn.cursor().execute(f"CREATE DATABASE IF NOT EXISTS {DB_CONFIG['database']}")
     conn.close()
 
-    # Sync Tables
     db = get_db()
     with db.cursor() as cur:
+        # 1. Patients/Users Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,6 +62,7 @@ def init_db():
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # 2. Vocal Scan History
         cur.execute("""
             CREATE TABLE IF NOT EXISTS analysis_history (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,30 +73,110 @@ def init_db():
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # 3. CLINICAL ACCESS LOGS (For Biometric Gateway Audit)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS access_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                staff_email VARCHAR(255),
+                action VARCHAR(255),
+                ip_address VARCHAR(50),
+                access_time DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
     db.commit()
     db.close()
 
 try:
     init_db()
-    print("✓ Clinical Database Synchronized")
+    print("✓ Clinical Database Synchronized & Secured")
 except Exception as e:
     print(f"✗ Database Error: {e}")
 
-# --- AUTH HELPERS ---
+# --- SECURITY & AUTH HELPERS ---
 def gen_token(email):
+    # Generates a secure session token valid for 8 hours
     payload = {"email": email, "exp": int(time.time()) + 28800}
     p = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().replace("=", "")
     sig = hmac.new(ADMIN_SECRET.encode(), p.encode(), sha256).hexdigest()
     return f"{p}.{sig}"
 
 def verify_token(token):
+    if not token: return None
     try:
         p_part, sig = token.split('.')
+        expected = hmac.new(ADMIN_SECRET.encode(), p_part.encode(), sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected): return None
         payload = json.loads(base64.urlsafe_b64decode(p_part + "=="))
         return payload if payload['exp'] > time.time() else None
     except: return None
 
+# --- THE CLINICAL GATEWAY GUARD (Decorator) ---
+def staff_required(f):
+    """Protects routes by requiring a valid staff token."""
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get("Authorization", "")
+        token = auth_header.replace("Bearer ", "")
+        
+        staff_data = verify_token(token)
+        if not staff_data or staff_data['email'] != ADMIN_EMAIL:
+            return jsonify({"status": "error", "message": "Secure Clinical Access Required"}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
 # --- API ROUTES ---
+
+@app.route("/api/admin/login", methods=["POST"])
+def admin_login():
+    data = request.json
+    if data.get("email") == ADMIN_EMAIL and data.get("password") == ADMIN_PASS:
+        # LOG THE SUCCESSFUL ACCESS
+        db = get_db()
+        with db.cursor() as cur:
+            cur.execute("INSERT INTO access_logs (staff_email, action, ip_address) VALUES (%s, %s, %s)", 
+                       (ADMIN_EMAIL, "Authorized Gateway Access", request.remote_addr))
+        db.commit()
+        db.close()
+        return jsonify({"status": "success", "token": gen_token(ADMIN_EMAIL)})
+    return jsonify({"status": "error", "message": "Biometric Credentials Mismatch"}), 401
+
+@app.route("/api/admin/overview", methods=["GET"])
+@staff_required
+def admin_overview():
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("SELECT COUNT(DISTINCT user_email) as total_users FROM analysis_history")
+        u_count = cur.fetchone()
+        cur.execute("SELECT COUNT(*) as total_analyses, AVG(score) as avg_score FROM analysis_history")
+        a_count = cur.fetchone()
+        cur.execute("SELECT COUNT(*) as high_stress FROM analysis_history WHERE stress_level = 'High'")
+        h_count = cur.fetchone()
+    db.close()
+
+    return jsonify({
+        "status": "success",
+        "counts": {
+            "total_users": u_count['total_users'],
+            "total_analyses": a_count['total_analyses'],
+            "average_score": round(a_count['avg_score'] or 0, 1),
+            "high_stress_count": h_count['high_stress']
+        }
+    })
+
+@app.route("/api/admin/users", methods=["GET"])
+@staff_required
+def admin_list_users():
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("""
+            SELECT u.*, COUNT(a.id) as analyses_count 
+            FROM users u 
+            LEFT JOIN analysis_history a ON u.email = a.user_email 
+            GROUP BY u.email
+        """)
+        users = cur.fetchall()
+    db.close()
+    return jsonify({"status": "success", "users": users})
 
 @app.route("/api/upload", methods=["POST"])
 def upload_audio():
@@ -104,7 +184,6 @@ def upload_audio():
     user_email = request.form.get('user_email', 'guest@vocalvibe.pro')
     if not file: return jsonify({"status": "error", "message": "No audio"}), 400
 
-    # Analysis Simulation
     score = random.uniform(20, 90)
     stress = "Low" if score < 45 else "Moderate" if score < 75 else "High"
     emo = random.choice(["Calm", "Focused"]) if score < 45 else random.choice(["Tense", "Anxious"])
@@ -140,18 +219,7 @@ def get_summary():
         lvl = r['stress_level'].lower()
         if lvl in dist: dist[lvl] = r['count']
         
-    return jsonify({
-        "total": stats['total'], 
-        "avg_score": round(stats['avg'] or 0, 1), 
-        "distribution": dist
-    })
-
-@app.route("/api/admin/login", methods=["POST"])
-def admin_login():
-    data = request.json
-    if data.get("email") == ADMIN_EMAIL and data.get("password") == ADMIN_PASS:
-        return jsonify({"status": "success", "token": gen_token(ADMIN_EMAIL)})
-    return jsonify({"status": "error", "message": "Access Denied"}), 401
+    return jsonify({"total": stats['total'], "avg_score": round(stats['avg'] or 0, 1), "distribution": dist})
 
 @app.route("/api/history", methods=["GET"])
 def get_history():
@@ -163,24 +231,18 @@ def get_history():
     db.close()
     return jsonify(rows)
 
-# --- STATIC FILE SERVING (FIXES 404 & JSON ERRORS) ---
-
+# --- STATIC FILE SERVING ---
 @app.route("/")
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
 
 @app.route("/<path:path>")
 def serve_static(path):
-    # If path starts with api/, but wasn't caught by routes above, it's a 404
     if path.startswith("api/"):
-        return jsonify({"error": "Not Found"}), 404
-    
-    # Check if the file exists in the frontend folder
+        return jsonify({"error": "Resource Not Found"}), 404
     file_path = os.path.join(app.static_folder, path)
     if os.path.exists(file_path) and os.path.isfile(file_path):
         return send_from_directory(app.static_folder, path)
-    
-    # Otherwise, default to index (for SPA-style routing)
     return send_from_directory(app.static_folder, "index.html")
 
 if __name__ == "__main__":
