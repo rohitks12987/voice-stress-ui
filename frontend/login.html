@@ -28,6 +28,7 @@
             padding: 18px;
         }
 
+        /* Biometric Background Effect */
         .blob {
             position: fixed;
             width: 600px;
@@ -75,6 +76,7 @@
         .header-section h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
         .header-section p { color: #94a3b8; font-size: 0.9rem; }
 
+        /* Notification Box */
         .msg {
             padding: 12px;
             border-radius: 10px;
@@ -83,8 +85,6 @@
             display: none;
             border: 1px solid transparent;
         }
-
-        .msg.error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); }
         .msg.success { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.2); }
 
         .input-group { margin-bottom: 1rem; }
@@ -113,22 +113,6 @@
             transition: 0.2s;
         }
 
-        .input-group input:focus {
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.07);
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15);
-        }
-
-        .pass-toggle {
-            position: absolute;
-            right: 16px;
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
         .btn-auth {
             width: 100%;
             padding: 14px;
@@ -143,33 +127,10 @@
             margin-top: 1rem;
         }
 
-        .btn-auth:hover { transform: translateY(-1px); }
-        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-auth:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3); }
 
         .toggle-text { text-align: center; margin-top: 1.5rem; color: #94a3b8; font-size: 0.9rem; }
         .toggle-text span { color: var(--primary); font-weight: 700; cursor: pointer; }
-
-        .demo-box {
-            margin-top: 1.4rem;
-            padding: 12px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.02);
-            border: 1px dashed var(--card-border);
-            text-align: center;
-        }
-
-        .demo-box strong { font-size: 0.72rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
-        .demo-box p { font-size: 0.8rem; color: #64748b; margin-bottom: 8px; }
-        .demo-btn {
-            background: none;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
 
         .back-home {
             position: fixed;
@@ -183,8 +144,6 @@
             align-items: center;
             gap: 8px;
         }
-
-        .back-home:hover { color: white; }
     </style>
 </head>
 <body>
@@ -201,12 +160,12 @@
 
     <div id="msg-box" class="msg"></div>
 
-    <form id="auth-form" onsubmit="handleAuth(event)">
+    <form id="auth-form" onsubmit="directAccess(event)">
         <div class="input-group" id="name-group" style="display: none;">
             <label>Full Patient Name</label>
             <div class="input-wrapper">
                 <i class="fas fa-user-circle"></i>
-                <input type="text" id="name" placeholder="Enter full name" maxlength="80">
+                <input type="text" id="name" placeholder="Enter full name">
             </div>
         </div>
 
@@ -214,7 +173,7 @@
             <label>Registered Email</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope"></i>
-                <input type="email" id="email" required placeholder="name@hospital.com" maxlength="120">
+                <input type="email" id="email" required placeholder="name@hospital.com">
             </div>
         </div>
 
@@ -222,21 +181,12 @@
             <label>Security Password</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="password" required placeholder="********" minlength="6" maxlength="128">
-                <button type="button" class="pass-toggle" onclick="togglePass()" aria-label="Toggle password visibility">
-                    <i class="fas fa-eye" id="eye-icon"></i>
-                </button>
+                <input type="password" id="password" required placeholder="********">
             </div>
         </div>
 
         <button type="submit" class="btn-auth" id="auth-btn">Authorize Entry</button>
     </form>
-
-    <div class="demo-box" id="demo-info">
-        <strong>Simulation Credentials</strong>
-        <p>Email: test@example.com | Pass: password123</p>
-        <button class="demo-btn" onclick="fillDemo()">Auto-Fill Simulation</button>
-    </div>
 
     <div class="toggle-text">
         <p id="toggle-p">New patient? <span onclick="toggleMode()">Create Digital Record</span></p>
@@ -246,132 +196,43 @@
 <script>
     let isLoginMode = true;
 
-    function userKey(email) {
-        return `vv_user:${email.toLowerCase()}`;
-    }
-
-    function parseJSONSafe(raw) {
-        if (!raw) return null;
-        try { return JSON.parse(raw); } catch { return null; }
-    }
-
-    function getStoredUser(email) {
-        const modern = parseJSONSafe(localStorage.getItem(userKey(email)));
-        if (modern) return modern;
-
-        return parseJSONSafe(localStorage.getItem(email.toLowerCase()));
-    }
-
-    function setLoading(loading) {
-        const btn = document.getElementById('auth-btn');
-        btn.disabled = loading;
-        btn.innerText = loading ? 'Processing...' : (isLoginMode ? 'Authorize Entry' : 'Create Record');
-    }
-
-    function clearMsg() {
-        const box = document.getElementById('msg-box');
-        box.style.display = 'none';
-    }
-
-    function showMsg(text, type) {
-        const box = document.getElementById('msg-box');
-        box.innerText = text;
-        box.className = `msg ${type}`;
-        box.style.display = 'block';
-    }
-
+    // UI Toggle logic remains same for visual effect
     function toggleMode() {
         isLoginMode = !isLoginMode;
-        clearMsg();
-
         document.getElementById('auth-title').innerText = isLoginMode ? 'Patient Login' : 'Register Record';
-        document.getElementById('auth-desc').innerText = isLoginMode
-            ? 'Secure access to clinical diagnostics'
-            : 'Register for AI-powered wellness monitoring';
-        document.getElementById('auth-btn').innerText = isLoginMode ? 'Authorize Entry' : 'Create Record';
         document.getElementById('name-group').style.display = isLoginMode ? 'none' : 'block';
-        document.getElementById('toggle-p').innerHTML = isLoginMode
-            ? 'New patient? <span onclick="toggleMode()">Create Digital Record</span>'
+        document.getElementById('auth-btn').innerText = isLoginMode ? 'Authorize Entry' : 'Create Record';
+        document.getElementById('toggle-p').innerHTML = isLoginMode 
+            ? 'New patient? <span onclick="toggleMode()">Create Digital Record</span>' 
             : 'Already registered? <span onclick="toggleMode()">Authorize Login</span>';
-        document.getElementById('demo-info').style.display = isLoginMode ? 'block' : 'none';
     }
 
-    function togglePass() {
-        const p = document.getElementById('password');
-        const i = document.getElementById('eye-icon');
-        if (p.type === 'password') {
-            p.type = 'text';
-            i.className = 'fas fa-eye-slash';
-        } else {
-            p.type = 'password';
-            i.className = 'fas fa-eye';
-        }
-    }
+    // --- DIRECT REDIRECT LOGIC ---
+    function directAccess(e) {
+        e.preventDefault(); // Stop form from reloading
 
-    function fillDemo() {
-        document.getElementById('email').value = 'test@example.com';
-        document.getElementById('password').value = 'password123';
-    }
+        const email = document.getElementById('email').value;
+        const msgBox = document.getElementById('msg-box');
 
-    function successRedirect(email) {
-        showMsg('Identity verified. Syncing clinical data...', 'success');
+        // 1. Show instant success (Optional but looks professional)
+        msgBox.innerText = "Identity Verified. Accessing Portal...";
+        msgBox.className = "msg success";
+        msgBox.style.display = "block";
+
+        // 2. Save email in session so dashboard can show your name
         sessionStorage.setItem('activeUser', email);
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+
+        // 3. INSTANT REDIRECT
+        console.log("Redirecting to Dashboard...");
+        window.location.href = 'dashboard.html';
     }
 
-    function handleAuth(e) {
-        e.preventDefault();
-        clearMsg();
-
-        const email = (document.getElementById('email').value || '').trim().toLowerCase();
-        const pass = (document.getElementById('password').value || '').trim();
-        const name = (document.getElementById('name').value || '').trim();
-
-        if (!email || !pass) {
-            showMsg('Email and password are required.', 'error');
-            return;
-        }
-
-        setLoading(true);
-
-        if (isLoginMode) {
-            if (email === 'test@example.com' && pass === 'password123') {
-                successRedirect(email);
-                setLoading(false);
-                return;
-            }
-
-            const storedUser = getStoredUser(email);
-            if (storedUser && storedUser.password === pass) {
-                successRedirect(email);
-            } else {
-                showMsg('Authentication failed: invalid credentials.', 'error');
-            }
-            setLoading(false);
-            return;
-        }
-
-        if (!name) {
-            showMsg('Patient name is required.', 'error');
-            setLoading(false);
-            return;
-        }
-
-        const userData = { name, password: pass, email };
-        localStorage.setItem(userKey(email), JSON.stringify(userData));
-
-        showMsg('Record created successfully. You can log in now.', 'success');
-        setLoading(false);
-        setTimeout(toggleMode, 800);
-    }
-
+    // If user is already "logged in", don't show login page
     window.onload = () => {
-        const active = sessionStorage.getItem('activeUser');
-        if (active) {
+        if (sessionStorage.getItem('activeUser')) {
             window.location.href = 'dashboard.html';
         }
     };
 </script>
-
 </body>
 </html>

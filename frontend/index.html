@@ -21,6 +21,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; scroll-behavior: smooth; }
 
+        /* --- THE BIOMETRIC BLOB --- */
         .blob {
             position: fixed;
             width: 520px;
@@ -59,7 +60,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
         .logo small {
@@ -68,19 +68,28 @@
             font-weight: 600;
         }
 
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
         .btn {
-            padding: 12px 22px;
+            padding: 10px 20px;
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.25s;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-ghost { color: white; background: transparent; border: 1px solid var(--card-border); }
-        .btn-ghost:hover { background: rgba(255,255,255,0.06); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.06); border-color: var(--primary); }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 18px rgba(14, 165, 233, 0.3); }
 
@@ -174,52 +183,67 @@
         .socials a:hover { color: var(--primary); }
         .copyright { color: #475569; font-size: 0.82rem; text-align: center; }
 
+        /* --- THE ENTRY PORTAL MODAL --- */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(15px);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 3000;
+            z-index: 5000;
             padding: 18px;
+            transition: 0.3s;
         }
 
         .modal-card {
             background: var(--dark);
-            padding: 34px;
-            border-radius: 26px;
+            padding: 40px;
+            border-radius: 32px;
             width: 100%;
             max-width: 600px;
             position: relative;
             border: 1px solid var(--card-border);
             text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .close-modal {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            color: white;
-            font-size: 1.4rem;
+            top: 20px;
+            right: 20px;
+            color: var(--muted);
+            font-size: 1.6rem;
             cursor: pointer;
             background: none;
             border: none;
+            transition: 0.2s;
         }
+        .close-modal:hover { color: white; }
 
-        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px; }
+        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 32px; }
         .choice-card {
-            padding: 24px;
-            border-radius: 16px;
+            padding: 30px 20px;
+            border-radius: 20px;
             border: 1px solid var(--card-border);
             cursor: pointer;
-            transition: 0.25s;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.02);
         }
 
-        .choice-card:hover { background: var(--primary); border-color: var(--primary); }
-        .choice-card i { font-size: 1.7rem; margin-bottom: 10px; }
+        .choice-card:hover { 
+            background: var(--primary); 
+            border-color: var(--primary); 
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3);
+        }
+        .choice-card i { font-size: 2.2rem; margin-bottom: 15px; display: block; color: var(--primary); }
+        .choice-card:hover i { color: white; }
+        .choice-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        .choice-card p { font-size: 0.75rem; opacity: 0.8; }
 
+        /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 1024px) {
             .hero { flex-direction: column; text-align: center; padding-top: 130px; }
             .hero-actions { justify-content: center; }
@@ -238,21 +262,22 @@
 <div class="blob"></div>
 
 <nav>
-    <a href="#" class="logo"><i class="fas fa-microchip"></i> VocalVibe Pro <small>Mental Stress Detection</small></a>
+    <a href="index.html" class="logo"><i class="fas fa-microchip"></i> VocalVibe Pro <small>Diagnostic Terminal</small></a>
     <div class="nav-actions">
-        <button class="btn btn-ghost" onclick="setModal(true)">Sign In</button>
-        <button class="btn btn-primary" onclick="window.location.href='login.html'">Get Started</button>
+        <a href="admin_login.html" class="btn btn-ghost"><i class="fas fa-user-md"></i> Clinical Staff</a>
+        
+        <button class="btn btn-primary" onclick="setModal(true)"><i class="fas fa-shield-alt"></i> Patient Authorization</button>
     </div>
 </nav>
 
 <section class="hero">
     <div class="hero-content">
-        <div class="hero-tag">Advanced Clinical Biomarkers</div>
+        <div class="hero-tag">Clinical AI Biomarkers</div>
         <h1>Mental Health, <span style="color:var(--primary);">Decoded</span> by Voice.</h1>
-        <p>AI-powered vocal modeling to detect stress and emotional patterns in seconds with a streamlined clinical workflow.</p>
+        <p>Advanced vocal modeling to detect stress and emotional micro-patterns. Engineered for high-speed clinical diagnostics and consistent patient monitoring.</p>
         <div class="hero-actions">
-            <button class="btn btn-primary" onclick="setModal(true)">Run Instant Scan</button>
-            <button class="btn btn-ghost" onclick="setModal(true)">Request Demo</button>
+            <button class="btn btn-primary" style="padding: 15px 35px; font-size: 1rem;" onclick="setModal(true)">Initiate Diagnostics</button>
+            <button class="btn btn-ghost" style="padding: 15px 35px; font-size: 1rem;">Technical Specs</button>
         </div>
     </div>
     <div class="hero-visual">
@@ -263,72 +288,73 @@
 <section class="stats">
     <div class="stat-item">
         <h2>98.4%</h2>
-        <p>Clinical Accuracy</p>
+        <p>Acoustic Accuracy</p>
     </div>
     <div class="stat-item">
         <h2>&lt;10s</h2>
-        <p>Analysis Speed</p>
+        <p>Processing Speed</p>
     </div>
     <div class="stat-item">
-        <h2>25k+</h2>
-        <p>Scans Analyzed</p>
+        <h2>Encrypted</h2>
+        <p>HIPAA Standard</p>
     </div>
 </section>
 
 <section class="features" id="features">
-    <div class="hero-tag">How It Works</div>
-    <h2>Precision diagnostics for the mind</h2>
+    <div class="hero-tag">System Capabilities</div>
+    <h2>Engineered for Clinical Precision</h2>
     <div class="grid">
         <div class="card">
             <i class="fas fa-wave-square"></i>
             <h3>Spectral Mapping</h3>
-            <p>Analyzes pitch variance, jitter, and vocal micro-patterns to estimate stress level and emotional load.</p>
+            <p>Monitors pitch variance and vocal jitter to estimate stress level and cognitive emotional load.</p>
         </div>
         <div class="card">
             <i class="fas fa-brain"></i>
-            <h3>Neural Logic</h3>
-            <p>Models process voice data quickly for real-time guidance and consistent clinical reporting.</p>
+            <h3>Neural Inference</h3>
+            <p>Our backend models process complex voice data in real-time for immediate clinician feedback.</p>
         </div>
         <div class="card">
             <i class="fas fa-file-medical"></i>
-            <h3>Dynamic Reporting</h3>
-            <p>Generates readable summaries and history trends to support patient monitoring workflows.</p>
+            <h3>Automated Audit</h3>
+            <p>Generates detailed clinical summaries and longitudinal history trends for professional patient care.</p>
         </div>
     </div>
 </section>
 
 <footer>
     <div class="logo"><i class="fas fa-microchip"></i> VocalVibe Pro</div>
-    <div class="socials">
-        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+    <div class="socials" style="margin: 20px 0;">
+        <a href="#"><i class="fab fa-linkedin"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-github"></i></a>
     </div>
-    <p class="copyright">&copy; 2026 VocalVibe Health Solutions. All rights reserved.</p>
+    <p class="copyright">&copy; 2026 VocalVibe Health Solutions | Secured Access Only</p>
 </footer>
 
 <div class="modal-overlay" id="choiceModal" aria-hidden="true">
     <div class="modal-card">
-        <button class="close-modal" onclick="setModal(false)" aria-label="Close">&times;</button>
-        <h2 style="font-size: 2rem; margin-bottom: 10px;">Select Entry Point</h2>
-        <p style="color: var(--muted);">Choose your portal to continue</p>
+        <button class="close-modal" onclick="setModal(false)">&times;</button>
+        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Portal Selection</h2>
+        <p style="color: var(--muted); font-size: 0.9rem;">Choose an authentication path to continue</p>
 
         <div class="choice-grid">
-            <div class="choice-card" onclick="nav('user')">
-                <i class="fas fa-user-injured"></i>
-                <h3 style="margin-bottom: 5px;">Patient Portal</h3>
-                <p style="font-size: 0.8rem; color: #cbd5e1;">View wellness metrics</p>
+            <div class="choice-card" onclick="nav('login')">
+                <i class="fas fa-sign-in-alt"></i>
+                <h3>Patient Login</h3>
+                <p>Existing Portal User</p>
             </div>
-            <div class="choice-card" onclick="nav('admin')">
-                <i class="fas fa-user-md"></i>
-                <h3 style="margin-bottom: 5px;">Clinical Staff</h3>
-                <p style="font-size: 0.8rem; color: #cbd5e1;">Staff operations dashboard</p>
+            <div class="choice-card" onclick="nav('register')">
+                <i class="fas fa-user-plus"></i>
+                <h3>New Registration</h3>
+                <p>Create Clinical Record</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // 1. Dynamic Waveform Generation
     const wave = document.getElementById('waveform');
     for (let i = 0; i < 20; i += 1) {
         const bar = document.createElement('div');
@@ -337,20 +363,27 @@
         wave.appendChild(bar);
     }
 
+    // 2. Modal Controller (Popup Window)
     function setModal(show) {
         const modal = document.getElementById('choiceModal');
         modal.style.display = show ? 'flex' : 'none';
-        modal.setAttribute('aria-hidden', show ? 'false' : 'true');
         document.body.style.overflow = show ? 'hidden' : 'auto';
     }
 
+    // 3. Routing Engine (Directs to separate pages)
     function nav(role) {
         setModal(false);
-        window.location.href = role === 'user' ? 'login.html' : 'admin.html';
+        if(role === 'login') {
+            window.location.href = 'login.html';
+        } else if (role === 'register') {
+            window.location.href = 'register.html';
+        }
     }
 
+    // 4. Global Click-to-Close Listeners
     window.addEventListener('click', (e) => {
-        if (e.target && e.target.id === 'choiceModal') setModal(false);
+        const modal = document.getElementById('choiceModal');
+        if (e.target === modal) setModal(false);
     });
 
     window.addEventListener('keydown', (e) => {

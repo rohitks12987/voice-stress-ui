@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personnel Authentication | VocalVibe Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --secondary: #6366f1;
+            --bg: #020617;
+            --card: rgba(15, 23, 42, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Biometric Background Effect */
+        .scan-line {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary), transparent);
+            opacity: 0.5;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .login-card {
+            background: var(--card);
+            padding: 50px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 100px rgba(14, 165, 233, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .shield-icon {
+            font-size: 3.5rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.5));
+        }
+
+        h2 { font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+        p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 30px; }
+
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; margin-left: 5px; }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+
+        .btn-authorize {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .btn-authorize:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        #msg { margin-top: 20px; font-size: 0.8rem; font-weight: 600; min-height: 20px; }
+        
+        .footer-link { margin-top: 25px; display: block; color: #475569; text-decoration: none; font-size: 0.75rem; font-weight: 600; }
+        .footer-link:hover { color: var(--primary); }
+
+        /* Error Shake */
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-line"></div>
+
+    <div class="login-card" id="card">
+        <div class="shield-icon"><i class="fas fa-user-shield"></i></div>
+        <h2>Clinical Terminal</h2>
+        <p>Personnel Authorization Protocol</p>
+
+        <div class="input-group">
+            <label>Staff Identification (Email)</label>
+            <input type="email" id="email" placeholder="staff@vocalvibe.pro" value="admin@vocalvibe.pro">
+        </div>
+
+        <div class="input-group">
+            <label>Security Passcode</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button class="btn-authorize" onclick="attemptLogin()">AUTHORIZE SESSION</button>
+
+        <div id="msg"></div>
+
+        <a href="index.html" class="footer-link"><i class="fas fa-arrow-left"></i> Return to Public Site</a>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function attemptLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('msg');
+            const card = document.getElementById('card');
+
+            msg.innerText = "Verifying credentials...";
+            msg.style.color = "var(--primary)";
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success Path
+                    msg.style.color = "#10b981";
+                    msg.innerHTML = '<i class="fas fa-check-circle"></i> Identity Verified. Issuing Token...';
+                    
+                    // Save Token for Dashboard use
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminEmail', email);
+
+                    setTimeout(() => {
+                        window.location.href = 'admin_dashboard.html';
+                    }, 1200);
+
+                } else {
+                    // Failure Path
+                    throw new Error(data.message || "Access Denied");
+                }
+
+            } catch (err) {
+                msg.style.color = "#ef4444";
+                msg.innerText = `✗ ${err.message}`;
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 400);
+            }
+        }
+    </script>
+</body>
+</html>
