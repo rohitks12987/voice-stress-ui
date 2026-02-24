@@ -14,6 +14,7 @@ import pymysql.cursors
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # --- PATH CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent
@@ -58,10 +59,21 @@ def init_db():
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 full_name VARCHAR(255),
                 email VARCHAR(255) UNIQUE NOT NULL,
+                password_hash VARCHAR(255),
                 age INT, phone VARCHAR(50), address TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        cur.execute("""
+            SELECT COUNT(*) AS col_count
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = %s
+              AND TABLE_NAME = 'users'
+              AND COLUMN_NAME = 'password_hash'
+        """, (DB_CONFIG["database"],))
+        has_password_col = cur.fetchone()["col_count"] > 0
+        if not has_password_col:
+            cur.execute("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)")
         # 2. Vocal Scan History
         cur.execute("""
             CREATE TABLE IF NOT EXISTS analysis_history (
@@ -179,6 +191,64 @@ def admin_list_users():
     db.close()
     return jsonify({"status": "success", "users": users})
 
+@app.route("/api/patient/register", methods=["POST"])
+def patient_register():
+    data = request.get_json(silent=True) or {}
+    full_name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not full_name or not email or not password:
+        return jsonify({"status": "error", "message": "Name, email, and password are required"}), 400
+    if len(password) < 6:
+        return jsonify({"status": "error", "message": "Password must be at least 6 characters"}), 400
+
+    password_hash = generate_password_hash(password)
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+            existing = cur.fetchone()
+            if existing:
+                return jsonify({"status": "error", "message": "Email already registered"}), 409
+            cur.execute(
+                "INSERT INTO users (full_name, email, password_hash) VALUES (%s, %s, %s)",
+                (full_name, email, password_hash),
+            )
+        db.commit()
+    finally:
+        db.close()
+
+    return jsonify({"status": "success", "message": "Registration completed", "user_email": email})
+
+@app.route("/api/patient/login", methods=["POST"])
+def patient_login():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not email or not password:
+        return jsonify({"status": "error", "message": "Email and password are required"}), 400
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("SELECT full_name, email, password_hash FROM users WHERE email=%s", (email,))
+            user = cur.fetchone()
+    finally:
+        db.close()
+
+    if not user or not user.get("password_hash"):
+        return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+    if not check_password_hash(user["password_hash"], password):
+        return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+
+    return jsonify({
+        "status": "success",
+        "message": "Login successful",
+        "user": {"name": user.get("full_name") or "", "email": user["email"]},
+    })
+
 @app.route("/api/upload", methods=["POST"])
 def upload_audio():
     file = request.files.get('audio')
@@ -225,12 +295,29 @@ def get_summary():
 @app.route("/api/history", methods=["GET"])
 def get_history():
     email = request.args.get('user_email')
-    if not email:
-        return jsonify({"status": "error", "message": "user_email is required"}), 400
+    try:
+        limit = int(request.args.get("limit", 50))
+    except ValueError:
+        limit = 50
+    limit = max(1, min(limit, 500))
+
     db = get_db()
     with db.cursor() as cur:
-        cur.execute("SELECT * FROM analysis_history WHERE user_email=%s ORDER BY id DESC", (email,))
-        rows = cur.fetchall()
+        if email:
+            cur.execute(
+                "SELECT * FROM analysis_history WHERE user_email=%s ORDER BY id DESC LIMIT %s",
+                (email, limit),
+            )
+            rows = cur.fetchall()
+        else:
+            auth_header = request.headers.get("Authorization", "")
+            token = auth_header.replace("Bearer ", "")
+            staff_data = verify_token(token)
+            if not staff_data or staff_data["email"] != ADMIN_EMAIL:
+                db.close()
+                return jsonify({"status": "error", "message": "user_email is required"}), 400
+            cur.execute("SELECT * FROM analysis_history ORDER BY id DESC LIMIT %s", (limit,))
+            rows = cur.fetchall()
     db.close()
     return jsonify(rows)
 
@@ -241,7 +328,7 @@ def serve_index():
 
 @app.route("/admin_dashboard.html")
 def admin_dashboard_alias():
-    return send_from_directory(app.static_folder, "dashboard.html")
+    return send_from_directory(app.static_folder, "admin_dashboard.html")
 
 @app.route("/<path:path>")
 def serve_static(path):

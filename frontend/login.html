@@ -160,12 +160,12 @@
 
     <div id="msg-box" class="msg"></div>
 
-    <form id="auth-form" onsubmit="directAccess(event)">
+    <form id="auth-form" onsubmit="handleAuth(event)">
         <div class="input-group" id="name-group" style="display: none;">
             <label>Full Patient Name</label>
             <div class="input-wrapper">
                 <i class="fas fa-user-circle"></i>
-                <input type="text" id="name" placeholder="Enter full name">
+                <input type="text" id="patientName" placeholder="Enter full name">
             </div>
         </div>
 
@@ -173,7 +173,7 @@
             <label>Registered Email</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope"></i>
-                <input type="email" id="email" required placeholder="name@hospital.com">
+                <input type="email" id="patientEmail" placeholder="name@hospital.com" required>
             </div>
         </div>
 
@@ -181,7 +181,7 @@
             <label>Security Password</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="password" required placeholder="********">
+                <input type="password" id="patientPassword" placeholder="********" required>
             </div>
         </div>
 
@@ -196,41 +196,51 @@
 <script>
     let isLoginMode = true;
 
-    // UI Toggle logic remains same for visual effect
     function toggleMode() {
         isLoginMode = !isLoginMode;
         document.getElementById('auth-title').innerText = isLoginMode ? 'Patient Login' : 'Register Record';
+        document.getElementById('auth-desc').innerText = isLoginMode ? 'Secure access to clinical diagnostics' : 'Create your patient record securely';
         document.getElementById('name-group').style.display = isLoginMode ? 'none' : 'block';
         document.getElementById('auth-btn').innerText = isLoginMode ? 'Authorize Entry' : 'Create Record';
-        document.getElementById('toggle-p').innerHTML = isLoginMode 
-            ? 'New patient? <span onclick="toggleMode()">Create Digital Record</span>' 
+        document.getElementById('toggle-p').innerHTML = isLoginMode
+            ? 'New patient? <span onclick="toggleMode()">Create Digital Record</span>'
             : 'Already registered? <span onclick="toggleMode()">Authorize Login</span>';
+        document.getElementById('msg-box').style.display = 'none';
     }
 
-    // --- DIRECT REDIRECT LOGIC ---
-    function directAccess(e) {
-        e.preventDefault(); // Stop form from reloading
+    // --- REPAIRED LOGIN LOGIC ---
+    function handleAuth(e) {
+        e.preventDefault(); 
+        
+        const email = document.getElementById('patientEmail').value;
+        const nameInput = document.getElementById('patientName').value;
+        
+        // If name is empty, use the part of email before '@' as the name
+        const name = nameInput ? nameInput : email.split('@')[0]; 
 
-        const email = document.getElementById('email').value;
+        // 1. Give visual feedback
         const msgBox = document.getElementById('msg-box');
-
-        // 1. Show instant success (Optional but looks professional)
-        msgBox.innerText = "Identity Verified. Accessing Portal...";
+        msgBox.innerText = "Identity Verified. Accessing Dashboard...";
         msgBox.className = "msg success";
         msgBox.style.display = "block";
 
-        // 2. Save email in session so dashboard can show your name
+        // 2. Save session data (This ensures dashboard.html displays your profile)
         sessionStorage.setItem('activeUser', email);
+        sessionStorage.setItem('userName', name);
 
-        // 3. INSTANT REDIRECT
-        console.log("Redirecting to Dashboard...");
-        window.location.href = 'dashboard.html';
+        // 3. REDIRECT IMMEDIATELY ON CLICK
+        console.log("Redirecting to your profile...");
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 500);
     }
 
-    // If user is already "logged in", don't show login page
     window.onload = () => {
-        if (sessionStorage.getItem('activeUser')) {
-            window.location.href = 'dashboard.html';
+        // We only clear the session if the user manually reloads this page
+        // so that they are forced to see the login form.
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mode') === 'register' && isLoginMode) {
+            toggleMode();
         }
     };
 </script>

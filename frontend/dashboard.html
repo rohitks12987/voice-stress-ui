@@ -326,7 +326,6 @@
         window.onload = () => {
             updateWaterUI();
             const active = sessionStorage.getItem('activeUser') || 'Guest';
-            document.getElementById('user-name').innerText = active.split('@')[0];
             document.getElementById('display-name').innerText = active;
             setTimeout(() => updateGraph(65, 25, 10), 500); 
             setTimeout(() => appendMsg("Clinical systems online. Welcome to VocalVibe Pro.", 'bot'), 1000);

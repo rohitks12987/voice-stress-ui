@@ -199,10 +199,10 @@
 
         .modal-card {
             background: var(--dark);
-            padding: 40px;
+            padding: 45px;
             border-radius: 32px;
             width: 100%;
-            max-width: 600px;
+            max-width: 450px;
             position: relative;
             border: 1px solid var(--card-border);
             text-align: center;
@@ -222,14 +222,23 @@
         }
         .close-modal:hover { color: white; }
 
-        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 32px; }
+        .choice-grid { 
+            display: flex; 
+            justify-content: center;
+            margin-top: 32px; 
+        }
+        
         .choice-card {
-            padding: 30px 20px;
+            width: 100%;
+            padding: 35px 20px;
             border-radius: 20px;
             border: 1px solid var(--card-border);
             cursor: pointer;
             transition: 0.3s;
             background: rgba(255,255,255,0.02);
+            text-decoration: none;
+            color: white;
+            display: block;
         }
 
         .choice-card:hover { 
@@ -240,10 +249,9 @@
         }
         .choice-card i { font-size: 2.2rem; margin-bottom: 15px; display: block; color: var(--primary); }
         .choice-card:hover i { color: white; }
-        .choice-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
-        .choice-card p { font-size: 0.75rem; opacity: 0.8; }
+        .choice-card h3 { font-size: 1.2rem; margin-bottom: 8px; }
+        .choice-card p { font-size: 0.85rem; opacity: 0.8; }
 
-        /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 1024px) {
             .hero { flex-direction: column; text-align: center; padding-top: 130px; }
             .hero-actions { justify-content: center; }
@@ -262,10 +270,9 @@
 <div class="blob"></div>
 
 <nav>
-    <a href="index.html" class="logo"><i class="fas fa-microchip"></i> VocalVibe Pro <small>Diagnostic Terminal</small></a>
+    <a href="index.html" class="logo"><i class="fas fa-microchip"></i> Mental Stress Detection <small>Using Voice tone Analysis</small></a>
     <div class="nav-actions">
         <a href="admin_login.html" class="btn btn-ghost"><i class="fas fa-user-md"></i> Clinical Staff</a>
-        
         <button class="btn btn-primary" onclick="setModal(true)"><i class="fas fa-shield-alt"></i> Patient Authorization</button>
     </div>
 </nav>
@@ -295,8 +302,8 @@
         <p>Processing Speed</p>
     </div>
     <div class="stat-item">
-        <h2>Encrypted</h2>
-        <p>HIPAA Standard</p>
+        <h2>25K+</h2>
+        <p>Total Users</p>
     </div>
 </section>
 
@@ -323,7 +330,7 @@
 </section>
 
 <footer>
-    <div class="logo"><i class="fas fa-microchip"></i> VocalVibe Pro</div>
+    <div class="logo"><i class="fas fa-microchip"></i> Mental Stress Detection Using Voice Tone Analysis</div>
     <div class="socials" style="margin: 20px 0;">
         <a href="#"><i class="fab fa-linkedin"></i></a>
         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -335,52 +342,43 @@
 <div class="modal-overlay" id="choiceModal" aria-hidden="true">
     <div class="modal-card">
         <button class="close-modal" onclick="setModal(false)">&times;</button>
-        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Portal Selection</h2>
-        <p style="color: var(--muted); font-size: 0.9rem;">Choose an authentication path to continue</p>
+        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Portal Access</h2>
+        <p style="color: var(--muted); font-size: 0.9rem;">Access the clinical wellness portal</p>
 
         <div class="choice-grid">
-            <div class="choice-card" onclick="nav('login')">
+            <a href="login.html" class="choice-card">
                 <i class="fas fa-sign-in-alt"></i>
                 <h3>Patient Login</h3>
-                <p>Existing Portal User</p>
-            </div>
-            <div class="choice-card" onclick="nav('register')">
-                <i class="fas fa-user-plus"></i>
-                <h3>New Registration</h3>
-                <p>Create Clinical Record</p>
-            </div>
+                <p>Enter the portal to view wellness metrics</p>
+            </a>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. Dynamic Waveform Generation
-    const wave = document.getElementById('waveform');
-    for (let i = 0; i < 20; i += 1) {
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        bar.style.animationDelay = `${i * 0.1}s`;
-        wave.appendChild(bar);
-    }
+    // System Reset: Ensure fresh login every time landing page is opened
+    window.onload = () => {
+        // RESET LOGIC: Wipes any existing session to prevent auto-skipping the login form
+        sessionStorage.removeItem('activeUser');
+        sessionStorage.removeItem('userName');
+        console.log("Patient session cleared. Ready for fresh login.");
+        
+        // Generate Dynamic Waveform
+        const wave = document.getElementById('waveform');
+        for (let i = 0; i < 20; i += 1) {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.animationDelay = `${i * 0.1}s`;
+            wave.appendChild(bar);
+        }
+    };
 
-    // 2. Modal Controller (Popup Window)
     function setModal(show) {
         const modal = document.getElementById('choiceModal');
         modal.style.display = show ? 'flex' : 'none';
         document.body.style.overflow = show ? 'hidden' : 'auto';
     }
 
-    // 3. Routing Engine (Directs to separate pages)
-    function nav(role) {
-        setModal(false);
-        if(role === 'login') {
-            window.location.href = 'login.html';
-        } else if (role === 'register') {
-            window.location.href = 'register.html';
-        }
-    }
-
-    // 4. Global Click-to-Close Listeners
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('choiceModal');
         if (e.target === modal) setModal(false);
