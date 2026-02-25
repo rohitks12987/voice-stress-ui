@@ -1,7 +1,6 @@
 import os
 import json
 import time
-import random
 import hmac
 import base64
 import functools # Needed for the security guard
@@ -15,6 +14,9 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+
+from advanced_stress_predictor import AdvancedStressPredictor
 
 # --- PATH CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent
@@ -27,6 +29,34 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
 CORS(app)
+
+MODEL_PATH_CANDIDATES = [
+    BASE_DIR / "models" / "voice_stress_model.pkl",
+    PROJECT_ROOT / "models" / "voice_stress_model.pkl",
+]
+STRESS_BASE_SCORES = {"low": 30.0, "moderate": 60.0, "high": 85.0}
+STRESS_TO_EMOTION = {"low": "Calm", "moderate": "Tense", "high": "Anxious"}
+_predictor = None
+
+
+def _load_trainer():
+    global _predictor
+    if _predictor is not None:
+        return True
+    for model_path in MODEL_PATH_CANDIDATES:
+        if model_path.exists():
+            try:
+                _predictor = AdvancedStressPredictor(model_path=str(model_path), window_size=5)
+                return True
+            except Exception:
+                continue
+    return False
+
+
+def _build_stress_score(stress_level, confidence):
+    base = STRESS_BASE_SCORES.get(stress_level.lower(), 60.0)
+    adjusted = base + (float(confidence) - 0.5) * 20.0
+    return max(0.0, min(100.0, adjusted))
 
 # --- CONFIGURATION ---
 DB_CONFIG = {
@@ -248,6 +278,7 @@ def patient_login():
         "message": "Login successful",
         "user": {"name": user.get("full_name") or "", "email": user["email"]},
     })
+# ... (Keep existing imports/config from your original app.py) ...
 
 @app.route("/api/upload", methods=["POST"])
 def upload_audio():
@@ -255,12 +286,22 @@ def upload_audio():
     user_email = request.form.get('user_email', 'guest@vocalvibe.pro')
     if not file: return jsonify({"status": "error", "message": "No audio"}), 400
 
-    score = random.uniform(20, 90)
-    stress = "Low" if score < 45 else "Moderate" if score < 75 else "High"
-    emo = random.choice(["Calm", "Focused"]) if score < 45 else random.choice(["Tense", "Anxious"])
-    
-    filename = f"{int(time.time())}_{user_email.replace('@','_')}.wav"
-    file.save(str(UPLOAD_DIR / filename))
+    if not _load_trainer():
+        return jsonify({"status": "error", "message": "Model not found"}), 503
+
+    filename = f"{int(time.time())}_{secure_filename(user_email.replace('@','_'))}.wav"
+    saved_path = UPLOAD_DIR / filename
+    file.save(str(saved_path))
+
+    # --- LONG AUDIO PREDICTION ---
+    try:
+        prediction = _predictor.predict_long_audio(str(saved_path))
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+    stress = prediction["stress_level"].capitalize()
+    score = _build_stress_score(prediction["stress_level"].lower(), prediction["confidence"])
+    emo = STRESS_TO_EMOTION.get(prediction["stress_level"].lower(), "Focused")
 
     db = get_db()
     with db.cursor() as cur:
@@ -270,7 +311,16 @@ def upload_audio():
         """, (user_email, datetime.now().strftime("%b %d, %Y"), datetime.now().strftime("%I:%M %p"), stress, emo, score, filename))
     db.commit()
     db.close()
-    return jsonify({"status": "success", "stress_level": stress, "score": round(score, 1), "emotion": emo})
+
+    return jsonify({
+        "status": "success",
+        "stress_level": stress,
+        "score": round(score, 1),
+        "emotion": emo,
+        "duration": round(prediction["duration"], 2)
+    })
+
+# ... (Keep all other routes) ...
 
 @app.route("/api/dashboard-summary", methods=["GET"])
 def get_summary():
