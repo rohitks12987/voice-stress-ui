@@ -37,6 +37,7 @@ MODEL_PATH_CANDIDATES = [
 STRESS_BASE_SCORES = {"low": 30.0, "moderate": 60.0, "high": 85.0}
 STRESS_TO_EMOTION = {"low": "Calm", "moderate": "Tense", "high": "Anxious"}
 _predictor = None
+ALLOWED_UPLOAD_EXTENSIONS = {".wav", ".mp3", ".m4a", ".webm", ".ogg", ".flac"}
 
 
 def _load_trainer():
@@ -57,6 +58,14 @@ def _build_stress_score(stress_level, confidence):
     base = STRESS_BASE_SCORES.get(stress_level.lower(), 60.0)
     adjusted = base + (float(confidence) - 0.5) * 20.0
     return max(0.0, min(100.0, adjusted))
+
+
+def _resolve_upload_extension(file_obj):
+    raw_name = secure_filename(file_obj.filename or "")
+    ext = Path(raw_name).suffix.lower()
+    if ext in ALLOWED_UPLOAD_EXTENSIONS:
+        return ext
+    return ".wav"
 
 # --- CONFIGURATION ---
 DB_CONFIG = {
@@ -289,7 +298,8 @@ def upload_audio():
     if not _load_trainer():
         return jsonify({"status": "error", "message": "Model not found"}), 503
 
-    filename = f"{int(time.time())}_{secure_filename(user_email.replace('@','_'))}.wav"
+    file_ext = _resolve_upload_extension(file)
+    filename = f"{int(time.time())}_{secure_filename(user_email.replace('@','_'))}{file_ext}"
     saved_path = UPLOAD_DIR / filename
     file.save(str(saved_path))
 

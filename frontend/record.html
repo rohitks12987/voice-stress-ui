@@ -240,270 +240,242 @@
     </main>
 
     <script>
-        const API_BASE = window.location.origin;
-        let mediaRecorder = null;
-        let chunks = [];
-        let currentBlob = null;
-        let currentMimeType = 'audio/webm';
-        let timerId = null;
-        let startedAt = 0;
-        let playbackAudio = null;
+    const API_BASE = window.location.origin;
+    let mediaRecorder = null;
+    let chunks = [];
+    let currentBlob = null;
+    let timerId = null;
+    let startedAt = 0;
+    let playbackAudio = null;
 
-        const recordBtn = document.getElementById('record-btn');
-        const pulseWrap = document.getElementById('pulse-wrap');
-        const timerEl = document.getElementById('timer');
-        const statusText = document.getElementById('status-text');
-        const playBtn = document.getElementById('play-btn');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const resetBtn = document.getElementById('reset-btn');
+    const recordBtn = document.getElementById('record-btn');
+    const pulseWrap = document.getElementById('pulse-wrap');
+    const timerEl = document.getElementById('timer');
+    const statusText = document.getElementById('status-text');
+    const playBtn = document.getElementById('play-btn');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const resetBtn = document.getElementById('reset-btn');
 
-        function getActiveEmail() {
-            const patientEmail = sessionStorage.getItem('activeUser');
-            if (patientEmail) return patientEmail;
+    // --- AUTHENTICATION ---
+    function getActiveEmail() {
+        const patientEmail = sessionStorage.getItem('activeUser');
+        if (patientEmail) return patientEmail;
+        const adminEmail = localStorage.getItem('adminEmail');
+        if (adminEmail) return adminEmail;
+        return null;
+    }
 
-            const adminToken = localStorage.getItem('adminToken');
-            const adminEmail = localStorage.getItem('adminEmail');
-            if (adminToken && adminEmail) return adminEmail;
+    // --- UI MESSAGING ---
+    function showMsg(text, type) {
+        const errorEl = document.getElementById('error-msg');
+        const successEl = document.getElementById('success-msg');
+        errorEl.style.display = 'none';
+        successEl.style.display = 'none';
 
-            return null;
+        const el = type === 'error' ? errorEl : successEl;
+        el.textContent = text;
+        el.style.display = 'block';
+    }
+
+    function clearMsg() {
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function setActionState(hasAudio) {
+        playBtn.disabled = !hasAudio;
+        analyzeBtn.disabled = !hasAudio;
+        resetBtn.disabled = !hasAudio;
+    }
+
+    function setStatus(text, colorVar) {
+        statusText.textContent = text;
+        statusText.style.color = colorVar ? `var(${colorVar})` : 'var(--muted)';
+    }
+
+    // --- TIMER ---
+    function updateTimer() {
+        const sec = Math.floor((Date.now() - startedAt) / 1000);
+        const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+        const ss = String(sec % 60).padStart(2, '0');
+        timerEl.textContent = `${mm}:${ss}`;
+    }
+
+    function resetTimer() {
+        if (timerId) clearInterval(timerId);
+        timerId = null;
+        timerEl.textContent = '00:00';
+    }
+
+    // --- RECORDING CORE ---
+    async function startRecording() {
+        clearMsg();
+        chunks = []; // Reset chunks for new recording
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showMsg('Audio recording is not supported in this browser.', 'error');
+            return;
         }
 
-        function showMsg(text, type) {
-            const errorEl = document.getElementById('error-msg');
-            const successEl = document.getElementById('success-msg');
-            errorEl.style.display = 'none';
-            successEl.style.display = 'none';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Determine best supported MIME type
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+                             ? 'audio/webm;codecs=opus' 
+                             : 'audio/webm';
 
-            const el = type === 'error' ? errorEl : successEl;
-            el.textContent = text;
-            el.style.display = 'block';
-        }
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
 
-        function clearMsg() {
-            document.getElementById('error-msg').style.display = 'none';
-            document.getElementById('success-msg').style.display = 'none';
-        }
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) chunks.push(e.data);
+            };
 
-        function setActionState(hasAudio) {
-            playBtn.disabled = !hasAudio;
-            analyzeBtn.disabled = !hasAudio;
-            resetBtn.disabled = !hasAudio;
-        }
+            mediaRecorder.onstart = () => {
+                startedAt = Date.now();
+                timerId = setInterval(updateTimer, 1000);
+                pulseWrap.classList.add('recording');
+                recordBtn.classList.add('recording');
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                setStatus('Recording... Speak as long as needed.', '--danger');
+                setActionState(false);
+            };
 
-        function setStatus(text, colorVar) {
-            statusText.textContent = text;
-            statusText.style.color = colorVar ? `var(${colorVar})` : 'var(--muted)';
-        }
+            mediaRecorder.onstop = () => {
+                resetTimer();
+                pulseWrap.classList.remove('recording');
+                recordBtn.classList.remove('recording');
+                recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
 
-        function updateTimer() {
-            const sec = Math.floor((Date.now() - startedAt) / 1000);
-            const mm = String(Math.floor(sec / 60)).padStart(2, '0');
-            const ss = String(sec % 60).padStart(2, '0');
-            timerEl.textContent = `${mm}:${ss}`;
-        }
+                // Stop the hardware microphone
+                stream.getTracks().forEach(track => track.stop());
 
-        function resetTimer() {
-            if (timerId) clearInterval(timerId);
-            timerId = null;
-            timerEl.textContent = '00:00';
-        }
-
-        function stopRecorder() {
-            if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-        }
-
-        function cleanupStream() {
-            if (mediaRecorder && mediaRecorder.stream) {
-                mediaRecorder.stream.getTracks().forEach((t) => t.stop());
-            }
-        }
-
-        async function startRecording() {
-            clearMsg();
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showMsg('Audio recording is not supported in this browser.', 'error');
-                return;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-                if (!window.MediaRecorder) {
-                    stream.getTracks().forEach((t) => t.stop());
-                    showMsg('MediaRecorder is not available in this browser.', 'error');
-                    return;
-                }
-
-                mediaRecorder = new MediaRecorder(stream);
-                currentMimeType = mediaRecorder.mimeType || 'audio/webm';
-                chunks = [];
-
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data && e.data.size > 0) chunks.push(e.data);
-                };
-
-                mediaRecorder.onstart = () => {
-                    startedAt = Date.now();
-                    timerId = setInterval(updateTimer, 1000);
-                    pulseWrap.classList.add('recording');
-                    recordBtn.classList.add('recording');
-                    recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
-                    setStatus('Recording in progress...', '--danger');
+                // Create the final Blob
+                currentBlob = new Blob(chunks, { type: mimeType });
+                
+                if (currentBlob.size > 2000) { // Ensure at least ~2KB captured
+                    setStatus('Voice captured successfully.', '--success');
+                    setActionState(true);
+                } else {
+                    setStatus('Recording too short. Please try again.', '--muted');
+                    currentBlob = null;
                     setActionState(false);
-                };
-
-                mediaRecorder.onstop = () => {
-                    resetTimer();
-                    pulseWrap.classList.remove('recording');
-                    recordBtn.classList.remove('recording');
-                    recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-
-                    cleanupStream();
-
-                    currentBlob = chunks.length ? new Blob(chunks, { type: currentMimeType }) : null;
-                    if (currentBlob) {
-                        setStatus('Recording complete. Ready to analyze.', '--success');
-                        setActionState(true);
-                    } else {
-                        setStatus('No audio captured. Try again.', '--muted');
-                        setActionState(false);
-                    }
-                };
-
-                mediaRecorder.start();
-            } catch (err) {
-                showMsg('Microphone access denied or unavailable.', 'error');
-            }
-        }
-
-        recordBtn.addEventListener('click', async () => {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                await startRecording();
-            } else {
-                stopRecorder();
-            }
-        });
-
-        function playRecording() {
-            if (!currentBlob) {
-                showMsg('No audio available to play.', 'error');
-                return;
-            }
-
-            if (playbackAudio) {
-                playbackAudio.pause();
-                playbackAudio = null;
-            }
-
-            const url = URL.createObjectURL(currentBlob);
-            playbackAudio = new Audio(url);
-            playbackAudio.onended = () => URL.revokeObjectURL(url);
-            playbackAudio.play();
-            setStatus('Playing captured audio...', '--muted');
-        }
-
-        function getUploadFilename() {
-            if (currentBlob && currentBlob.name) return currentBlob.name;
-            if (currentMimeType.includes('wav')) return 'recording.wav';
-            if (currentMimeType.includes('mpeg')) return 'recording.mp3';
-            if (currentMimeType.includes('mp4')) return 'recording.m4a';
-            return 'recording.webm';
-        }
-
-        async function submitAudio() {
-            clearMsg();
-            if (!currentBlob) {
-                showMsg('Please record or upload audio first.', 'error');
-                return;
-            }
-
-            const email = getActiveEmail();
-            if (!email) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            analyzeBtn.disabled = true;
-            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-            const form = new FormData();
-            form.append('audio', currentBlob, getUploadFilename());
-            form.append('user_email', email);
-
-            try {
-                const res = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: form });
-                const text = await res.text();
-                let data = {};
-                try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
-
-                if (!res.ok || data.status !== 'success') {
-                    throw new Error(data.message || 'Upload failed.');
                 }
+            };
 
-                showMsg('Analysis completed. Redirecting to history...', 'success');
-                setTimeout(() => { window.location.href = 'history.html'; }, 1000);
-            } catch (err) {
-                showMsg(err.message || 'Unable to analyze audio.', 'error');
-            } finally {
-                analyzeBtn.disabled = false;
-                analyzeBtn.innerHTML = '<i class="fas fa-brain"></i> Analyze Tone';
-            }
+            mediaRecorder.start();
+        } catch (err) {
+            console.error(err);
+            showMsg('Microphone access denied or unavailable.', 'error');
+        }
+    }
+
+    recordBtn.addEventListener('click', () => {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            startRecording();
+        } else {
+            mediaRecorder.stop();
+        }
+    });
+
+    // --- PLAYBACK ---
+    function playRecording() {
+        if (!currentBlob) return;
+        if (playbackAudio) playbackAudio.pause();
+
+        const url = URL.createObjectURL(currentBlob);
+        playbackAudio = new Audio(url);
+        playbackAudio.onended = () => URL.revokeObjectURL(url);
+        playbackAudio.play();
+        setStatus('Playing back recording...', '--primary');
+    }
+
+    // --- SUBMISSION (FIXES 400 ERROR) ---
+    async function submitAudio() {
+        clearMsg();
+        if (!currentBlob) {
+            showMsg('Please record audio first.', 'error');
+            return;
         }
 
-        function resetRecording() {
-            stopRecorder();
-            cleanupStream();
-            currentBlob = null;
-            chunks = [];
-            currentMimeType = 'audio/webm';
-            if (playbackAudio) {
-                playbackAudio.pause();
-                playbackAudio = null;
-            }
-            resetTimer();
-            pulseWrap.classList.remove('recording');
-            recordBtn.classList.remove('recording');
-            recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-            setActionState(false);
-            setStatus('Click microphone to start recording.', '--muted');
-            clearMsg();
-            document.getElementById('file-input').value = '';
+        const email = getActiveEmail();
+        if (!email) {
+            window.location.href = 'login.html';
+            return;
         }
 
-        document.getElementById('file-input').addEventListener('change', (e) => {
-            clearMsg();
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+        setStatus('Uploading to AI Engine...', '--muted');
 
-            if (!file.type.startsWith('audio/')) {
-                showMsg('Please upload a valid audio file.', 'error');
-                return;
+        const form = new FormData();
+        // Librosa handles .webm files perfectly, so we keep the native format
+        form.append('audio', currentBlob, 'voice_capture.webm');
+        form.append('user_email', email);
+
+        try {
+            const res = await fetch(`${API_BASE}/api/upload`, {
+                method: 'POST',
+                body: form // Note: No 'Content-Type' header here. Let the browser handle it.
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || data.status !== 'success') {
+                throw new Error(data.message || 'Server rejected the audio data.');
             }
 
-            currentBlob = file;
-            currentMimeType = file.type || 'audio/mpeg';
-            setActionState(true);
-            resetTimer();
-            setStatus(`File loaded: ${file.name}`, '--success');
-        });
-
-        function logout() {
-            sessionStorage.removeItem('activeUser');
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminEmail');
-            window.location.href = 'index.html';
+            showMsg('Analysis complete! Redirecting...', 'success');
+            setTimeout(() => { window.location.href = 'history.html'; }, 1200);
+        } catch (err) {
+            showMsg(err.message || 'The server encountered an error during analysis.', 'error');
+            console.error("Analysis Error:", err);
+        } finally {
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<i class="fas fa-brain"></i> Analyze Tone';
         }
+    }
 
-        window.onload = () => {
-            const email = getActiveEmail();
-            if (!email) {
-                window.location.href = 'login.html';
-                return;
-            }
-            document.getElementById('user-pill').innerText = email;
-            setActionState(false);
-        };
-    </script>
+    // --- UTILS ---
+    function resetRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        currentBlob = null;
+        chunks = [];
+        if (playbackAudio) playbackAudio.pause();
+        resetTimer();
+        pulseWrap.classList.remove('recording');
+        recordBtn.classList.remove('recording');
+        recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        setActionState(false);
+        setStatus('Click microphone to start recording.', '--muted');
+        clearMsg();
+        document.getElementById('file-input').value = '';
+    }
+
+    document.getElementById('file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        clearMsg();
+        currentBlob = file;
+        setStatus(`Loaded: ${file.name}`, '--success');
+        setActionState(true);
+    });
+
+    function logout() {
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    window.onload = () => {
+        const email = getActiveEmail();
+        if (!email) {
+            window.location.href = 'login.html';
+            return;
+        }
+        document.getElementById('user-pill').innerText = email;
+        setActionState(false);
+    };
+</script>
 </body>
 </html>

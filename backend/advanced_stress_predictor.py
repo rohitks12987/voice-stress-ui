@@ -16,7 +16,8 @@ class AdvancedStressPredictor:
         self.model_path = str(model_path)
         self.window_size = window_size
         self.sample_rate = 22050
-        self.clip_duration = 3.0  # Training segment length
+        # Undefined duration means: analyze the full uploaded track as one sample.
+        self.clip_duration = None
         self.n_mfcc = 13
         self.model = None
         self.scaler = None
@@ -71,23 +72,36 @@ class AdvancedStressPredictor:
         return probs, classes
 
     def predict_long_audio(self, audio_path: str) -> Dict:
-        """Processes audio of any length by segmenting it into 3s chunks."""
+        """Processes audio of any length; defaults to full-track analysis."""
         y, sr = librosa.load(audio_path, sr=self.sample_rate)
         duration = librosa.get_duration(y=y, sr=sr)
-        seg_samples = int(self.clip_duration * sr)
         
-        if len(y) < seg_samples: # Fallback for short audio
+        # Full-track mode (undefined clip duration).
+        if not self.clip_duration or self.clip_duration <= 0:
             feat = self.extract_features_from_audio(y, sr)
             probs, classes = self._predict_raw_probabilities(feat)
             all_probs = [probs]
         else:
-            all_probs = []
-            step = int(sr * 1.0) # 1-second step for overlap
-            for start in range(0, len(y) - seg_samples, step):
-                chunk = y[start : start + seg_samples]
-                feat = self.extract_features_from_audio(chunk, sr)
+            seg_samples = int(self.clip_duration * sr)
+        
+            if len(y) < seg_samples: # Fallback for short audio
+                feat = self.extract_features_from_audio(y, sr)
                 probs, classes = self._predict_raw_probabilities(feat)
-                all_probs.append(probs)
+                all_probs = [probs]
+            else:
+                all_probs = []
+                step = int(sr * 1.0) # 1-second step for overlap
+                for start in range(0, len(y) - seg_samples + 1, step):
+                    chunk = y[start : start + seg_samples]
+                    feat = self.extract_features_from_audio(chunk, sr)
+                    probs, classes = self._predict_raw_probabilities(feat)
+                    all_probs.append(probs)
+                # Ensure at least one segment is processed for edge-length clips.
+                if not all_probs:
+                    chunk = y[-seg_samples:] if len(y) >= seg_samples else y
+                    feat = self.extract_features_from_audio(chunk, sr)
+                    probs, classes = self._predict_raw_probabilities(feat)
+                    all_probs.append(probs)
 
         avg_probs = np.mean(all_probs, axis=0)
         label = classes[int(np.argmax(avg_probs))]
