@@ -187,6 +187,43 @@
         }
         .upload-box:hover { border-color: #335277; color: #cbd5e1; }
 
+        .quick-panel {
+            text-align: left;
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .quick-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        .quick-text {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .quick-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .quick-chip {
+            border: 1px solid var(--card-border);
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
         @media (max-width: 980px) {
             .sidebar { position: static; width: 100%; height: auto; }
             body { display: block; }
@@ -205,7 +242,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-icon"><i class="fas fa-microchip"></i></div>
-            <div class="logo-text">VocalVibe <span>Pro</span></div>
+            <div class="logo-text">Mental Stress Detection <span>Using Voice Tone Analysis</span></div>
         </div>
         <nav class="nav-menu">
             <a class="nav-item" href="dashboard.html"><i class="fas fa-th-large"></i> <span>Overview</span></a>
@@ -221,7 +258,7 @@
     <main class="main-content">
         <header>
             <div class="welcome">
-                <h1>Vocal Stress Scan</h1>
+                <h1>Voice Stress Scan</h1>
                 <p>Record or upload audio for stress analysis</p>
             </div>
             <div class="user-profile">
@@ -236,6 +273,15 @@
         <section class="record-card">
             <div id="error-msg" class="msg error"></div>
             <div id="success-msg" class="msg success"></div>
+
+            <div id="quick-panel" class="quick-panel" style="display:none;">
+                <div class="quick-label">Quick Scan Paragraph</div>
+                <p id="quick-text" class="quick-text"></p>
+                <div class="quick-meta">
+                    <div id="quick-status" class="quick-chip">Reading check: Waiting...</div>
+                    <div id="quick-progress" class="quick-chip">Progress: 0%</div>
+                </div>
+            </div>
 
             <div class="pulse-wrapper" id="pulse-wrap">
                 <div class="pulse-ring"></div>
@@ -272,6 +318,12 @@
     let startedAt = 0;
     let recordedDurationSec = 0;
     let playbackAudio = null;
+    let quickScanMode = false;
+    let speechRecognition = null;
+    let speechTranscript = "";
+    let speechInterim = "";
+    const QUICK_SCAN_TEXT = "This is a standard reading passage for voice scan. Please read this paragraph clearly at a natural pace. Keep your voice steady and continue reading until recording stops.";
+    const QUICK_SCAN_WORDS = QUICK_SCAN_TEXT.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
 
     const recordBtn = document.getElementById('record-btn');
     const pulseWrap = document.getElementById('pulse-wrap');
@@ -280,6 +332,130 @@
     const playBtn = document.getElementById('play-btn');
     const analyzeBtn = document.getElementById('analyze-btn');
     const resetBtn = document.getElementById('reset-btn');
+
+    function normalizeWords(text) {
+        return (text || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, " ")
+            .split(/\s+/)
+            .filter(Boolean);
+    }
+
+    function readingProgressPercent(transcriptText) {
+        if (!QUICK_SCAN_WORDS.length) return 0;
+        const spoken = normalizeWords(transcriptText);
+        if (!spoken.length) return 0;
+
+        let i = 0;
+        let j = 0;
+        while (i < QUICK_SCAN_WORDS.length && j < spoken.length) {
+            if (QUICK_SCAN_WORDS[i] === spoken[j]) {
+                i += 1;
+            }
+            j += 1;
+        }
+        return Math.min(100, Math.round((i / QUICK_SCAN_WORDS.length) * 100));
+    }
+
+    function updateQuickReadingUI() {
+        const progressEl = document.getElementById('quick-progress');
+        const statusEl = document.getElementById('quick-status');
+        if (!progressEl || !statusEl) return;
+
+        const progress = readingProgressPercent(`${speechTranscript} ${speechInterim}`.trim());
+        progressEl.innerText = `Progress: ${progress}%`;
+
+        if (progress >= 70) {
+            statusEl.innerText = 'Reading check: Good reading detected';
+            statusEl.style.color = '#10b981';
+            return;
+        }
+        if (progress >= 35) {
+            statusEl.innerText = 'Reading check: Partial paragraph detected';
+            statusEl.style.color = '#f59e0b';
+            return;
+        }
+        if (speechTranscript.trim() || speechInterim.trim()) {
+            statusEl.innerText = 'Reading check: Voice detected, keep reading paragraph';
+            statusEl.style.color = '#f59e0b';
+            return;
+        }
+        statusEl.innerText = 'Reading check: Waiting for speech...';
+        statusEl.style.color = 'var(--text-muted)';
+    }
+
+    function stopReadingMonitor() {
+        if (!speechRecognition) return;
+        try {
+            speechRecognition.stop();
+        } catch (err) {
+            console.error('Speech recognition stop error:', err);
+        }
+    }
+
+    function startReadingMonitor() {
+        if (!quickScanMode) return;
+
+        speechTranscript = '';
+        speechInterim = '';
+        updateQuickReadingUI();
+
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Recognition) {
+            const statusEl = document.getElementById('quick-status');
+            if (statusEl) {
+                statusEl.innerText = 'Reading check: Browser does not support live speech check';
+                statusEl.style.color = '#f59e0b';
+            }
+            return;
+        }
+
+        try {
+            speechRecognition = new Recognition();
+            speechRecognition.lang = 'en-US';
+            speechRecognition.interimResults = true;
+            speechRecognition.continuous = true;
+
+            speechRecognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                    const text = event.results[i][0] ? event.results[i][0].transcript : '';
+                    if (event.results[i].isFinal) {
+                        speechTranscript += ` ${text}`;
+                    } else {
+                        interim += ` ${text}`;
+                    }
+                }
+                speechInterim = interim;
+                updateQuickReadingUI();
+            };
+
+            speechRecognition.onerror = () => {
+                const statusEl = document.getElementById('quick-status');
+                if (statusEl && statusEl.innerText.indexOf('Good reading detected') === -1) {
+                    statusEl.innerText = 'Reading check: Speech check interrupted, continue recording';
+                    statusEl.style.color = '#f59e0b';
+                }
+            };
+
+            speechRecognition.start();
+        } catch (err) {
+            console.error('Speech recognition start error:', err);
+        }
+    }
+
+    function setupQuickScanMode() {
+        const params = new URLSearchParams(window.location.search);
+        quickScanMode = (params.get('mode') || '').toLowerCase() === 'quick';
+        if (!quickScanMode) return;
+
+        const panel = document.getElementById('quick-panel');
+        const textEl = document.getElementById('quick-text');
+        if (panel) panel.style.display = 'block';
+        if (textEl) textEl.innerText = QUICK_SCAN_TEXT;
+        setStatus('Quick Scan mode: Read the paragraph while recording.', '--primary');
+        updateQuickReadingUI();
+    }
 
     function toggleSidebar(event) {
         if (event) event.preventDefault();
@@ -427,11 +603,17 @@
                 pulseWrap.classList.add('recording');
                 recordBtn.classList.add('recording');
                 recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
-                setStatus('Recording... Speak as long as needed.', '--danger');
+                if (quickScanMode) {
+                    setStatus('Recording... Read the paragraph on screen.', '--danger');
+                    startReadingMonitor();
+                } else {
+                    setStatus('Recording... Speak as long as needed.', '--danger');
+                }
                 setActionState(false);
             };
 
             mediaRecorder.onstop = () => {
+                stopReadingMonitor();
                 recordedDurationSec = Math.max(0, (Date.now() - startedAt) / 1000);
                 resetTimer();
                 pulseWrap.classList.remove('recording');
@@ -445,7 +627,19 @@
                 currentBlob = new Blob(chunks, { type: mimeType });
                 
                 if (currentBlob.size > 2000) { // Ensure at least ~2KB captured
-                    setStatus('Voice captured successfully.', '--success');
+                    if (quickScanMode) {
+                        const progress = readingProgressPercent(speechTranscript);
+                        if (progress >= 70) {
+                            setStatus('Voice captured. Reading quality check passed.', '--success');
+                        } else if (progress >= 35) {
+                            setStatus('Voice captured. Partial reading detected, try clearer reading.', '--warning');
+                        } else {
+                            setStatus('Voice captured, but reading was not clearly detected.', '--warning');
+                        }
+                        updateQuickReadingUI();
+                    } else {
+                        setStatus('Voice captured successfully.', '--success');
+                    }
                     setActionState(true);
                 } else {
                     setStatus('Recording too short. Please try again.', '--muted');
@@ -558,16 +752,24 @@
     // --- UTILS ---
     function resetRecording() {
         if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        stopReadingMonitor();
         currentBlob = null;
         recordedDurationSec = 0;
         chunks = [];
+        speechTranscript = '';
+        speechInterim = '';
         if (playbackAudio) playbackAudio.pause();
         resetTimer();
         pulseWrap.classList.remove('recording');
         recordBtn.classList.remove('recording');
         recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
         setActionState(false);
-        setStatus('Click microphone to start recording.', '--muted');
+        if (quickScanMode) {
+            setStatus('Quick Scan mode: Click microphone and read the paragraph.', '--muted');
+            updateQuickReadingUI();
+        } else {
+            setStatus('Click microphone to start recording.', '--muted');
+        }
         clearMsg();
         document.getElementById('file-input').value = '';
     }
@@ -579,6 +781,13 @@
         currentBlob = file;
         recordedDurationSec = 0;
         setStatus(`Loaded: ${file.name}`, '--success');
+        if (quickScanMode) {
+            const statusEl = document.getElementById('quick-status');
+            if (statusEl) {
+                statusEl.innerText = 'Reading check: Not available for uploaded file';
+                statusEl.style.color = '#f59e0b';
+            }
+        }
         setActionState(true);
     });
 
@@ -595,6 +804,7 @@
             return;
         }
         document.getElementById('user-pill').innerText = email;
+        setupQuickScanMode();
         setActionState(false);
     };
 </script>
