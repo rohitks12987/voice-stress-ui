@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical Gateway | Staff Access</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0ea5e9;
@@ -19,9 +17,11 @@
         }
 
         * { box-sizing: border-box; }
+        .fas { display: inline-flex; align-items: center; justify-content: center; font-style: normal; line-height: 1; }
+        .fa-arrow-left::before { content: "\2190"; }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -226,7 +226,7 @@
                 localStorage.setItem('adminEmail', email);
 
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'admin_dashboard.html';
                 }, 900);
             } catch (err) {
                 error.innerText = `[ERROR] ${err.message || 'Unable to authorize session.'}`;
@@ -242,7 +242,7 @@
 
         window.onload = () => {
             if (hasValidAdminSession()) {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'admin_dashboard.html';
                 return;
             }
             clearAdminSession();

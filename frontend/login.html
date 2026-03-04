@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Portal | VocalVibe Pro Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0ea5e9;
@@ -15,7 +13,15 @@
             --card-border: rgba(255, 255, 255, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif; }
+
+        /* Local icon shim */
+        .fas { display: inline-flex; align-items: center; justify-content: center; font-style: normal; line-height: 1; }
+        .fa-arrow-left::before { content: "\2190"; }
+        .fa-microchip::before { content: "\2699"; }
+        .fa-user-circle::before { content: "\1F464"; }
+        .fa-envelope::before { content: "\2709"; }
+        .fa-lock::before { content: "\1F512"; }
 
         body {
             background-color: var(--bg);
