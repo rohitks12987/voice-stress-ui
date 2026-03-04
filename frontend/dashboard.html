@@ -236,6 +236,7 @@
     <audio id="track2" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
 
     <script>
+        const API_BASE = window.location.origin;
         // --- 1. CORE UI ---
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function toggleChat(show) { document.getElementById('chat-window').style.display = show ? 'flex' : 'none'; document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex'; }
@@ -261,13 +262,7 @@
         }
 
         // --- 4. PERFECT CHATBOT BRAIN ---
-        const hospitalKB = {
-            "hello": "Hello! I am your VocalVibe Assistant. How can I help you navigate your health data?",
-            "stress": "Stress is analyzed via pitch variance and vocal jitter. Your latest scan shows 'Low' stress.",
-            "privacy": "All clinical recordings are encrypted. We analyze your voice in real-time without permanent storage.",
-            "help": "I can help you understand your Health Score, guide you through a Voice Scan, or assist with SOS setup.",
-            "sos": "If you activate SOS, our hospital response team and your emergency contacts are notified instantly."
-        };
+        const hospitalKB = {};
 
         function appendMsg(text, sender) {
             const body = document.getElementById('chat-body');
@@ -292,7 +287,7 @@
             body.scrollTop = body.scrollHeight; // AUTO-SCROLL FIX
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chat-input');
             const status = document.getElementById('chat-status');
             const msg = input.value.trim();
@@ -302,14 +297,25 @@
             input.value = "";
             status.innerText = "Analyzing...";
 
-            // Check keywords
-            let foundKey = Object.keys(hospitalKB).find(k => msg.toLowerCase().includes(k));
-            
-            setTimeout(() => {
-                const response = foundKey ? hospitalKB[foundKey] : "I'm analyzing your request. For clinical emergencies, please use the SOS button.";
-                appendMsg(response, 'bot');
+            try {
+                const res = await fetch(`${API_BASE}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const rawBody = await res.text();
+                let data = {};
+                try { data = rawBody ? JSON.parse(rawBody) : {}; } catch { data = {}; }
+                if (!res.ok || data.status !== 'success') {
+                    throw new Error(data.message || rawBody || `Chat request failed with status ${res.status}`);
+                }
+                appendMsg(data.reply || "I could not generate a response right now.", 'bot');
+            } catch (err) {
+                appendMsg(`Real AI error: ${err.message}`, 'bot');
+                console.error("Chat Error:", err);
+            } finally {
                 status.innerText = "Assistant Online";
-            }, 800);
+            }
         }
 
         // --- 5. AUDIO & LOGOUT ---

@@ -1,7 +1,7 @@
 from __future__ import annotations
-from collections import deque
+import wave
 from pathlib import Path
-from typing import Deque, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple, Union
 import joblib
 import librosa
 import numpy as np
@@ -16,8 +16,8 @@ class AdvancedStressPredictor:
         self.model_path = str(model_path)
         self.window_size = window_size
         self.sample_rate = 22050
-        # Undefined duration means: analyze the full uploaded track as one sample.
-        self.clip_duration = None
+        # Analyze in short windows to reduce silence bias from real recordings.
+        self.clip_duration = 2.5
         self.n_mfcc = 13
         self.model = None
         self.scaler = None
@@ -71,10 +71,62 @@ class AdvancedStressPredictor:
         classes = [str(c).upper() for c in self.label_encoder.classes_] if self.label_encoder else ["LOW", "MODERATE", "HIGH"]
         return probs, classes
 
+    def _load_audio_fallback_wav(self, audio_path: str) -> Tuple[np.ndarray, int]:
+        with wave.open(audio_path, "rb") as wav_file:
+            channels = wav_file.getnchannels()
+            sample_width = wav_file.getsampwidth()
+            sr = wav_file.getframerate()
+            frames = wav_file.readframes(wav_file.getnframes())
+
+        if sample_width == 1:
+            raw = np.frombuffer(frames, dtype=np.uint8).astype(np.float32)
+            raw = (raw - 128.0) / 128.0
+        elif sample_width == 2:
+            raw = np.frombuffer(frames, dtype="<i2").astype(np.float32) / 32768.0
+        elif sample_width == 4:
+            raw = np.frombuffer(frames, dtype="<i4").astype(np.float32) / 2147483648.0
+        else:
+            raise ValueError(f"Unsupported WAV sample width: {sample_width * 8}-bit")
+
+        if channels > 1:
+            raw = raw.reshape(-1, channels).mean(axis=1)
+
+        if sr != self.sample_rate:
+            raw = librosa.resample(raw, orig_sr=sr, target_sr=self.sample_rate)
+            sr = self.sample_rate
+
+        return raw.astype(np.float32), sr
+
+    def _load_audio(self, audio_path: str) -> Tuple[np.ndarray, int]:
+        try:
+            return librosa.load(audio_path, sr=self.sample_rate)
+        except Exception:
+            return self._load_audio_fallback_wav(audio_path)
+
+    def _prepare_audio(self, y: np.ndarray, sr: int) -> np.ndarray:
+        if y.ndim > 1:
+            y = librosa.to_mono(y)
+
+        # Remove leading/trailing silence; browser recordings often include long quiet sections.
+        y_trimmed, _ = librosa.effects.trim(y, top_db=25)
+        if y_trimmed.size > 0:
+            y = y_trimmed
+
+        peak = float(np.max(np.abs(y))) if y.size else 0.0
+        if peak > 0:
+            y = y / peak
+
+        return y.astype(np.float32)
+
     def predict_long_audio(self, audio_path: str) -> Dict:
         """Processes audio of any length; defaults to full-track analysis."""
-        y, sr = librosa.load(audio_path, sr=self.sample_rate)
+        y, sr = self._load_audio(audio_path)
+        raw_duration = librosa.get_duration(y=y, sr=sr)
+        y = self._prepare_audio(y, sr)
         duration = librosa.get_duration(y=y, sr=sr)
+
+        if duration < 0.4:
+            raise ValueError("Speech is too short after silence removal. Please record a longer, clearer sample.")
         
         # Full-track mode (undefined clip duration).
         if not self.clip_duration or self.clip_duration <= 0:
