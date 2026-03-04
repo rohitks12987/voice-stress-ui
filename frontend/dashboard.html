@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | VocalVibe Pro Clinical</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0ea5e9;
@@ -21,20 +19,41 @@
             --text-muted: #94a3b8;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* Local icon shim to avoid third-party CDN requests blocked by Tracking Prevention */
+        .fas { display: inline-flex; align-items: center; justify-content: center; font-style: normal; line-height: 1; }
+        .fa-microchip::before { content: "\2699"; }
+        .fa-th-large::before { content: "\2630"; }
+        .fa-microphone::before { content: "\1F3A4"; }
+        .fa-history::before { content: "\1F553"; }
+        .fa-bars::before { content: "\2261"; }
+        .fa-sign-out-alt::before { content: "\21AA"; }
+        .fa-circle::before { content: "\25CF"; }
+        .fa-chart-bar::before { content: "\1F4CA"; }
+        .fa-tint::before { content: "\1F4A7"; }
+        .fa-redo::before { content: "\21BB"; }
+        .fa-headphones-alt::before { content: "\1F3A7"; }
+        .fa-play::before { content: "\25B6"; }
+        .fa-pause::before { content: "\23F8"; }
+        .fa-wave-square::before { content: "\223F"; }
+        .fa-robot::before { content: "\1F916"; }
+        .fa-times::before { content: "\2715"; }
+        .fa-paper-plane::before { content: "\27A4"; }
 
         /* --- SIDEBAR --- */
         .sidebar {
             width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--card-border);
             display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: 0.3s;
+            overflow: hidden;
         }
         .sidebar.collapsed { width: 80px; }
         .sidebar-header { padding: 30px 20px; display: flex; align-items: center; gap: 12px; }
         .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; flex-shrink: 0; }
         .logo-text { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; transition: 0.3s; }
         .sidebar.collapsed .logo-text { display: none; }
+        .sidebar.collapsed .sidebar-header { justify-content: center; padding: 24px 8px; }
 
         .nav-menu { flex: 1; padding: 10px; }
         .nav-item { 
@@ -43,6 +62,12 @@
         }
         .nav-item:hover, .nav-item.active { background: rgba(14, 165, 233, 0.1); color: var(--primary); }
         .nav-item i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .sidebar.collapsed .nav-menu { padding: 10px 8px; }
+        .sidebar.collapsed .nav-item { justify-content: center; gap: 0; padding: 14px 0; }
+        .sidebar.collapsed .nav-item span { display: none; }
+        .sidebar.collapsed .nav-item i { width: auto; }
+        .sidebar-footer { padding: 20px; }
+        .sidebar.collapsed .sidebar-footer { padding: 8px; }
 
         /* --- MAIN CONTENT --- */
         .main-content { flex: 1; margin-left: 260px; padding: 40px; transition: 0.3s; width: calc(100% - 260px); }
@@ -77,6 +102,14 @@
         .water-progress { width: 100%; height: 12px; background: #1e293b; border-radius: 10px; overflow: hidden; margin: 15px 0; }
         .water-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: 0.8s ease; }
         .btn-sm { padding: 8px 15px; border-radius: 8px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-size: 0.8rem; }
+        .track-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+        .play-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
         
         /* --- CHATBOT UI (PRO) --- */
         #ai-trigger { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 15px 25px; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); font-weight: 700; display: flex; align-items: center; gap: 8px; z-index: 2000; }
@@ -112,9 +145,9 @@
             <a href="#" class="nav-item active"><i class="fas fa-th-large"></i> <span>Overview</span></a>
             <a href="record.html" class="nav-item"><i class="fas fa-microphone"></i> <span>Voice Scan</span></a>
             <a href="history.html" class="nav-item"><i class="fas fa-history"></i> <span>History</span></a>
-            <a href="#" class="nav-item" onclick="toggleSidebar()"><i class="fas fa-bars"></i> <span>Collapse</span></a>
+            <a href="#" class="nav-item" onclick="toggleSidebar(event)"><i class="fas fa-bars"></i> <span id="collapse-label">Collapse</span></a>
         </nav>
-        <div style="padding: 20px;">
+        <div class="sidebar-footer">
             <a href="#" onclick="logout()" class="nav-item" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
         </div>
     </aside>
@@ -147,15 +180,15 @@
                 <div class="stats-grid">
                     <div class="stat-card highlight">
                         <span class="label">Vocal Health</span>
-                        <span class="value">92%</span>
+                        <span class="value" id="vocal-health">--</span>
                     </div>
                     <div class="stat-card">
                         <span class="label">Latest Stress</span>
-                        <span class="value" style="color: var(--success);">Low</span>
+                        <span class="value" id="latest-stress">--</span>
                     </div>
                     <div class="stat-card">
                         <span class="label">Total Analyses</span>
-                        <span class="value">24</span>
+                        <span class="value" id="total-analyses">0</span>
                     </div>
                 </div>
 
@@ -238,7 +271,15 @@
     <script>
         const API_BASE = window.location.origin;
         // --- 1. CORE UI ---
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function toggleSidebar(event) {
+            if (event) event.preventDefault();
+            const sidebar = document.getElementById('sidebar');
+            const collapsed = sidebar.classList.toggle('collapsed');
+            const label = document.getElementById('collapse-label');
+            if (label) {
+                label.innerText = collapsed ? 'Expand' : 'Collapse';
+            }
+        }
         function toggleChat(show) { document.getElementById('chat-window').style.display = show ? 'flex' : 'none'; document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex'; }
 
         // --- 2. HYDRATION ---
@@ -259,6 +300,95 @@
             document.getElementById('low-bar').style.height = low + '%';
             document.getElementById('med-bar').style.height = med + '%';
             document.getElementById('high-bar').style.height = high + '%';
+        }
+
+        function getActiveEmail() {
+            const email = sessionStorage.getItem('activeUser');
+            if (email) return email;
+            const adminToken = localStorage.getItem('adminToken');
+            const adminEmail = localStorage.getItem('adminEmail');
+            if (adminToken && adminEmail) return adminEmail;
+            return null;
+        }
+
+        function setLatestStress(level) {
+            const el = document.getElementById('latest-stress');
+            const text = (level || 'No Data').trim();
+            const lower = text.toLowerCase();
+            el.innerText = text;
+
+            if (lower.includes('high')) {
+                el.style.color = 'var(--danger)';
+                return;
+            }
+            if (lower.includes('mod')) {
+                el.style.color = 'var(--warning)';
+                return;
+            }
+            if (lower.includes('low')) {
+                el.style.color = 'var(--success)';
+                return;
+            }
+            el.style.color = 'var(--text-muted)';
+        }
+
+        function toPercent(count, total) {
+            if (!total) return 0;
+            return Math.round((Number(count || 0) / total) * 100);
+        }
+
+        function applyDashboardStats(summary, latestStress) {
+            const total = Number(summary.total || 0);
+            const avgScore = Number(summary.avg_score || 0);
+            const distribution = summary.distribution || {};
+
+            document.getElementById('total-analyses').innerText = String(total);
+
+            if (total > 0) {
+                const health = Math.max(0, Math.min(100, 100 - avgScore));
+                document.getElementById('vocal-health').innerText = `${Math.round(health)}%`;
+            } else {
+                document.getElementById('vocal-health').innerText = '--';
+            }
+
+            setLatestStress(latestStress);
+
+            const low = Number(distribution.low || 0);
+            const moderate = Number(distribution.moderate || 0);
+            const high = Number(distribution.high || 0);
+            const base = total || (low + moderate + high);
+
+            updateGraph(
+                toPercent(low, base),
+                toPercent(moderate, base),
+                toPercent(high, base)
+            );
+        }
+
+        async function loadDashboardStats(email) {
+            const summaryUrl = `${API_BASE}/api/dashboard-summary?user_email=${encodeURIComponent(email)}`;
+            const latestUrl = `${API_BASE}/api/history?user_email=${encodeURIComponent(email)}&limit=1`;
+
+            const [summaryRes, latestRes] = await Promise.all([
+                fetch(summaryUrl),
+                fetch(latestUrl),
+            ]);
+
+            if (!summaryRes.ok) {
+                throw new Error(`Dashboard summary failed (${summaryRes.status})`);
+            }
+
+            const summary = await summaryRes.json();
+
+            let latestStress = 'No Data';
+            if (latestRes.ok) {
+                const latestRows = await latestRes.json();
+                if (Array.isArray(latestRows) && latestRows.length) {
+                    latestStress = latestRows[0].stress_level || latestStress;
+                }
+            }
+
+            applyDashboardStats(summary || {}, latestStress);
         }
 
         // --- 4. PERFECT CHATBOT BRAIN ---
@@ -329,11 +459,29 @@
 
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-        window.onload = () => {
+        window.onload = async () => {
             updateWaterUI();
-            const active = sessionStorage.getItem('activeUser') || 'Guest';
-            document.getElementById('display-name').innerText = active;
-            setTimeout(() => updateGraph(65, 25, 10), 500); 
+            updateGraph(0, 0, 0);
+
+            const activeEmail = getActiveEmail();
+            if (!activeEmail) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const displayName = sessionStorage.getItem('userName') || activeEmail;
+            document.getElementById('display-name').innerText = displayName;
+
+            try {
+                await loadDashboardStats(activeEmail);
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+                document.getElementById('vocal-health').innerText = '--';
+                document.getElementById('total-analyses').innerText = '0';
+                setLatestStress('Offline');
+                updateGraph(0, 0, 0);
+            }
+
             setTimeout(() => appendMsg("Clinical systems online. Welcome to VocalVibe Pro.", 'bot'), 1000);
         };
     </script>

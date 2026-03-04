@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personnel Authentication | VocalVibe Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0ea5e9;
@@ -16,8 +14,14 @@
             --text: #f8fafc;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif; }
+
+        /* Local icon shim */
+        .fas { display: inline-flex; align-items: center; justify-content: center; font-style: normal; line-height: 1; }
+        .fa-user-shield::before { content: "\1F6E1"; }
+        .fa-arrow-left::before { content: "\2190"; }
+        .fa-check-circle::before { content: "\2714"; }
+
         body {
             background-color: var(--bg);
             color: var(--text);
@@ -28,15 +32,16 @@
             overflow: hidden;
         }
 
-        /* Biometric Background Effect */
         .scan-line {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
             background: linear-gradient(to right, transparent, var(--primary), transparent);
             opacity: 0.5;
             animation: scan 4s linear infinite;
         }
-
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
@@ -67,12 +72,20 @@
         p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 30px; }
 
         .input-group { text-align: left; margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; margin-left: 5px; }
-        
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            margin-left: 5px;
+        }
+
         input {
             width: 100%;
             padding: 15px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid #1e293b;
             border-radius: 12px;
             color: white;
@@ -80,7 +93,6 @@
             outline: none;
             transition: 0.3s;
         }
-
         input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
         .btn-authorize {
@@ -96,15 +108,13 @@
             letter-spacing: 1px;
             margin-top: 10px;
         }
-
         .btn-authorize:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
         #msg { margin-top: 20px; font-size: 0.8rem; font-weight: 600; min-height: 20px; }
-        
+
         .footer-link { margin-top: 25px; display: block; color: #475569; text-decoration: none; font-size: 0.75rem; font-weight: 600; }
         .footer-link:hover { color: var(--primary); }
 
-        /* Error Shake */
         .shake { animation: shake 0.4s ease-in-out; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -128,7 +138,7 @@
 
         <div class="input-group">
             <label>Security Passcode</label>
-            <input type="password" id="password" placeholder="••••••••">
+            <input type="password" id="password" placeholder="********">
         </div>
 
         <button class="btn-authorize" onclick="attemptLogin()">AUTHORIZE SESSION</button>
@@ -160,26 +170,21 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Success Path
                     msg.style.color = "#10b981";
                     msg.innerHTML = '<i class="fas fa-check-circle"></i> Identity Verified. Issuing Token...';
-                    
-                    // Save Token for Dashboard use
+
                     localStorage.setItem('adminToken', data.token);
                     localStorage.setItem('adminEmail', email);
 
                     setTimeout(() => {
                         window.location.href = 'admin_dashboard.html';
                     }, 1200);
-
                 } else {
-                    // Failure Path
                     throw new Error(data.message || "Access Denied");
                 }
-
             } catch (err) {
                 msg.style.color = "#ef4444";
-                msg.innerText = `✗ ${err.message}`;
+                msg.innerText = `X ${err.message}`;
                 card.classList.add('shake');
                 setTimeout(() => card.classList.remove('shake'), 400);
             }
