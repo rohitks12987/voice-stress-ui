@@ -1,5 +1,4 @@
-__pycache__/
-*.pyc
 *.pkl
+models/
 uploads/
-venv/
+__pycache__/
