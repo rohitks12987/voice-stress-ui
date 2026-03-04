@@ -419,7 +419,8 @@ def staff_required(f):
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
     data = request.get_json(silent=True) or {}
-    if data.get("email") == ADMIN_EMAIL and data.get("password") == ADMIN_PASS:
+    email = (data.get("email") or "").strip().lower()
+    if email == ADMIN_EMAIL.lower() and data.get("password") == ADMIN_PASS:
         # LOG THE SUCCESSFUL ACCESS
         db = get_db()
         with db.cursor() as cur:
@@ -590,13 +591,14 @@ def upload_audio():
     stress = stress_label.capitalize()
     score = _build_stress_score(stress_label.lower(), confidence)
     emo = STRESS_TO_EMOTION.get(stress_label.lower(), "Focused")
+    timestamp = datetime.now()
 
     db = get_db()
     with db.cursor() as cur:
         cur.execute("""
             INSERT INTO analysis_history (user_email, date, time, stress_level, emotion, score, audio_file)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (user_email, datetime.now().strftime("%b %d, %Y"), datetime.now().strftime("%I:%M %p"), stress, emo, score, filename))
+        """, (user_email, timestamp.strftime("%b %d, %Y"), timestamp.strftime("%I:%M %p"), stress, emo, score, filename))
     db.commit()
     db.close()
 
@@ -605,7 +607,7 @@ def upload_audio():
         "stress_level": stress,
         "score": round(score, 1),
         "emotion": emo,
-        "duration": round(prediction["duration"], 2),
+        "duration": round(float(prediction.get("duration", 0.0)), 2),
         "model": Path(_active_model_path).name if _active_model_path else "unknown",
         "analysis_source": analysis_source,
         "confidence": round(float(prediction.get("confidence", 0.0)), 4),
@@ -658,11 +660,19 @@ def get_history():
             staff_data = verify_token(token)
             if not staff_data or staff_data["email"] != ADMIN_EMAIL:
                 db.close()
-                return jsonify({"status": "error", "message": "user_email is required"}), 400
+                return jsonify({"status": "error", "message": "Secure Clinical Access Required"}), 401
             cur.execute("SELECT * FROM analysis_history ORDER BY id DESC LIMIT %s", (limit,))
             rows = cur.fetchall()
     db.close()
     return jsonify(rows)
+
+@app.route("/uploads/<path:filename>")
+def serve_upload(filename):
+    safe_name = os.path.basename(filename)
+    file_path = UPLOAD_DIR / safe_name
+    if not file_path.exists() or not file_path.is_file():
+        return jsonify({"status": "error", "message": "Audio file not found"}), 404
+    return send_from_directory(str(UPLOAD_DIR), safe_name, as_attachment=False)
 
 # --- STATIC FILE SERVING ---
 @app.route("/")
