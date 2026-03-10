@@ -44,8 +44,11 @@ class AdvancedStressPredictor:
         centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
         bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr)
         
-        pitches, _ = librosa.piptrack(y=y, sr=sr)
-        pitch_vals = pitches[pitches > 0]
+        # Improved Pitch Detection: Pick the dominant frequency per frame
+        pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+        indices = magnitudes.argmax(axis=0)
+        pitch_vals = pitches[indices, np.arange(pitches.shape[1])]
+        pitch_vals = pitch_vals[pitch_vals > 0] # Filter out silence
 
         features = {f"mfcc_{i}": float(np.mean(mfccs[i])) for i in range(self.n_mfcc)}
         features.update({

@@ -18,6 +18,8 @@ const faqData = {
     "can i delete history": "Currently, history is stored for your wellness tracking, but you can contact support for data requests.",
     
     // Stress & Wellness Tips
+    "what should i do": "You can start by recording your voice to get a stress analysis, or ask me for a breathing exercise.",
+    "i feel sad": "I'm sorry to hear that. Acknowledge your feelings, take a deep breath, and consider talking to a friend or professional.",
     "help me relax": "Try closing your eyes and taking three deep breaths. Inhale for 4, hold for 4, exhale for 4.",
     "i am stressed": "I'm sorry to hear that. Please try a short walk or some water. You can also click the EMERGENCY button if it's too much.",
     "tips for anxiety": "Focus on 5 things you can see, 4 things you can touch, and 3 things you can hear.",
@@ -38,7 +40,7 @@ const faqData = {
 
 // Default responses for unknown queries
 const defaultResponses = [
-    "That's an interesting question. Let me check my wellness guidelines on that.",
-    "I'm here to help with stress management and project info. Could you rephrase that?",
-    "I recommend speaking with a health professional for specific medical advice."
+    "I am tuned to analyze stress and wellness. Could you ask about your stress levels, breathing exercises, or how to use the app?",
+    "I'm here to support your mental wellness. You can ask me 'How do I relax?' or 'How does this work?'.",
+    "For specific medical advice, please consult a doctor. However, I can help you with stress management techniques."
 ];

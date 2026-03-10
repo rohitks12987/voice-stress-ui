@@ -140,6 +140,24 @@
 
         .empty { text-align: center; color: var(--text-muted); padding: 24px; }
 
+        /* Clinical Action Buttons */
+        .history-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            color: white !important;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        .history-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        .high-action { background-color: var(--danger); }
+        .mod-action { background-color: var(--warning); }
+        .low-action { background-color: var(--success); }
+
         @media (max-width: 980px) {
             .sidebar { position: static; width: 100%; height: auto; }
             body { display: block; }
@@ -215,6 +233,7 @@
                         <th>Emotion</th>
                         <th>Score</th>
                         <th>Audio</th>
+                        <th>Clinical Action</th>
                     </tr>
                 </thead>
                 <tbody id="history-body"></tbody>
@@ -321,7 +340,11 @@
             empty.style.display = 'none';
             body.innerHTML = rows.map((row) => {
                 const score = Number(row.score || 0).toFixed(1);
-                const audio = row.audio_file ? `<a class="btn" href="/uploads/${encodeURIComponent(row.audio_file)}" target="_blank">Open</a>` : '--';
+                // Backend now sends full URL for audio_file, so we use it directly to avoid broken links
+                const audio = row.audio_file ? `<a class="btn" href="${row.audio_file}" target="_blank">Open</a>` : '--';
+                const actionLabel = row.recommendation || 'View Report';
+                const actionClass = row.action_class || 'low-action';
+
                 return `
                     <tr>
                         <td>${row.date || '--'}</td>
@@ -330,9 +353,27 @@
                         <td>${row.emotion || 'Unknown'}</td>
                         <td>${score}</td>
                         <td>${audio}</td>
+                        <td>
+                            <button class="history-btn ${actionClass}" onclick="handleAction('${actionLabel}')">
+                                ${actionLabel}
+                            </button>
+                        </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function handleAction(action) {
+            if (action === "Contact Doctor") {
+                alert("Redirecting to Tele-Medicine Portal...");
+            } else if (action === "Breathing Exercise") {
+                alert("Opening Breathing Guide...");
+            } else if (action === "View Report") {
+                alert("Opening Detailed Report...");
+            } else {
+                // Fallback for any other action
+                alert("Viewing details for: " + action);
+            }
         }
 
         function applyFilters() {

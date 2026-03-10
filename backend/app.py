@@ -9,6 +9,7 @@ import mimetypes
 from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
+import urllib.parse
 
 import pymysql
 import pymysql.cursors
@@ -48,7 +49,7 @@ HF_API_TOKEN = os.getenv("HF_API_TOKEN", "").strip()
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "superb/wav2vec2-base-superb-er").strip()
 REMOTE_AI_TIMEOUT_SEC = float(os.getenv("REMOTE_AI_TIMEOUT_SEC", "15"))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
 CHAT_FALLBACK_ENABLED = os.getenv("CHAT_FALLBACK_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 CHAT_PROVIDER = os.getenv("CHAT_PROVIDER", "gemini").strip().lower()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
@@ -188,16 +189,44 @@ def _predict_with_remote_ai(audio_path):
     }
 
 def _chat_fallback_reply(message):
-    text = (message or "").lower()
-    if any(k in text for k in ["stress", "anxiety", "tension"]):
-        return "Stress can raise heart rate, muscle tension, and fatigue. Try 4-7-8 breathing for 2 minutes and re-check your voice scan."
-    if any(k in text for k in ["sleep", "insomnia", "tired"]):
-        return "For better sleep, keep a fixed bedtime, avoid caffeine after 2 PM, and reduce screen use 60 minutes before bed."
-    if any(k in text for k in ["panic", "emergency", "suicide", "harm"]):
-        return "If you are in immediate danger, call emergency services now. You can also use the SOS button in this app."
-    if any(k in text for k in ["hello", "hi", "hey"]):
-        return "Hello. I can help with stress, sleep, breathing routines, and understanding your scan trends."
-    return "I can help with stress management, breathing routines, sleep hygiene, and how to interpret your scan history."
+    """Provides clinical-style fallback responses when AI is offline."""
+    # Add spaces to ensure we match whole words (avoids matching 'hi' in 'this')
+    text = f" {(message or '').lower()} "
+    
+    # Helper to check for whole words
+    def has_word(keywords):
+        return any(f" {k} " in text for k in keywords)
+    
+    # Emergency
+    if has_word(["suicide", "kill", "die", "hurt", "harm", "emergency", "sos"]):
+        return "⚠️ CRITICAL: If you are in immediate danger, please call emergency services (911/112) or use the red SOS button immediately. You are not alone."
+
+    # Greeting & General
+    if has_word(["hello", "hi", "hey", "greetings"]):
+        return "Hello. I am your Clinical Wellness Assistant. I can help you interpret your stress levels, suggest coping mechanisms, or guide you through breathing exercises."
+    
+    if has_word(["who", "made", "created", "developer", "about"]):
+        return "I am the VocalVibe Clinical Assistant, developed to support mental wellness tracking via vocal biomarkers."
+
+    if has_word(["yes", "sure", "ok", "okay", "yeah"]):
+        return "Great. You can proceed by clicking the microphone icon to start a new analysis, or ask me for a specific relaxation tip."
+
+    # Specific Clinical Topics
+    if has_word(["stress", "anxious", "anxiety", "tension", "worried", "panic"]):
+        if has_word(["how", "check", "measure", "test"]):
+             return "To check your stress, go to the 'Voice Scan' tab, click the microphone, and speak for 10-15 seconds."
+        return "High stress levels often affect vocal pitch and jitter. I recommend the 'Box Breathing' technique: Inhale 4s, Hold 4s, Exhale 4s, Hold 4s. Would you like to try a voice scan now?"
+    if has_word(["sleep", "insomnia", "tired", "awake", "rest"]):
+        return "Sleep hygiene is vital for mental health. Try to maintain a consistent sleep schedule and avoid screens 1 hour before bed. High vocal jitter often correlates with fatigue."
+    if has_word(["breath", "relax", "calm", "meditation"]):
+        return "Relaxation starts with the breath. Try the 4-7-8 technique: Inhale quietly for 4 seconds, hold for 7 seconds, and exhale forcefully for 8 seconds."
+    if has_word(["sad", "depressed", "unhappy", "cry", "lonely"]):
+        return "It is okay to feel down sometimes. If these feelings persist, consider speaking to a professional. Deep breathing can help regulate immediate emotional responses."
+    if has_word(["history", "report", "scan", "result", "record"]):
+        return "You can view your detailed analysis trends in the 'History' tab. This tracks your vocal biomarkers over time to help identify stress triggers."
+
+    # Default fallback
+    return "I am currently operating in offline mode. I can assist with stress management tips, breathing exercises, and explaining your voice analysis results. Please verify your internet connection for full AI capabilities."
 
 def _chat_with_gemini(message):
     if not GEMINI_API_KEY or GEMINI_API_KEY.lower() in {"your_key_here", "your_real_gemini_key"}:
@@ -209,7 +238,7 @@ def _chat_with_gemini(message):
         if model not in model_candidates:
             model_candidates.append(model)
     if not model_candidates:
-        model_candidates = ["gemini-2.0-flash"]
+        model_candidates = ["gemini-1.5-flash"]
 
     payload = {
         "contents": [
@@ -440,18 +469,34 @@ def admin_overview():
         u_count = cur.fetchone()
         cur.execute("SELECT COUNT(*) as total_analyses, AVG(score) as avg_score FROM analysis_history")
         a_count = cur.fetchone()
-        cur.execute("SELECT COUNT(*) as high_stress FROM analysis_history WHERE stress_level = 'High'")
-        h_count = cur.fetchone()
+        cur.execute("SELECT stress_level, COUNT(*) as count FROM analysis_history GROUP BY stress_level")
+        dist_rows = cur.fetchall()
     db.close()
+
+    total_analyses = a_count['total_analyses'] or 0
+    dist = {"low": 0, "moderate": 0, "high": 0}
+    for r in dist_rows:
+        if r.get('stress_level'):
+            lvl = r['stress_level'].lower()
+            if lvl in dist:
+                dist[lvl] = r['count']
+
+    percentages = {
+        "low": round((dist["low"] / total_analyses) * 100) if total_analyses > 0 else 0,
+        "moderate": round((dist["moderate"] / total_analyses) * 100) if total_analyses > 0 else 0,
+        "high": round((dist["high"] / total_analyses) * 100) if total_analyses > 0 else 0,
+    }
 
     return jsonify({
         "status": "success",
         "counts": {
             "total_users": u_count['total_users'],
-            "total_analyses": a_count['total_analyses'],
+            "total_analyses": total_analyses,
             "average_score": round(a_count['avg_score'] or 0, 1),
-            "high_stress_count": h_count['high_stress']
-        }
+            "high_stress_count": dist["high"]
+        },
+        "distribution": dist,
+        "percentages": percentages
     })
 
 @app.route("/api/admin/users", methods=["GET"])
@@ -538,6 +583,7 @@ def chat_assistant():
         reply, source = _chat_with_provider(message)
         return jsonify({"status": "success", "reply": reply, "source": source})
     except Exception as e:
+        print(f"[-] AI Chat Error: {str(e)}") # Log error to terminal for debugging
         if not CHAT_FALLBACK_ENABLED:
             return jsonify({
                 "status": "error",
@@ -616,8 +662,14 @@ def upload_audio():
 @app.route("/api/dashboard-summary", methods=["GET"])
 def get_summary():
     email = request.args.get('user_email')
-    if not email: return jsonify({"total": 0, "distribution": {"low":0,"moderate":0,"high":0}})
-    
+    if not email:
+        return jsonify({
+            "total": 0,
+            "avg_score": 0,
+            "distribution": {"low": 0, "moderate": 0, "high": 0},
+            "percentages": {"low": 0, "moderate": 0, "high": 0}
+        })
+
     db = get_db()
     with db.cursor() as cur:
         cur.execute("SELECT COUNT(*) as total, AVG(score) as avg FROM analysis_history WHERE user_email=%s", (email,))
@@ -625,13 +677,27 @@ def get_summary():
         cur.execute("SELECT stress_level, COUNT(*) as count FROM analysis_history WHERE user_email=%s GROUP BY stress_level", (email,))
         dist_rows = cur.fetchall()
     db.close()
-    
+
+    total_analyses = stats.get('total') or 0
     dist = {"low": 0, "moderate": 0, "high": 0}
     for r in dist_rows:
-        lvl = r['stress_level'].lower()
-        if lvl in dist: dist[lvl] = r['count']
-        
-    return jsonify({"total": stats['total'], "avg_score": round(stats['avg'] or 0, 1), "distribution": dist})
+        if r.get('stress_level'):
+            lvl = r['stress_level'].lower()
+            if lvl in dist:
+                dist[lvl] = r.get('count') or 0
+
+    percentages = {
+        "low": round((dist["low"] / total_analyses) * 100) if total_analyses > 0 else 0,
+        "moderate": round((dist["moderate"] / total_analyses) * 100) if total_analyses > 0 else 0,
+        "high": round((dist["high"] / total_analyses) * 100) if total_analyses > 0 else 0,
+    }
+
+    return jsonify({
+        "total": total_analyses,
+        "avg_score": round(stats.get('avg') or 0, 1),
+        "distribution": dist,
+        "percentages": percentages
+    })
 
 @app.route("/api/history", methods=["GET"])
 def get_history():
@@ -665,7 +731,20 @@ def get_history():
     base_url = request.host_url.rstrip('/')
     for row in rows:
         if row.get("audio_file"):
-            row["audio_file"] = f"{base_url}/uploads/{os.path.basename(row['audio_file'])}"
+            filename = os.path.basename(row['audio_file'])
+            row["audio_file"] = f"{base_url}/uploads/{urllib.parse.quote(filename)}"
+        
+        # Add clinical recommendation for the 'Action' column
+        s_level = (row.get("stress_level") or "").upper()
+        if s_level == "HIGH":
+            row["recommendation"] = "Contact Doctor"
+            row["action_class"] = "high-action"
+        elif s_level == "MODERATE":
+            row["recommendation"] = "Breathing Exercise"
+            row["action_class"] = "mod-action"
+        else:
+            row["recommendation"] = "View Report"
+            row["action_class"] = "low-action"
 
     return jsonify(rows)
 
@@ -675,16 +754,14 @@ def serve_upload(filename):
     file_path = UPLOAD_DIR / safe_name
     if not file_path.exists() or not file_path.is_file():
         return jsonify({"status": "error", "message": "Audio file not found"}), 404
-    return send_from_directory(str(UPLOAD_DIR), safe_name, as_attachment=False)
+
+    mimetype, _ = mimetypes.guess_type(safe_name)
+    return send_from_directory(str(UPLOAD_DIR), safe_name, mimetype=mimetype, as_attachment=False)
 
 # --- STATIC FILE SERVING ---
 @app.route("/")
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
-
-@app.route("/admin_dashboard.html")
-def admin_dashboard_alias():
-    return send_from_directory(app.static_folder, "admin_dashboard.html")
 
 @app.route("/<path:path>")
 def serve_static(path):

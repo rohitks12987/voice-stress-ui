@@ -41,8 +41,11 @@ class VoiceStressTrainer:
             centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
             bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr)
 
-            pitches, _ = librosa.piptrack(y=y, sr=sr)
-            pitch_vals = pitches[pitches > 0]
+            # Improved Pitch Detection: Pick the dominant frequency per frame
+            pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+            indices = magnitudes.argmax(axis=0)
+            pitch_vals = pitches[indices, np.arange(pitches.shape[1])]
+            pitch_vals = pitch_vals[pitch_vals > 0]  # Filter out silence
 
             features = {f"mfcc_{i}": float(np.mean(mfccs[i])) for i in range(self.n_mfcc)}
             features.update(
@@ -206,16 +209,22 @@ class VoiceStressTrainer:
         print(f"Model Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
         print(classification_report(y_test, y_pred, target_names=self.label_encoder.classes_))
 
-        os.makedirs("models", exist_ok=True)
+        output_dir = Path(__file__).parent / "models"
+        output_dir.mkdir(exist_ok=True)
+        output_path = output_dir / "voice_stress_model.pkl"
+        
         bundle = {
             "model": model,
             "scaler": self.scaler,
             "label_encoder": self.label_encoder,
             "feature_names": list(X.columns),
         }
-        joblib.dump(bundle, "models/voice_stress_model.pkl")
-        print("Success: Model saved to models/voice_stress_model.pkl")
+        joblib.dump(bundle, output_path)
+        print(f"Success: Model saved to {output_path}")
 
 
 if __name__ == "__main__":
-    VoiceStressTrainer().train("archive")
+    # Automatically locate the archive folder in the project root
+    base_dir = Path(__file__).resolve().parent
+    archive_dir = base_dir.parent / "archive"
+    VoiceStressTrainer().train(str(archive_dir))

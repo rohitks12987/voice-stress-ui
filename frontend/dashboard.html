@@ -268,6 +268,8 @@
     <audio id="track1" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
     <audio id="track2" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
 
+    <!-- Import FAQ Data for instant offline responses -->
+    <script src="faq-data.js"></script>
     <script>
         const API_BASE = window.location.origin;
         // --- 1. CORE UI ---
@@ -425,8 +427,20 @@
 
             appendMsg(msg, 'user');
             input.value = "";
-            status.innerText = "Analyzing...";
+            
+            // 1. Check Local FAQ First (Instant Response)
+            if (typeof faqData !== 'undefined') {
+                const lowerMsg = msg.toLowerCase();
+                for (const [key, answer] of Object.entries(faqData)) {
+                    if (lowerMsg.includes(key)) {
+                        setTimeout(() => appendMsg(answer, 'bot'), 400); // Small delay for realism
+                        return;
+                    }
+                }
+            }
 
+            // 2. Fallback to Server AI
+            status.innerText = "Analyzing...";
             try {
                 const res = await fetch(`${API_BASE}/api/chat`, {
                     method: 'POST',

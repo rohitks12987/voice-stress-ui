@@ -147,6 +147,23 @@
         .btn-refresh { background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: 0.3s; }
         .btn-refresh:hover { transform: scale(1.05); }
 
+        .btn-audio {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--primary);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-audio:hover {
+            background: var(--primary);
+            color: white;
+        }
+
         @media (max-width: 1200px) {
             .vitals-grid { grid-template-columns: repeat(2, 1fr); }
             .visual-grid { grid-template-columns: 1fr; }
@@ -223,7 +240,7 @@
                         <th>Classification</th>
                         <th>AI Probability</th>
                         <th>Timestamp (UTC)</th>
-                        <th>Clinical Audit</th>
+                        <th>Audio Playback</th>
                     </tr>
                 </thead>
                 <tbody id="patient-table">
@@ -274,6 +291,9 @@
 
                 history.forEach((row) => {
                     const badge = row.stress_level === 'High' ? 'bg-high' : row.stress_level === 'Moderate' ? 'bg-mod' : 'bg-low';
+                    const audioLink = row.audio_file
+                        ? `<a href="${row.audio_file}" target="_blank" class="btn-audio">Play Audio</a>`
+                        : `<span style="color: var(--text-muted); font-size: 0.8rem;">No Audio</span>`;
 
                     table.innerHTML += `
                         <tr>
@@ -281,7 +301,7 @@
                             <td><span class="stress-badge ${badge}">${row.stress_level}</span></td>
                             <td style="color: var(--primary); font-weight: 800; font-family: monospace;">${row.score}%</td>
                             <td style="color: var(--text-muted); font-size: 0.8rem;">${row.date} | ${row.time}</td>
-                            <td><i class="fas fa-shield-check" style="color:var(--success);"></i> Verified</td>
+                            <td>${audioLink}</td>
                         </tr>
                     `;
 
