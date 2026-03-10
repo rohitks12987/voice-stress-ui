@@ -46,7 +46,7 @@ REMOTE_AI_ENABLED = os.getenv("REMOTE_AI_ENABLED", "false").strip().lower() in {
 REMOTE_AI_PROVIDER = os.getenv("REMOTE_AI_PROVIDER", "huggingface").strip().lower()
 HF_API_TOKEN = os.getenv("HF_API_TOKEN", "").strip()
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "superb/wav2vec2-base-superb-er").strip()
-REMOTE_AI_TIMEOUT_SEC = float(os.getenv("REMOTE_AI_TIMEOUT_SEC", "45"))
+REMOTE_AI_TIMEOUT_SEC = float(os.getenv("REMOTE_AI_TIMEOUT_SEC", "15"))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash").strip()
 CHAT_FALLBACK_ENABLED = os.getenv("CHAT_FALLBACK_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
@@ -232,7 +232,7 @@ def _chat_with_gemini(message):
     errors = []
     for model in model_candidates:
         endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
-        resp = requests.post(endpoint, json=payload, timeout=20)
+        resp = requests.post(endpoint, json=payload, timeout=10)
         if resp.status_code == 429:
             raise RuntimeError(
                 "Gemini quota exceeded (429). Enable billing or wait for quota reset: "
@@ -286,7 +286,7 @@ def _chat_with_openai(message):
             {"role": "user", "content": message},
         ],
     }
-    resp = requests.post(endpoint, headers=headers, json=payload, timeout=20)
+    resp = requests.post(endpoint, headers=headers, json=payload, timeout=10)
     if not resp.ok:
         raise RuntimeError(f"OpenAI request failed ({resp.status_code}): {resp.text[:300]}")
     data = resp.json()
@@ -550,8 +550,6 @@ def chat_assistant():
             "source": "fallback",
             "note": str(e),
         })
-# ... (Keep existing imports/config from your original app.py) ...
-
 @app.route("/api/upload", methods=["POST"])
 def upload_audio():
     file = request.files.get('audio')
@@ -615,8 +613,6 @@ def upload_audio():
         "remote_error": remote_error,
     })
 
-# ... (Keep all other routes) ...
-
 @app.route("/api/dashboard-summary", methods=["GET"])
 def get_summary():
     email = request.args.get('user_email')
@@ -664,6 +660,13 @@ def get_history():
             cur.execute("SELECT * FROM analysis_history ORDER BY id DESC LIMIT %s", (limit,))
             rows = cur.fetchall()
     db.close()
+
+    # Fix audio paths to be absolute URLs so they work even if frontend is on a different port
+    base_url = request.host_url.rstrip('/')
+    for row in rows:
+        if row.get("audio_file"):
+            row["audio_file"] = f"{base_url}/uploads/{os.path.basename(row['audio_file'])}"
+
     return jsonify(rows)
 
 @app.route("/uploads/<path:filename>")
