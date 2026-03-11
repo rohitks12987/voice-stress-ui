@@ -61,7 +61,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
 
 # --- ADMIN/STAFF CONFIG ---
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@vocalvibe.pro")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@stress-tone.local")
 
 # --- TWILIO CONFIG (FOR SOS) ---
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
@@ -604,17 +604,88 @@ def admin_overview():
 @app.route("/api/admin/users", methods=["GET"])
 @staff_required
 def admin_list_users():
+    search_query = request.args.get("search", "").strip()
     db = get_db()
     with db.cursor() as cur:
-        cur.execute("""
-            SELECT u.*, COUNT(a.id) as analyses_count 
-            FROM users u 
-            LEFT JOIN analysis_history a ON u.email = a.user_email 
-            GROUP BY u.email
-        """)
+        if search_query:
+            sql = """
+                SELECT u.*, COUNT(a.id) as analyses_count
+                FROM users u
+                LEFT JOIN analysis_history a ON u.email = a.user_email
+                WHERE u.full_name LIKE %s OR u.email LIKE %s
+                GROUP BY u.email
+            """
+            like_query = f"%{search_query}%"
+            cur.execute(sql, (like_query, like_query))
+        else:
+            cur.execute("""
+                SELECT u.*, COUNT(a.id) as analyses_count
+                FROM users u
+                LEFT JOIN analysis_history a ON u.email = a.user_email
+                GROUP BY u.email
+            """)
         users = cur.fetchall()
     db.close()
     return jsonify({"status": "success", "users": users})
+
+@app.route("/api/admin/user/<int:user_id>", methods=["GET", "PUT", "DELETE"])
+@staff_required
+def admin_manage_user(user_id):
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            if request.method == "GET":
+                cur.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+                user = cur.fetchone()
+                if not user:
+                    return jsonify({"status": "error", "message": "User not found"}), 404
+                
+                cur.execute("SELECT * FROM analysis_history WHERE user_email=%s ORDER BY id DESC", (user['email'],))
+                history = cur.fetchall()
+                
+                base_url = request.host_url.rstrip('/')
+                for row in history:
+                    if row.get("audio_file"):
+                        filename = os.path.basename(row['audio_file'])
+                        row["audio_file"] = f"{base_url}/uploads/{urllib.parse.quote(filename)}"
+
+                return jsonify({"status": "success", "user": user, "history": history})
+
+            if request.method == "PUT":
+                data = request.get_json(silent=True) or {}
+                full_name = data.get("full_name")
+                email = data.get("email")
+                age = data.get("age")
+                phone = data.get("phone")
+                address = data.get("address")
+
+                if not full_name or not email:
+                    return jsonify({"status": "error", "message": "Full name and email are required"}), 400
+
+                cur.execute(
+                    "UPDATE users SET full_name=%s, email=%s, age=%s, phone=%s, address=%s WHERE id=%s",
+                    (full_name, email, age, phone, address, user_id)
+                )
+                if cur.rowcount == 0:
+                    return jsonify({"status": "error", "message": "User not found or no changes made"}), 404
+                db.commit()
+                return jsonify({"status": "success", "message": "User updated successfully"})
+
+            if request.method == "DELETE":
+                cur.execute("SELECT email FROM users WHERE id=%s", (user_id,))
+                user = cur.fetchone()
+                if not user:
+                    return jsonify({"status": "error", "message": "User not found"}), 404
+                
+                user_email = user['email']
+                
+                cur.execute("DELETE FROM analysis_history WHERE user_email=%s", (user_email,))
+                cur.execute("DELETE FROM emergency_contacts WHERE user_email=%s", (user_email,))
+                cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
+                db.commit()
+                return jsonify({"status": "success", "message": f"User '{user_email}' and all associated data have been deleted."})
+    finally:
+        db.close()
 
 @app.route("/api/patient/register", methods=["POST"])
 def patient_register():
