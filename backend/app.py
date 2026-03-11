@@ -10,6 +10,9 @@ from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 import urllib.parse
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 import pymysql
 import pymysql.cursors
@@ -19,6 +22,8 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 
 from advanced_stress_predictor import AdvancedStressPredictor
 
@@ -54,6 +59,21 @@ CHAT_FALLBACK_ENABLED = os.getenv("CHAT_FALLBACK_ENABLED", "false").strip().lowe
 CHAT_PROVIDER = os.getenv("CHAT_PROVIDER", "gemini").strip().lower()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
+
+# --- ADMIN/STAFF CONFIG ---
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@vocalvibe.pro")
+
+# --- TWILIO CONFIG (FOR SOS) ---
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+
+# --- SMTP CONFIG (FOR STAFF ALERTS) ---
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_SENDER_EMAIL = os.getenv("SMTP_SENDER_EMAIL")
 
 
 def _load_trainer():
@@ -334,6 +354,78 @@ def _chat_with_provider(message):
         return _chat_with_openai(message), "openai"
     raise RuntimeError(f"Unsupported CHAT_PROVIDER: {CHAT_PROVIDER}")
 
+def _send_email_alert_to_staff(user_name, user_email, location):
+    """Sends an email alert to the clinical staff."""
+    if not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_SENDER_EMAIL, ADMIN_EMAIL]):
+        print("⚠️ [SOS WARNING] SMTP settings not configured. Skipping email to clinical staff. Please set SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_SENDER_EMAIL in .env")
+        return False
+
+    subject = f"CRITICAL SOS ALERT: Patient {user_name}"
+    body = f"""
+    <p><b>A critical SOS alert has been triggered by a user on the VocalVibe platform.</b></p>
+    <p>Please take immediate action.</p>
+    <ul style="list-style-type: none; padding: 0;">
+        <li style="padding-bottom: 5px;"><b>User Name:</b> {user_name}</li>
+        <li style="padding-bottom: 5px;"><b>User Email:</b> {user_email}</li>
+        <li style="padding-bottom: 5px;"><b>Last Known Location:</b> {location or 'Not Provided'}</li>
+        <li style="padding-bottom: 5px;"><b>Time of Alert:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}</li>
+    </ul>
+    <p>This is an automated notification. Please check the system dashboard for more details and attempt to contact the user or their emergency contacts.</p>
+    """
+
+    msg = MIMEMultipart()
+    msg['From'] = f"VocalVibe Alert System <{SMTP_SENDER_EMAIL}>"
+    msg['To'] = ADMIN_EMAIL
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        # Using 'with' ensures the connection is closed
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()  # Secure the connection
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+            print(f"✅ [SOS SUCCESS] Email alert sent to clinical staff at {ADMIN_EMAIL}")
+            return True
+    except Exception as e:
+        print(f"❌ [SOS FAILED] Could not send email to clinical staff. Error: {e}")
+        return False
+
+def _send_sos_notification(contact, user_name, location):
+    """
+    Sends a real SOS SMS/Alert using Twilio.
+    Falls back to console logging if Twilio is not configured.
+    """
+    message_body = (
+        f"URGENT! {user_name} has triggered an SOS alert from the VocalVibe app. "
+        f"Last known location: {location or 'Not available'}. Please contact them immediately."
+    )
+    
+    # Log to console regardless
+    print(f"🚨 [SOS ALERT] Preparing to notify {contact['name']} ({contact['phone']}): {message_body}")
+
+    if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER]):
+        print("⚠️ [SOS WARNING] Twilio credentials not set. Skipping real SMS. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in your .env file.")
+        return True # Simulate success for logging
+
+    try:
+        # Ensure the contact phone number is in E.164 format (e.g., +919876543210)
+        to_phone = contact['phone']
+        if not to_phone.startswith('+'):
+            print(f"⚠️ [SOS WARNING] Phone number for {contact['name']} ({to_phone}) may not be in E.164 format. SMS might fail.")
+
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            body=message_body,
+            from_=TWILIO_PHONE_NUMBER,
+            to=to_phone
+        )
+        print(f"✅ [SOS SUCCESS] SMS sent to {contact['phone']} (SID: {message.sid})")
+        return True
+    except TwilioRestException as e:
+        print(f"❌ [SOS FAILED] Could not send SMS to {contact['phone']}. Error: {e}")
+        return False
+
 # --- CONFIGURATION ---
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
@@ -344,7 +436,6 @@ DB_CONFIG = {
     "cursorclass": pymysql.cursors.DictCursor
 }
 
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@vocalvibe.pro")
 ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "admin123")
 ADMIN_SECRET = os.getenv("ADMIN_SECRET", "clinical-secret-2026")
 
@@ -399,6 +490,17 @@ def init_db():
                 action VARCHAR(255),
                 ip_address VARCHAR(50),
                 access_time DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        # 4. Emergency Contacts
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS emergency_contacts (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_email VARCHAR(255),
+                name VARCHAR(255),
+                phone VARCHAR(50),
+                relationship VARCHAR(100),
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
     db.commit()
@@ -747,6 +849,97 @@ def get_history():
             row["action_class"] = "low-action"
 
     return jsonify(rows)
+
+@app.route("/api/user/contacts", methods=["GET", "POST", "DELETE"])
+def manage_contacts():
+    db = get_db()
+    if request.method == "GET":
+        email = request.args.get("user_email")
+        if not email:
+            return jsonify({"status": "error", "message": "User email required"}), 400
+        
+        with db.cursor() as cur:
+            cur.execute("SELECT * FROM emergency_contacts WHERE user_email=%s", (email,))
+            contacts = cur.fetchall()
+        db.close()
+        return jsonify({"status": "success", "contacts": contacts})
+
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        email = data.get("user_email")
+        name = data.get("name")
+        phone = data.get("phone")
+        relation = data.get("relationship", "Other")
+        
+        if not email or not name or not phone:
+            return jsonify({"status": "error", "message": "Missing fields"}), 400
+        
+        with db.cursor() as cur:
+            cur.execute("SELECT COUNT(*) as count FROM emergency_contacts WHERE user_email=%s", (email,))
+            if cur.fetchone()['count'] >= 5:
+                db.close()
+                return jsonify({"status": "error", "message": "Max 5 contacts allowed"}), 400
+            
+            cur.execute(
+                "INSERT INTO emergency_contacts (user_email, name, phone, relationship) VALUES (%s, %s, %s, %s)",
+                (email, name, phone, relation)
+            )
+        db.commit()
+        db.close()
+        return jsonify({"status": "success", "message": "Contact added"})
+
+    if request.method == "DELETE":
+        data = request.get_json(silent=True) or {}
+        contact_id = data.get("id")
+        email = data.get("user_email") # Security check to ensure ownership
+        
+        with db.cursor() as cur:
+            cur.execute("DELETE FROM emergency_contacts WHERE id=%s AND user_email=%s", (contact_id, email))
+        db.commit()
+        db.close()
+        return jsonify({"status": "success", "message": "Contact deleted"})
+
+@app.route("/api/user/sos", methods=["POST"])
+def trigger_sos():
+    data = request.get_json(silent=True) or {}
+    email = data.get("user_email")
+    location = data.get("location", "Unknown Location")
+    
+    if not email:
+        return jsonify({"status": "error", "message": "User email required"}), 400
+        
+    db = get_db()
+    with db.cursor() as cur:
+        # Get User Name for the message
+        cur.execute("SELECT full_name FROM users WHERE email=%s", (email,))
+        user_row = cur.fetchone()
+        user_name = user_row['full_name'] if user_row else "User"
+        
+        # Get Contacts
+        cur.execute("SELECT * FROM emergency_contacts WHERE user_email=%s", (email,))
+        contacts = cur.fetchall()
+    db.close()
+    
+    if not contacts:
+        return jsonify({"status": "error", "message": "No emergency contacts found. Please add contacts in Settings."}), 404
+        
+    # Notify clinical staff via email
+    staff_notified = _send_email_alert_to_staff(user_name, email, location)
+        
+    sent_count = 0
+    for contact in contacts:
+        if _send_sos_notification(contact, user_name, location):
+            sent_count += 1
+            
+    message = f"SOS Alert sent to {sent_count} contacts."
+    if staff_notified:
+        message = f"SOS Alert sent to {sent_count} contacts and the clinical team."
+            
+    return jsonify({
+        "status": "success", 
+        "message": message,
+        "contacts_notified": sent_count
+    })
 
 @app.route("/uploads/<path:filename>")
 def serve_upload(filename):

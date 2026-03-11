@@ -1015,6 +1015,34 @@ body {
     transition: 0.3s;
 }
 
+/* --- SOS BUTTON STYLING --- */
+.sos-btn {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 50px; /* Rounded pill shape */
+    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.5);
+    animation: pulse-red 2s infinite;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 65, 108, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 65, 108, 0); }
+}
+
+.sos-btn:disabled {
+    background: #95a5a6; /* Muted Grey during processing */
+    color: #eee;
+    cursor: wait;
+    animation: none;
+    box-shadow: none;
+    transform: none;
+}
+
 .pulse-btn {
     background: var(--primary-gradient);
     color: white;
