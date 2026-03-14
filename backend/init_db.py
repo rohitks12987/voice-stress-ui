@@ -75,7 +75,7 @@ def create_db():
                     full_name VARCHAR(255) NULL,
                     email VARCHAR(255) NOT NULL,
                     age INT NULL,
-                    password VARCHAR(255) NULL,
+                    password_hash VARCHAR(255) NULL,
                     phone VARCHAR(64) NULL,
                     address TEXT NULL,
                     photo_url VARCHAR(512) NULL,

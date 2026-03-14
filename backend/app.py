@@ -1,13 +1,7 @@
 import os
-import json
-import time
-import hmac
-import base64
 import traceback
-import functools # Needed for the security guard
 import mimetypes
 from datetime import datetime
-from hashlib import sha256
 from pathlib import Path
 import urllib.parse
 import smtplib
@@ -15,16 +9,16 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 import pymysql
-import pymysql.cursors
 import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
 
+from security import staff_required, generate_token, verify_token
 from advanced_stress_predictor import AdvancedStressPredictor
 
 # --- PATH CONFIGURATION ---
@@ -426,124 +420,23 @@ def _send_sos_notification(contact, user_name, location):
         print(f"❌ [SOS FAILED] Could not send SMS to {contact['phone']}. Error: {e}")
         return False
 
-# --- CONFIGURATION ---
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""), 
-    "database": os.getenv("DB_NAME", "vocalvibe_db"),
-    "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor
-}
+# --- DATABASE & SECURITY CONFIG ---
+from init_db import db_config, create_db as initialize_database_schema
 
+DB_CFG = db_config()
 ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "admin123")
-ADMIN_SECRET = os.getenv("ADMIN_SECRET", "clinical-secret-2026")
 
 # --- DATABASE HELPERS ---
 def get_db():
-    return pymysql.connect(**DB_CONFIG)
-
-def init_db():
-    conn = pymysql.connect(host=DB_CONFIG["host"], user=DB_CONFIG["user"], password=DB_CONFIG["password"])
-    conn.cursor().execute(f"CREATE DATABASE IF NOT EXISTS {DB_CONFIG['database']}")
-    conn.close()
-
-    db = get_db()
-    with db.cursor() as cur:
-        # 1. Patients/Users Table
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                full_name VARCHAR(255),
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password_hash VARCHAR(255),
-                age INT, phone VARCHAR(50), address TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        cur.execute("""
-            SELECT COUNT(*) AS col_count
-            FROM information_schema.COLUMNS
-            WHERE TABLE_SCHEMA = %s
-              AND TABLE_NAME = 'users'
-              AND COLUMN_NAME = 'password_hash'
-        """, (DB_CONFIG["database"],))
-        has_password_col = cur.fetchone()["col_count"] > 0
-        if not has_password_col:
-            cur.execute("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)")
-        # 2. Vocal Scan History
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS analysis_history (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_email VARCHAR(255),
-                date VARCHAR(50), time VARCHAR(50),
-                stress_level VARCHAR(50), emotion VARCHAR(50),
-                score DECIMAL(5,2), audio_file VARCHAR(255),
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        # 3. CLINICAL ACCESS LOGS (For Biometric Gateway Audit)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS access_logs (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                staff_email VARCHAR(255),
-                action VARCHAR(255),
-                ip_address VARCHAR(50),
-                access_time DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        # 4. Emergency Contacts
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS emergency_contacts (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_email VARCHAR(255),
-                name VARCHAR(255),
-                phone VARCHAR(50),
-                relationship VARCHAR(100),
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-    db.commit()
-    db.close()
+    """Returns a new database connection."""
+    return pymysql.connect(**DB_CFG)
 
 try:
-    init_db()
+    # Ensure the database and tables exist on startup
+    initialize_database_schema()
     print("[OK] Clinical Database Synchronized & Secured")
 except Exception as e:
     print(f"[ERROR] Database Error: {e}")
-
-# --- SECURITY & AUTH HELPERS ---
-def gen_token(email):
-    # Generates a secure session token valid for 8 hours
-    payload = {"email": email, "exp": int(time.time()) + 28800}
-    p = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().replace("=", "")
-    sig = hmac.new(ADMIN_SECRET.encode(), p.encode(), sha256).hexdigest()
-    return f"{p}.{sig}"
-
-def verify_token(token):
-    if not token: return None
-    try:
-        p_part, sig = token.split('.', 1)
-        expected = hmac.new(ADMIN_SECRET.encode(), p_part.encode(), sha256).hexdigest()
-        if not hmac.compare_digest(sig, expected): return None
-        padding = "=" * (-len(p_part) % 4)
-        payload = json.loads(base64.urlsafe_b64decode(p_part + padding))
-        return payload if payload['exp'] > time.time() else None
-    except: return None
-
-# --- THE CLINICAL GATEWAY GUARD (Decorator) ---
-def staff_required(f):
-    """Protects routes by requiring a valid staff token."""
-    @functools.wraps(f)
-    def decorated_function(*args, **kwargs):
-        auth_header = request.headers.get("Authorization", "")
-        token = auth_header.replace("Bearer ", "")
-        
-        staff_data = verify_token(token)
-        if not staff_data or staff_data['email'] != ADMIN_EMAIL:
-            return jsonify({"status": "error", "message": "Secure Clinical Access Required"}), 401
-        return f(*args, **kwargs)
-    return decorated_function
 
 # --- API ROUTES ---
 
@@ -558,8 +451,8 @@ def admin_login():
             cur.execute("INSERT INTO access_logs (staff_email, action, ip_address) VALUES (%s, %s, %s)", 
                        (ADMIN_EMAIL, "Authorized Gateway Access", request.remote_addr))
         db.commit()
-        db.close()
-        return jsonify({"status": "success", "token": gen_token(ADMIN_EMAIL)})
+        token = generate_token(ADMIN_EMAIL)
+        return jsonify({"status": "success", "token": token})
     return jsonify({"status": "error", "message": "Biometric Credentials Mismatch"}), 401
 
 @app.route("/api/admin/overview", methods=["GET"])
@@ -1038,3 +931,4 @@ def serve_static(path):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=True)
+    

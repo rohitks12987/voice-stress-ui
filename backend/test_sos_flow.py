@@ -27,30 +27,35 @@ def run_sos_test():
         print(f"    ❌ Connection failed: {e}")
         return
 
-    # 2. Add Emergency Contact
-    print("\n[2] Adding Emergency Contact...")
-    contact_payload = {
-        "user_email": TEST_EMAIL,
-        "name": "Dr. Strange",
-        "phone": "+15550199999", # Replace with real number to test SMS
-        "relationship": "Doctor"
-    }
-    
-    res = session.post(f"{BASE_URL}/user/contacts", json=contact_payload)
-    print(f"    Response: {res.text}")
-    
-    # 3. Trigger SOS Alert
-    print("\n[3] 🔴 TRIGGERING SOS ALERT...")
-    sos_payload = {
-        "user_email": TEST_EMAIL,
-        "location": "VocalVibe HQ - Test Lab 1"
-    }
-    
-    res = session.post(f"{BASE_URL}/user/sos", json=sos_payload)
-    if res.status_code == 200:
-        print(f"    ✅ SOS SUCCESS: {res.json()['message']}")
-    else:
-        print(f"    ❌ SOS FAILED: {res.text}")
+    try:
+        # 2. Add Emergency Contact
+        print("\n[2] Adding Emergency Contact...")
+        contact_payload = {
+            "user_email": TEST_EMAIL,
+            "name": "Dr. Strange",
+            "phone": "+15550199999", # Replace with real number to test SMS
+            "relationship": "Doctor"
+        }
+        
+        res = session.post(f"{BASE_URL}/user/contacts", json=contact_payload)
+        res.raise_for_status()
+        print(f"    Response: {res.text}")
+        
+        # 3. Trigger SOS Alert
+        print("\n[3] 🔴 TRIGGERING SOS ALERT...")
+        sos_payload = {
+            "user_email": TEST_EMAIL,
+            "location": "VocalVibe HQ - Test Lab 1"
+        }
+        
+        res = session.post(f"{BASE_URL}/user/sos", json=sos_payload)
+        if res.status_code == 200:
+            print(f"    ✅ SOS SUCCESS: {res.json()['message']}")
+        else:
+            print(f"    ❌ SOS FAILED ({res.status_code}): {res.text}")
+    except Exception as e:
+        print(f"    ❌ An error occurred during the test flow: {e}")
+        return
 
 if __name__ == "__main__":
     run_sos_test()

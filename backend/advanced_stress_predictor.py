@@ -7,6 +7,8 @@ import librosa
 import numpy as np
 import pandas as pd
 
+from audio_features import extract_audio_features
+
 class AdvancedStressPredictor:
     LABEL_LOW = "LOW"
     LABEL_MODERATE = "MODERATE"
@@ -37,30 +39,9 @@ class AdvancedStressPredictor:
 
     def extract_features_from_audio(self, y: np.ndarray, sr: int) -> Dict[str, float]:
         if y.ndim > 1: y = librosa.to_mono(y)
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=self.n_mfcc)
-        chroma = librosa.feature.chroma_stft(y=y, sr=sr)
-        rms = librosa.feature.rms(y=y)
-        zcr = librosa.feature.zero_crossing_rate(y)
-        centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
-        bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr)
-        
-        # Improved Pitch Detection: Pick the dominant frequency per frame
-        pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
-        indices = magnitudes.argmax(axis=0)
-        pitch_vals = pitches[indices, np.arange(pitches.shape[1])]
-        pitch_vals = pitch_vals[pitch_vals > 0] # Filter out silence
-
-        features = {f"mfcc_{i}": float(np.mean(mfccs[i])) for i in range(self.n_mfcc)}
-        features.update({
-            "pitch_mean": float(np.mean(pitch_vals)) if pitch_vals.size else 0.0,
-            "pitch_std": float(np.std(pitch_vals)) if pitch_vals.size else 0.0,
-            "rms": float(np.mean(rms)),
-            "spectral_centroid": float(np.mean(centroid)),
-            "spectral_bandwidth": float(np.mean(bandwidth)),
-            "chroma": float(np.mean(chroma)),
-            "zero_crossing_rate": float(np.mean(zcr))
-        })
-        return features
+        # Use the shared feature extraction function.
+        # The input 'y' to this function is expected to be pre-processed by `_prepare_audio`.
+        return extract_audio_features(y, sr, n_mfcc=self.n_mfcc)
 
     def _predict_raw_probabilities(self, features: Dict[str, float]) -> Tuple[np.ndarray, List[str]]:
         df = pd.DataFrame([features])

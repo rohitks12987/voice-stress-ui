@@ -106,18 +106,20 @@ def main():
     # Test
     y_pred = model.predict(X_test_scaled)
     accuracy = accuracy_score(y_test, y_pred)
-    print(".3f")
+    print(f"Test Accuracy: {accuracy:.3f}")
 
     # Save model
     os.makedirs('models', exist_ok=True)
+    output_path = 'models/quick_train_model.pkl'
     model_data = {
         'model': model,
         'scaler': scaler,
         'label_encoder': LabelEncoder().fit(df['stress_level']),
         'feature_names': feature_cols
     }
-    joblib.dump(model_data, 'models/voice_stress_model.pkl')
-    print("Model saved to models/voice_stress_model.pkl")
+    joblib.dump(model_data, output_path)
+    print(f"\nWARNING: This is a simplified model for testing purposes only.")
+    print(f"Model saved to {output_path}")
 
 if __name__ == "__main__":
     main()

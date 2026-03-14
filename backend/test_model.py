@@ -7,16 +7,10 @@ def test_model_prediction():
 
     # Find a test audio file
     archive_path = Path("../archive")
-    test_file = None
 
-    # Look for a wav file in the datasets
-    for root, dirs, files in os.walk(archive_path):
-        for file in files:
-            if file.endswith('.wav'):
-                test_file = os.path.join(root, file)
-                break
-        if test_file:
-            break
+    # Look for any .wav file in the archive subdirectories
+    wav_files = list(archive_path.rglob("*.wav"))
+    test_file = wav_files[0] if wav_files else None
 
     if not test_file:
         print("No test audio file found")
