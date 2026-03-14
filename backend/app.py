@@ -1,6 +1,7 @@
 import os
 import traceback
 import mimetypes
+import time
 from datetime import datetime
 from pathlib import Path
 import urllib.parse
@@ -15,8 +16,13 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from twilio.base.exceptions import TwilioRestException
-from twilio.rest import Client
+
+try:
+    from twilio.base.exceptions import TwilioRestException
+    from twilio.rest import Client
+except ImportError:
+    TwilioRestException = Exception
+    Client = None
 
 from security import staff_required, generate_token, verify_token
 from advanced_stress_predictor import AdvancedStressPredictor
@@ -401,6 +407,10 @@ def _send_sos_notification(contact, user_name, location):
     if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER]):
         print("⚠️ [SOS WARNING] Twilio credentials not set. Skipping real SMS. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in your .env file.")
         return True # Simulate success for logging
+        
+    if Client is None:
+        print("⚠️ [SOS WARNING] Twilio module not installed. Run 'pip install twilio'. Skipping SMS...")
+        return True
 
     try:
         # Ensure the contact phone number is in E.164 format (e.g., +919876543210)

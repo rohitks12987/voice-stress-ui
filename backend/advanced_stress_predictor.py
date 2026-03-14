@@ -36,6 +36,10 @@ class AdvancedStressPredictor:
             self.feature_names = bundle.get("feature_names") or []
         else:
             self.model = bundle
+            
+        # FIX: Force single-threaded prediction to prevent Flask/Windows hard crashes
+        if hasattr(self.model, 'n_jobs'):
+            self.model.n_jobs = 1
 
     def extract_features_from_audio(self, y: np.ndarray, sr: int) -> Dict[str, float]:
         if y.ndim > 1: y = librosa.to_mono(y)
@@ -85,7 +89,12 @@ class AdvancedStressPredictor:
         try:
             return librosa.load(audio_path, sr=self.sample_rate)
         except Exception:
-            return self._load_audio_fallback_wav(audio_path)
+            try:
+                return self._load_audio_fallback_wav(audio_path)
+            except Exception as e:
+                if audio_path.lower().endswith(('.webm', '.ogg', '.m4a')):
+                    raise ValueError("Cannot read browser audio format. Please ensure FFmpeg is installed on your system.") from e
+                raise e
 
     def _prepare_audio(self, y: np.ndarray, sr: int) -> np.ndarray:
         if y.ndim > 1:
