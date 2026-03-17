@@ -135,7 +135,7 @@ class AdvancedStressPredictor:
                 all_probs = [probs]
             else:
                 all_probs = []
-                step = int(sr * 1.5) # 1.5-second step for less overlap and faster processing
+                step = int(sr * 2.5) # 2.5-second step (No overlap, processes 40% faster)
                 for start in range(0, len(y) - seg_samples + 1, step):
                     chunk = y[start : start + seg_samples]
                     feat = self.extract_features_from_audio(chunk, sr)

@@ -134,6 +134,14 @@ def _resolve_upload_extension(file_obj):
     ext = Path(raw_name).suffix.lower()
     if ext in ALLOWED_UPLOAD_EXTENSIONS:
         return ext
+        
+    if file_obj.mimetype:
+        if "webm" in file_obj.mimetype: return ".webm"
+        if "ogg" in file_obj.mimetype: return ".ogg"
+        if "mp4" in file_obj.mimetype or "m4a" in file_obj.mimetype: return ".m4a"
+        if "mpeg" in file_obj.mimetype or "mp3" in file_obj.mimetype: return ".mp3"
+        if "wav" in file_obj.mimetype: return ".wav"
+        
     return ".wav"
 
 def _emotion_to_stress_level(emotion_label):
@@ -923,6 +931,11 @@ def serve_upload(filename):
         return jsonify({"status": "error", "message": "Audio file not found"}), 404
 
     mimetype, _ = mimetypes.guess_type(safe_name)
+    if safe_name.lower().endswith('.webm'):
+        mimetype = 'audio/webm'
+    elif safe_name.lower().endswith('.m4a'):
+        mimetype = 'audio/mp4'
+
     return send_from_directory(str(UPLOAD_DIR), safe_name, mimetype=mimetype, as_attachment=False)
 
 # --- STATIC FILE SERVING ---
@@ -940,5 +953,5 @@ def serve_static(path):
     return send_from_directory(app.static_folder, "index.html")
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='127.0.0.1', port=8000, debug=True)
     
