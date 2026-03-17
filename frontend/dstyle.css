@@ -1603,3 +1603,28 @@ footer {
 .high-action { background-color: var(--high-color, #e53935); }
 .mod-action { background-color: var(--moderate-color, #fb8c00); }
 .low-action { background-color: var(--low-color, #43a047); }
+
+/* --- MOBILE RESPONSIVENESS FOR DASHBOARD --- */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+        gap: 15px;
+    }
+    .menu, .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    .menu a, .nav-links a {
+        margin-left: 0;
+    }
+    .info-grid {
+        grid-template-columns: 1fr; /* Cards ek ke neeche ek aayenge */
+    }
+    .actions {
+        flex-direction: column; /* Buttons ek ke neeche ek aayenge */
+    }
+}

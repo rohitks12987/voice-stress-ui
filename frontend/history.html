@@ -162,13 +162,18 @@
             .sidebar { position: static; width: 100%; height: auto; }
             body { display: block; }
             .main-content { margin-left: 0; width: 100%; padding: 20px; }
-            .stats { grid-template-columns: 1fr 1fr; }
+            .sidebar.collapsed + .main-content { margin-left: 0; width: 100%; }
+            .stats { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+            
+            .nav-menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+            .nav-item { margin-bottom: 0; padding: 10px 15px; }
+            header { flex-direction: column; text-align: center; gap: 15px; }
+            
             .sidebar.collapsed { width: 100%; }
             .sidebar.collapsed .logo-text { display: block; }
-            .sidebar.collapsed .sidebar-header { justify-content: flex-start; padding: 30px 20px; }
-            .sidebar.collapsed .nav-item { justify-content: flex-start; gap: 15px; padding: 14px 20px; }
+            .sidebar.collapsed .sidebar-header { justify-content: center; padding: 30px 20px; }
+            .sidebar.collapsed .nav-item { justify-content: center; gap: 10px; padding: 10px 15px; }
             .sidebar.collapsed .nav-item span { display: inline; }
-            .sidebar.collapsed .sidebar-footer { padding: 20px; }
         }
     </style>
 </head>

@@ -217,3 +217,25 @@ body {
     --white: #fdfdfd;     /* Pure white ki jagah off-white cards */
     --border: #d1d5db;    /* Borders ko thoda dark karein */
 }
+
+/* --- MOBILE RESPONSIVENESS FOR HISTORY --- */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    /* Table ko mobile me horizontally scroll karne ke liye */
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .history-table th, .history-table td {
+        white-space: nowrap; /* Text ko break hone se rokenge */
+    }
+}

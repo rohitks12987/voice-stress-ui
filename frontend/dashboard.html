@@ -132,6 +132,33 @@
         .sos-banner { background: linear-gradient(135deg, #450a0a, #7f1d1d); padding: 20px; border-radius: 24px; border: 1px solid var(--danger); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .btn-sos { background: var(--danger); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* --- MOBILE & DESKTOP RESPONSIVE SYSTEM --- */
+        @media (max-width: 980px) {
+            body { display: block; }
+            .sidebar { position: static; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--card-border); }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            .sidebar.collapsed + .main-content { margin-left: 0; width: 100%; }
+            
+            .nav-menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 15px; }
+            .nav-item { margin-bottom: 0; padding: 10px 15px; font-size: 0.9rem; }
+            
+            .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
+            .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+            
+            header { flex-direction: column; text-align: center; gap: 20px; }
+            .user-profile { justify-content: center; width: 100%; }
+            .sos-banner { flex-direction: column; text-align: center; gap: 15px; }
+            
+            .chat-window { width: 90%; right: 5%; bottom: 90px; }
+            
+            /* Prevent collapsing from breaking mobile layout */
+            .sidebar.collapsed { width: 100%; }
+            .sidebar.collapsed .logo-text { display: block; }
+            .sidebar.collapsed .sidebar-header { justify-content: center; padding: 20px; }
+            .sidebar.collapsed .nav-item { justify-content: center; gap: 8px; padding: 10px 15px; }
+            .sidebar.collapsed .nav-item span { display: inline; }
+        }
     </style>
 </head>
 <body>
