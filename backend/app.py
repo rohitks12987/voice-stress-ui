@@ -24,9 +24,6 @@ except ImportError:
     TwilioRestException = Exception
     Client = None
 
-from security import staff_required, generate_token, verify_token
-from advanced_stress_predictor import AdvancedStressPredictor
-
 # --- PATH CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
@@ -35,6 +32,9 @@ UPLOAD_DIR = PROJECT_ROOT / "uploads"
 
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 load_dotenv(PROJECT_ROOT / ".env", override=True)
+
+from security import staff_required, generate_token, verify_token
+from advanced_stress_predictor import AdvancedStressPredictor
 
 app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
 CORS(app)
@@ -77,6 +77,21 @@ except ValueError:
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_SENDER_EMAIL = os.getenv("SMTP_SENDER_EMAIL")
+
+def _env_flag(name, default=False):
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+def _env_int(name, default):
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw.strip())
+    except (TypeError, ValueError):
+        return default
 
 
 def _load_trainer():
@@ -686,6 +701,15 @@ def chat_assistant():
             "source": "fallback",
             "note": str(e),
         })
+
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status": "ok",
+        "service": "voice-stress-ui",
+        "timestamp_utc": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+    })
+
 @app.route("/api/upload", methods=["POST"])
 def upload_audio():
     file = request.files.get('audio')
@@ -959,5 +983,14 @@ def serve_static(path):
     return send_from_directory(app.static_folder, "index.html")
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=8000, debug=True)
+    host = os.getenv("HOST", os.getenv("FLASK_HOST", "0.0.0.0")).strip() or "0.0.0.0"
+    port = _env_int("PORT", _env_int("FLASK_PORT", 8000))
+    debug = _env_flag("FLASK_DEBUG", True)
+    use_reloader = _env_flag("FLASK_USE_RELOADER", False)
+
+    print(
+        f"[STARTUP] VocalVibe backend on http://127.0.0.1:{port} "
+        f"(bind={host}, debug={debug}, reloader={use_reloader})"
+    )
+    app.run(host=host, port=port, debug=debug, use_reloader=use_reloader)
     
