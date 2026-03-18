@@ -70,7 +70,10 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
 # --- SMTP CONFIG (FOR STAFF ALERTS) ---
 SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+try:
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+except ValueError:
+    SMTP_PORT = 587
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_SENDER_EMAIL = os.getenv("SMTP_SENDER_EMAIL")
@@ -465,10 +468,13 @@ def admin_login():
     if email == ADMIN_EMAIL.lower() and data.get("password") == ADMIN_PASS:
         # LOG THE SUCCESSFUL ACCESS
         db = get_db()
-        with db.cursor() as cur:
-            cur.execute("INSERT INTO access_logs (staff_email, action, ip_address) VALUES (%s, %s, %s)", 
-                       (ADMIN_EMAIL, "Authorized Gateway Access", request.remote_addr))
-        db.commit()
+        try:
+            with db.cursor() as cur:
+                cur.execute("INSERT INTO access_logs (staff_email, action, ip_address) VALUES (%s, %s, %s)", 
+                           (ADMIN_EMAIL, "Authorized Gateway Access", request.remote_addr))
+            db.commit()
+        finally:
+            db.close()
         token = generate_token(ADMIN_EMAIL)
         return jsonify({"status": "success", "token": token})
     return jsonify({"status": "error", "message": "Biometric Credentials Mismatch"}), 401

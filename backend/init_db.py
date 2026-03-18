@@ -128,6 +128,19 @@ def create_db():
                 """
             )
 
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS access_logs (
+                    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                    staff_email VARCHAR(255) NOT NULL,
+                    action VARCHAR(255) NOT NULL,
+                    ip_address VARCHAR(64) NULL,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """
+            )
+
         conn.commit()
         print(f"MySQL database '{db_name}' and tables are ready.")
     finally:
