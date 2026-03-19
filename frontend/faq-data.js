@@ -26,6 +26,10 @@ const faqData = {
     "breathing exercise": "Follow the 4-7-8 rule: Breathe in 4s, hold 7s, exhale 8s.",
     "music for stress": "Lo-fi beats or classical music are scientifically proven to lower cortisol.",
     
+    // App Features & Custom Points
+    "how to change profile photo": "Go to Settings on the sidebar, click 'Edit Profile', and use the camera icon to upload a new photo.",
+    "is my data safe": "Yes, your data is securely stored locally and only shared according to your privacy settings.",
+
     // Emergency
     "emergency": "If you are in danger, click the RED SOS button or call 1-800-HEALTH-123 immediately.",
     "suicide": "Please reach out to the National Suicide Prevention Lifeline at 988. You are not alone.",
