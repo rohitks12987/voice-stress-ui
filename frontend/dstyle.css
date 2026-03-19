@@ -1628,3 +1628,30 @@ footer {
         flex-direction: column; /* Buttons ek ke neeche ek aayenge */
     }
 }
+
+/* --- CHATBOT INSTRUCTIONS --- */
+.chatbot-instructions {
+    background: #f1f5f9;
+    border-left: 4px solid #6a11cb;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.chatbot-instructions h4 {
+    margin: 0 0 10px 0;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.chatbot-instructions ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #475569;
+}
+
+.chatbot-instructions li {
+    margin-bottom: 6px;
+}
