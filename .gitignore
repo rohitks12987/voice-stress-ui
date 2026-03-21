@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# local runtime/generated artifacts
+uploads/temp_rec.wav
+uploads/*.wav
+uploads/*.webm
+uploads/*.mp3
+uploads/*.ogg
+uploads/*.m4a
+
+# legacy local sqlite database (project uses MySQL now)
+database.db

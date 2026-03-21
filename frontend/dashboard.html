@@ -779,13 +779,6 @@
         }
         function toggleChat(show) { document.getElementById('chat-window').style.display = show ? 'flex' : 'none'; document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex'; }
         
-        function fillChat(text) {
-            toggleChat(true); // Open the chat window
-            const input = document.getElementById('chat-input');
-            input.value = text;
-            input.focus();
-        }
-
         // --- 2. HYDRATION ---
         let totalWater = parseFloat(localStorage.getItem('dailyWater')) || 0;
         if (localStorage.getItem('dailyWaterDate') !== formatDateKey()) {
@@ -963,8 +956,6 @@
         }
 
         // --- 4. PERFECT CHATBOT BRAIN ---
-        const hospitalKB = {};
-
         function appendMsg(text, sender) {
             const body = document.getElementById('chat-body');
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
