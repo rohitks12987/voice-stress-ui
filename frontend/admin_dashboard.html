@@ -309,6 +309,7 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+        .section-anchor { scroll-margin-top: 24px; }
 
         @media (max-width: 1200px) {
             .vitals-grid { grid-template-columns: repeat(2, 1fr); }
@@ -340,7 +341,11 @@
             <div class="sidebar-brand"><i class="fas fa-microchip"></i><span>Mental Stress Detection Using Voice Tone Analysis</span></div>
         </div>
         <nav class="nav-list">
-            <a href="#" class="nav-item active"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+            <a href="#overview" class="nav-item nav-link active" data-section="overview" onclick="scrollToSection('overview', event)"><i class="fas fa-chart-line"></i><span>Overview</span></a>
+            <a href="#trend" class="nav-item nav-link" data-section="trend" onclick="scrollToSection('trend', event)"><i class="fas fa-sliders-h"></i><span>Monthly Trend</span></a>
+            <a href="#triage" class="nav-item nav-link" data-section="triage" onclick="scrollToSection('triage', event)"><i class="fas fa-shield-virus"></i><span>High-Risk Queue</span></a>
+            <a href="#feed" class="nav-item nav-link" data-section="feed" onclick="scrollToSection('feed', event)"><i class="fas fa-users-medical"></i><span>Clinical Feed</span></a>
+            <a href="#reports" class="nav-item nav-link" data-section="reports" onclick="scrollToSection('reports', event)"><i class="fas fa-file-export"></i><span>Reports</span></a>
             <a href="#" class="nav-item" onclick="toggleSidebar(event)"><i class="fas fa-bars"></i><span id="collapse-label">Collapse</span></a>
         </nav>
         <div class="logout-section">
@@ -360,20 +365,20 @@
             </div>
         </div>
 
-        <div class="vitals-grid">
+        <div id="overview" class="vitals-grid section-anchor">
             <div class="vital-card"><p>Total Subjects</p><h2 id="stat-users">--</h2></div>
             <div class="vital-card"><p>Live Analyses</p><h2 id="stat-scans">--</h2></div>
             <div class="vital-card"><p>Global Accuracy</p><h2 id="stat-avg">--</h2></div>
         </div>
 
-        <div class="visual-grid">
+        <div id="trend" class="visual-grid section-anchor">
             <div class="chart-box">
                 <p style="font-weight: 800; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 25px;">STRESS DISTRIBUTION (MONTHLY TREND)</p>
                 <div style="height: 300px;"><canvas id="stressLineChart"></canvas></div>
             </div>
         </div>
 
-        <div class="table-panel triage-panel">
+        <div id="triage" class="table-panel triage-panel section-anchor">
             <div class="panel-header">
                 <span style="font-weight: 800; font-size: 1rem;"><i class="fas fa-shield-virus" style="margin-right: 12px;"></i> High-Risk Triage Queue</span>
                 <span id="triage-summary" class="queue-meta">Open: 0 | Resolved: 0</span>
@@ -395,7 +400,7 @@
             </table>
         </div>
 
-        <div class="table-panel">
+        <div id="feed" class="table-panel section-anchor">
             <div class="panel-header">
                 <span style="font-weight: 800; font-size: 1rem;"><i class="fas fa-clipboard-list" style="margin-right: 12px;"></i> Active Clinical Feed</span>
                 <button class="btn-refresh" onclick="syncAll()"><i class="fas fa-sync"></i> Refresh Records</button>
@@ -415,6 +420,21 @@
                 </tbody>
             </table>
         </div>
+
+        <div id="reports" class="table-panel reports-panel section-anchor">
+            <div class="panel-header">
+                <span style="font-weight: 800; font-size: 1rem;"><i class="fas fa-file-export" style="margin-right: 12px;"></i> Reports & Export</span>
+            </div>
+            <div class="reports-body">
+                <p class="reports-copy">
+                    Download the latest clinical feed and high-risk queue snapshot in CSV format for audits, daily reviews, and handover reports.
+                </p>
+                <div class="reports-actions">
+                    <button class="btn-secondary" onclick="exportClinicalFeedCsv()"><i class="fas fa-file-export"></i> Export Clinical Feed CSV</button>
+                    <button class="btn-secondary" onclick="exportQueueCsv()"><i class="fas fa-file-export"></i> Export Triage Queue CSV</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -423,6 +443,8 @@
 
         let lineChart;
         let queueActionBusy = false;
+        let latestHistoryRows = [];
+        let latestQueueRows = [];
 
         function toggleSidebar(event) {
             if (event) event.preventDefault();
@@ -430,6 +452,43 @@
             const collapsed = sidebar.classList.toggle('collapsed');
             const label = document.getElementById('collapse-label');
             if (label) label.innerText = collapsed ? 'Expand' : 'Collapse';
+        }
+
+        function setActiveNavLink(sectionId) {
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach((link) => {
+                const isActive = link.dataset.section === sectionId;
+                link.classList.toggle('active', isActive);
+            });
+        }
+
+        function scrollToSection(sectionId, event) {
+            if (event) event.preventDefault();
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveNavLink(sectionId);
+        }
+
+        function attachNavScrollSpy() {
+            const sectionIds = ['overview', 'trend', 'triage', 'feed', 'reports'];
+
+            const updateActiveSection = () => {
+                const markerY = window.scrollY + 180;
+                let activeSection = sectionIds[0];
+
+                sectionIds.forEach((id) => {
+                    const section = document.getElementById(id);
+                    if (section && section.offsetTop <= markerY) {
+                        activeSection = id;
+                    }
+                });
+
+                setActiveNavLink(activeSection);
+            };
+
+            window.addEventListener('scroll', updateActiveSection, { passive: true });
+            updateActiveSection();
         }
 
         function escapeHtml(value) {
@@ -454,6 +513,68 @@
             const normalized = String(status || 'NEW').toUpperCase();
             if (normalized === 'FOLLOW_UP') return 'FOLLOW UP';
             return normalized.replace('_', ' ');
+        }
+
+        function csvEscape(value) {
+            const text = String(value ?? '');
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        function downloadCsv(filename, headers, rows) {
+            const csvRows = [
+                headers.map(csvEscape).join(','),
+                ...rows.map((row) => row.map(csvEscape).join(','))
+            ];
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportClinicalFeedCsv() {
+            if (!latestHistoryRows.length) {
+                alert('No clinical feed data available to export yet.');
+                return;
+            }
+
+            const headers = ['Patient ID', 'Stress Level', 'AI Probability', 'Date', 'Time', 'Audio File'];
+            const rows = latestHistoryRows.map((row) => [
+                row.user_email || '',
+                row.stress_level || '',
+                row.score ?? '',
+                row.date || '',
+                row.time || '',
+                row.audio_file || ''
+            ]);
+
+            const dateStamp = new Date().toISOString().slice(0, 10);
+            downloadCsv(`clinical_feed_${dateStamp}.csv`, headers, rows);
+        }
+
+        function exportQueueCsv() {
+            if (!latestQueueRows.length) {
+                alert('No high-risk queue data available to export yet.');
+                return;
+            }
+
+            const headers = ['Patient ID', 'Risk Score', 'Detected Date', 'Detected Time', 'Status', 'Last Action By', 'Analysis ID'];
+            const rows = latestQueueRows.map((item) => [
+                item.user_email || '',
+                item.score ?? '',
+                item.date || '',
+                item.time || '',
+                item.status || 'NEW',
+                item.last_action_by || '',
+                item.analysis_id ?? ''
+            ]);
+
+            const dateStamp = new Date().toISOString().slice(0, 10);
+            downloadCsv(`high_risk_queue_${dateStamp}.csv`, headers, rows);
         }
 
         function renderTriageQueue(payload) {
@@ -546,6 +667,7 @@
                 const historyPayload = await historyRes.json();
                 const history = Array.isArray(historyPayload) ? historyPayload : [];
                 const queuePayload = await queueRes.json();
+                const queueRows = Array.isArray(queuePayload.queue) ? queuePayload.queue : [];
 
                 if (!overviewRes.ok || data.status === 'error') {
                     throw new Error(data.message || `Overview fetch failed (${overviewRes.status})`);
@@ -562,25 +684,31 @@
                 const table = document.getElementById('patient-table');
 
                 table.innerHTML = "";
+                latestHistoryRows = history;
+                latestQueueRows = queueRows;
 
                 renderTriageQueue(queuePayload);
 
-                history.forEach((row) => {
-                    const badge = row.stress_level === 'High' ? 'bg-high' : row.stress_level === 'Moderate' ? 'bg-mod' : 'bg-low';
-                    const audioLink = row.audio_file
-                        ? `<a href="${row.audio_file}" target="_blank" class="btn-audio">Play Audio</a>`
-                        : `<span style="color: var(--text-muted); font-size: 0.8rem;">No Audio</span>`;
+                if (!history.length) {
+                    table.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:32px; color: var(--text-muted);'>No clinical records available.</td></tr>";
+                } else {
+                    history.forEach((row) => {
+                        const badge = row.stress_level === 'High' ? 'bg-high' : row.stress_level === 'Moderate' ? 'bg-mod' : 'bg-low';
+                        const audioLink = row.audio_file
+                            ? `<a href="${row.audio_file}" target="_blank" class="btn-audio">Play Audio</a>`
+                            : `<span style="color: var(--text-muted); font-size: 0.8rem;">No Audio</span>`;
 
-                    table.innerHTML += `
-                        <tr>
-                            <td><b>${row.user_email}</b></td>
-                            <td class="classification-cell"><span class="stress-badge ${badge}">${row.stress_level}</span></td>
-                            <td style="color: var(--primary); font-weight: 800; font-family: monospace;">${row.score}%</td>
-                            <td style="color: var(--text-muted); font-size: 0.8rem;">${row.date} | ${row.time}</td>
-                            <td>${audioLink}</td>
-                        </tr>
-                    `;
-                });
+                        table.innerHTML += `
+                            <tr>
+                                <td><b>${row.user_email}</b></td>
+                                <td class="classification-cell"><span class="stress-badge ${badge}">${row.stress_level}</span></td>
+                                <td style="color: var(--primary); font-weight: 800; font-family: monospace;">${row.score}%</td>
+                                <td style="color: var(--text-muted); font-size: 0.8rem;">${row.date} | ${row.time}</td>
+                                <td>${audioLink}</td>
+                            </tr>
+                        `;
+                    });
+                }
 
                 renderChart(history);
             } catch (err) {
@@ -650,7 +778,10 @@
             window.location.href = 'admin_login.html';
         }
 
-        window.onload = syncAll;
+        window.onload = () => {
+            attachNavScrollSpy();
+            syncAll();
+        };
         setInterval(syncAll, 30000);
     </script>
 </body>

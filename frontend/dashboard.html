@@ -66,6 +66,7 @@
         }
         .nav-item:hover, .nav-item.active { background: rgba(14, 165, 233, 0.1); color: var(--primary); }
         .nav-item i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .section-anchor { scroll-margin-top: 20px; }
         .sidebar.collapsed .nav-menu { padding: 10px 8px; }
         .sidebar.collapsed .nav-item { justify-content: center; gap: 0; padding: 14px 0; }
         .sidebar.collapsed .nav-item span { display: none; }
@@ -326,9 +327,10 @@
             <div class="logo-text">Mental Stress Detection<span>Using Voice Tone Analysis</span></div>
         </div>
         <nav class="nav-menu">
-            <a href="#" class="nav-item active"><i class="fas fa-th-large"></i> <span>Overview</span></a>
+            <a href="#overview" class="nav-item nav-link active" data-section="overview" onclick="scrollToSection('overview', event)"><i class="fas fa-th-large"></i> <span>Overview</span></a>
             <a href="record.html" class="nav-item"><i class="fas fa-microphone"></i> <span>Voice Scan</span></a>
             <a href="history.html" class="nav-item"><i class="fas fa-history"></i> <span>History</span></a>
+            <a href="#calm-notes" class="nav-item nav-link" data-section="calm-notes" onclick="scrollToSection('calm-notes', event)"><i class="fas fa-heart"></i> <span>Calm Notes</span></a>
             <a href="#" class="nav-item" onclick="toggleSidebar(event)"><i class="fas fa-bars"></i> <span id="collapse-label">Collapse</span></a>
         </nav>
         <div class="sidebar-footer">
@@ -351,7 +353,7 @@
             </div>
         </header>
 
-        <div class="sos-banner">
+        <div class="sos-banner section-anchor" id="overview">
             <div>
                 <h3 style="color: #fca5a5;">Emergency Support</h3>
                 <p style="font-size: 0.85rem; color: #f8fafc; opacity: 0.8;">Notify clinical staff and saved contacts instantly.</p>
@@ -485,8 +487,8 @@
                     <p class="breath-meta" id="breath-session-count">Sessions today: 0</p>
                 </div>
 
-                <div class="v-card notes-card">
-                    <div class="section-title" style="color: #34d399;"><i class="fas fa-heart"></i> Stress Relief Notes</div>
+                <div class="v-card notes-card section-anchor" id="calm-notes">
+                    <div class="section-title" style="color: #34d399;"><i class="fas fa-heart"></i> Calm Notes</div>
                     <div class="stress-badge" id="stress-note-level">General calm support</div>
                     <p class="notes-intro" id="stress-note-intro">Try a short reset: inhale for 4 seconds, hold for 4, and exhale for 6.</p>
                     <ul class="notes-list">
@@ -777,6 +779,22 @@
                 label.innerText = collapsed ? 'Expand' : 'Collapse';
             }
         }
+
+        function setActiveSidebarLink(sectionId) {
+            document.querySelectorAll('.nav-link').forEach((link) => {
+                const active = link.dataset.section === sectionId;
+                link.classList.toggle('active', active);
+            });
+        }
+
+        function scrollToSection(sectionId, event) {
+            if (event) event.preventDefault();
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveSidebarLink(sectionId);
+        }
+
         function toggleChat(show) { document.getElementById('chat-window').style.display = show ? 'flex' : 'none'; document.getElementById('ai-trigger').style.display = show ? 'none' : 'flex'; }
         
         // --- 2. HYDRATION ---
