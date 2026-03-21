@@ -133,7 +133,21 @@
         th, td { padding: 12px; border-bottom: 1px solid var(--card-border); text-align: left; font-size: 0.88rem; }
         th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
 
-        .pill { font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 999px; }
+        th:nth-child(3), td:nth-child(3) { text-align: center; }
+        th:nth-child(7), td:nth-child(7) { text-align: center; }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 98px;
+            height: 32px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+        }
         .pill.low { color: #052e1f; background: #6ee7b7; }
         .pill.moderate { color: #3f2a00; background: #fcd34d; }
         .pill.high { color: #450a0a; background: #fca5a5; }
@@ -142,13 +156,20 @@
 
         /* Clinical Action Buttons */
         .history-btn {
-            padding: 6px 12px;
+            width: 150px;
+            min-height: 34px;
+            padding: 6px 10px;
             border-radius: 6px;
             text-decoration: none;
             font-size: 12px;
             font-weight: bold;
             color: white !important;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.1;
+            white-space: nowrap;
             cursor: pointer;
             border: none;
             transition: 0.2s;

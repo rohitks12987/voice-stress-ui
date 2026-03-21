@@ -499,11 +499,11 @@ def admin_login():
 def admin_overview():
     db = get_db()
     with db.cursor() as cur:
-        cur.execute("SELECT COUNT(DISTINCT user_email) as total_users FROM analysis_history")
+        cur.execute("SELECT COUNT(id) as total_users FROM users")
         u_count = cur.fetchone()
-        cur.execute("SELECT COUNT(*) as total_analyses, AVG(score) as avg_score FROM analysis_history")
+        cur.execute("SELECT COUNT(*) as total_analyses, AVG(score) as avg_score FROM analysis_history WHERE user_email IN (SELECT email FROM users)")
         a_count = cur.fetchone()
-        cur.execute("SELECT stress_level, COUNT(*) as count FROM analysis_history GROUP BY stress_level")
+        cur.execute("SELECT stress_level, COUNT(*) as count FROM analysis_history WHERE user_email IN (SELECT email FROM users) GROUP BY stress_level")
         dist_rows = cur.fetchall()
     db.close()
 
