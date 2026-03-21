@@ -139,10 +139,40 @@
         td { padding: 18px 35px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: #cbd5e1; }
         tr:hover { background: rgba(255, 255, 255, 0.02); }
 
-        .stress-badge { padding: 5px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-        .bg-high { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-        .bg-mod { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-        .bg-low { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .stress-badge {
+            min-width: 112px;
+            height: 34px;
+            padding: 0 12px;
+            border-radius: 10px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .classification-cell {
+            width: 170px;
+            vertical-align: middle;
+        }
+        .bg-high {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+        }
+        .bg-mod {
+            background: rgba(245, 158, 11, 0.18);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+        }
+        .bg-low {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #34d399;
+        }
 
         .btn-refresh { background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: 0.3s; }
         .btn-refresh:hover { transform: scale(1.05); }
@@ -164,6 +194,98 @@
             color: white;
         }
 
+        .triage-panel { margin-bottom: 35px; }
+        .queue-status {
+            min-width: 150px;
+            height: 34px;
+            padding: 0 12px;
+            border-radius: 10px;
+            font-size: 0.74rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.55px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .triage-status-cell {
+            width: 180px;
+            vertical-align: middle;
+        }
+        .status-new {
+            background: rgba(239, 68, 68, 0.16);
+            border-color: rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+        }
+        .status-acknowledged {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #fcd34d;
+        }
+        .status-called {
+            background: rgba(14, 165, 233, 0.2);
+            border-color: rgba(14, 165, 233, 0.35);
+            color: #7dd3fc;
+        }
+        .status-follow_up {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.35);
+            color: #a5b4fc;
+        }
+        .status-resolved {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #86efac;
+        }
+
+        .queue-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            width: 220px;
+            max-width: 100%;
+        }
+        .triage-actions-cell {
+            width: 260px;
+            vertical-align: middle;
+        }
+        .action-btn {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: #e2e8f0;
+            border-radius: 10px;
+            min-height: 34px;
+            width: 100%;
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .action-btn:hover { transform: translateY(-1px); }
+        .action-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            filter: saturate(60%);
+        }
+        .btn-ack { border-color: rgba(245, 158, 11, 0.4); color: #fcd34d; }
+        .btn-call { border-color: rgba(14, 165, 233, 0.4); color: #7dd3fc; }
+        .btn-follow { border-color: rgba(99, 102, 241, 0.4); color: #a5b4fc; }
+        .btn-resolve { border-color: rgba(16, 185, 129, 0.4); color: #86efac; }
+        .queue-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
         @media (max-width: 1200px) {
             .vitals-grid { grid-template-columns: repeat(2, 1fr); }
             .visual-grid { grid-template-columns: 1fr; }
@@ -179,6 +301,12 @@
             .sidebar.collapsed .btn-logout span { display: inline; }
             body { display: block; }
             .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            .queue-actions { width: 100%; }
+            .triage-actions-cell { width: 240px; }
+            .triage-status-cell { width: 160px; }
+            .queue-status { min-width: 132px; }
+            .classification-cell { width: 150px; }
+            .stress-badge { min-width: 96px; }
         }
     </style>
 </head>
@@ -228,6 +356,28 @@
             </div>
         </div>
 
+        <div class="table-panel triage-panel">
+            <div class="panel-header">
+                <span style="font-weight: 800; font-size: 1rem;"><i class="fas fa-shield-virus" style="margin-right: 12px;"></i> High-Risk Triage Queue</span>
+                <span id="triage-summary" class="queue-meta">Open: 0 | Resolved: 0</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Risk Score</th>
+                        <th>Detected</th>
+                        <th>Status</th>
+                        <th>Last Action By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="triage-table">
+                    <tr><td colspan="6" style="text-align: center; padding: 24px;">Building high-risk queue...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
         <div class="table-panel">
             <div class="panel-header">
                 <span style="font-weight: 800; font-size: 1rem;"><i class="fas fa-clipboard-list" style="margin-right: 12px;"></i> Active Clinical Feed</span>
@@ -255,6 +405,7 @@
         if (!token) window.location.href = 'admin_login.html';
 
         let lineChart;
+        let queueActionBusy = false;
 
         function toggleSidebar(event) {
             if (event) event.preventDefault();
@@ -264,30 +415,143 @@
             if (label) label.innerText = collapsed ? 'Expand' : 'Collapse';
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function queueStatusClass(status) {
+            const normalized = String(status || 'NEW').toUpperCase();
+            if (normalized === 'ACKNOWLEDGED') return 'status-acknowledged';
+            if (normalized === 'CALLED') return 'status-called';
+            if (normalized === 'FOLLOW_UP') return 'status-follow_up';
+            if (normalized === 'RESOLVED') return 'status-resolved';
+            return 'status-new';
+        }
+
+        function queueStatusLabel(status) {
+            const normalized = String(status || 'NEW').toUpperCase();
+            if (normalized === 'FOLLOW_UP') return 'FOLLOW UP';
+            return normalized.replace('_', ' ');
+        }
+
+        function renderTriageQueue(payload) {
+            const triageTable = document.getElementById('triage-table');
+            const triageSummary = document.getElementById('triage-summary');
+            const queue = payload && Array.isArray(payload.queue) ? payload.queue : [];
+            const summary = payload && payload.summary ? payload.summary : {};
+
+            triageSummary.innerText = `Open: ${summary.open_count || 0} | Resolved: ${summary.resolved_count || 0}`;
+
+            if (!queue.length) {
+                triageTable.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:24px; color: var(--text-muted);'>No high-risk cases in queue.</td></tr>";
+                return;
+            }
+
+            triageTable.innerHTML = queue.map((item) => {
+                const patient = escapeHtml(item.user_email || 'Unknown');
+                const score = Number(item.score || 0).toFixed(1);
+                const detectedAt = `${escapeHtml(item.date || '--')} | ${escapeHtml(item.time || '--')}`;
+                const status = String(item.status || 'NEW').toUpperCase();
+                const disabledAttr = queueActionBusy || status === 'RESOLVED' ? 'disabled' : '';
+                const lastAction = escapeHtml(item.last_action_by || '--');
+
+                return `
+                    <tr>
+                        <td><b>${patient}</b></td>
+                        <td style="color: var(--danger); font-weight: 800; font-family: monospace;">${score}%</td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">${detectedAt}</td>
+                        <td class="triage-status-cell"><span class="queue-status ${queueStatusClass(status)}">${queueStatusLabel(status)}</span></td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">${lastAction}</td>
+                        <td class="triage-actions-cell">
+                            <div class="queue-actions">
+                                <button class="action-btn btn-ack" ${disabledAttr} onclick="applyAlertAction(${Number(item.analysis_id)}, 'acknowledge')">Acknowledge</button>
+                                <button class="action-btn btn-call" ${disabledAttr} onclick="applyAlertAction(${Number(item.analysis_id)}, 'call_done')">Call Done</button>
+                                <button class="action-btn btn-follow" ${disabledAttr} onclick="applyAlertAction(${Number(item.analysis_id)}, 'follow_up')">Follow-up</button>
+                                <button class="action-btn btn-resolve" ${disabledAttr} onclick="applyAlertAction(${Number(item.analysis_id)}, 'resolved')">Resolved</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function applyAlertAction(analysisId, action) {
+            if (queueActionBusy) return;
+            queueActionBusy = true;
+            try {
+                const response = await fetch(`/api/admin/high-risk-queue/${analysisId}/action`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action })
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || `Action failed (${response.status})`);
+                }
+
+                await syncAll();
+            } catch (err) {
+                console.error("Queue action error:", err);
+                alert(`Could not update triage action: ${err.message}`);
+            } finally {
+                queueActionBusy = false;
+            }
+        }
+
         async function syncAll() {
             try {
-                const res = await fetch('/api/admin/overview', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.status === 401) logout();
-                const data = await res.json();
+                const [overviewRes, historyRes, queueRes] = await Promise.all([
+                    fetch('/api/admin/overview', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('/api/history?limit=12', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('/api/admin/high-risk-queue?limit=12', { headers: { 'Authorization': `Bearer ${token}` } }),
+                ]);
+
+                if (overviewRes.status === 401 || historyRes.status === 401 || queueRes.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await overviewRes.json();
+                const historyPayload = await historyRes.json();
+                const history = Array.isArray(historyPayload) ? historyPayload : [];
+                const queuePayload = await queueRes.json();
+
+                if (!overviewRes.ok || data.status === 'error') {
+                    throw new Error(data.message || `Overview fetch failed (${overviewRes.status})`);
+                }
+                if (!queueRes.ok || queuePayload.status === 'error') {
+                    throw new Error(queuePayload.message || `Queue fetch failed (${queueRes.status})`);
+                }
 
                 document.getElementById('stat-users').innerText = data.counts.total_users;
                 document.getElementById('stat-scans').innerText = data.counts.total_analyses;
-                document.getElementById('stat-high').innerText = data.counts.high_stress_count;
+                document.getElementById('stat-high').innerText = (queuePayload.summary && typeof queuePayload.summary.open_count !== 'undefined')
+                    ? queuePayload.summary.open_count
+                    : data.counts.high_stress_count;
                 document.getElementById('stat-avg').innerText = data.counts.average_score + '%';
                 document.getElementById('admin-name').innerText = "Personnel: " + localStorage.getItem('adminEmail');
-
-                const historyRes = await fetch('/api/history?limit=12', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const history = await historyRes.json();
 
                 const table = document.getElementById('patient-table');
                 const alertFeed = document.getElementById('alert-feed');
 
                 table.innerHTML = "";
                 alertFeed.innerHTML = "";
+
+                renderTriageQueue(queuePayload);
 
                 history.forEach((row) => {
                     const badge = row.stress_level === 'High' ? 'bg-high' : row.stress_level === 'Moderate' ? 'bg-mod' : 'bg-low';
@@ -298,7 +562,7 @@
                     table.innerHTML += `
                         <tr>
                             <td><b>${row.user_email}</b></td>
-                            <td><span class="stress-badge ${badge}">${row.stress_level}</span></td>
+                            <td class="classification-cell"><span class="stress-badge ${badge}">${row.stress_level}</span></td>
                             <td style="color: var(--primary); font-weight: 800; font-family: monospace;">${row.score}%</td>
                             <td style="color: var(--text-muted); font-size: 0.8rem;">${row.date} | ${row.time}</td>
                             <td>${audioLink}</td>

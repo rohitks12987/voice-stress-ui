@@ -461,11 +461,46 @@ from init_db import db_config, create_db as initialize_database_schema
 
 DB_CFG = db_config()
 ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "admin123")
+ALERT_ACTIONS = {
+    "acknowledge": {"status": "ACKNOWLEDGED", "timestamp_column": "acknowledged_at", "label": "Acknowledged"},
+    "call_done": {"status": "CALLED", "timestamp_column": "call_done_at", "label": "Call Marked Done"},
+    "follow_up": {"status": "FOLLOW_UP", "timestamp_column": "follow_up_at", "label": "Follow-up Scheduled"},
+    "resolved": {"status": "RESOLVED", "timestamp_column": "resolved_at", "label": "Resolved"},
+}
 
 # --- DATABASE HELPERS ---
 def get_db():
     """Returns a new database connection."""
     return pymysql.connect(**DB_CFG)
+
+
+def _get_staff_email_from_request():
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "")
+    payload = verify_token(token)
+    if payload and payload.get("email"):
+        return payload["email"]
+    return ADMIN_EMAIL
+
+
+def _sync_high_risk_alerts(cur):
+    """
+    Ensures every HIGH stress analysis has a corresponding triage alert record.
+    Uses INSERT IGNORE with a unique key on analysis_id to keep this idempotent.
+    """
+    cur.execute(
+        """
+        INSERT IGNORE INTO clinical_alerts (analysis_id, user_email, stress_level, score, status)
+        SELECT
+            a.id,
+            NULLIF(TRIM(a.user_email), ''),
+            COALESCE(a.stress_level, 'High'),
+            a.score,
+            'NEW'
+        FROM analysis_history a
+        WHERE LOWER(COALESCE(a.stress_level, '')) = 'high'
+        """
+    )
 
 try:
     # Ensure the database and tables exist on startup
@@ -501,10 +536,22 @@ def admin_overview():
     with db.cursor() as cur:
         cur.execute("SELECT COUNT(id) as total_users FROM users")
         u_count = cur.fetchone()
-        cur.execute("SELECT COUNT(*) as total_analyses, AVG(score) as avg_score FROM analysis_history WHERE user_email IN (SELECT email FROM users)")
+        cur.execute("SELECT COUNT(*) as total_analyses, AVG(score) as avg_score FROM analysis_history")
         a_count = cur.fetchone()
-        cur.execute("SELECT stress_level, COUNT(*) as count FROM analysis_history WHERE user_email IN (SELECT email FROM users) GROUP BY stress_level")
+        cur.execute("SELECT stress_level, COUNT(*) as count FROM analysis_history GROUP BY stress_level")
         dist_rows = cur.fetchall()
+
+        # Backward-compatible fallback:
+        # Some existing datasets contain analysis rows even when the users table is empty.
+        if (u_count.get("total_users") or 0) == 0 and (a_count.get("total_analyses") or 0) > 0:
+            cur.execute(
+                """
+                SELECT COUNT(DISTINCT LOWER(TRIM(user_email))) as total_users
+                FROM analysis_history
+                WHERE user_email IS NOT NULL AND TRIM(user_email) <> ''
+                """
+            )
+            u_count = cur.fetchone()
     db.close()
 
     total_analyses = a_count['total_analyses'] or 0
@@ -532,6 +579,153 @@ def admin_overview():
         "distribution": dist,
         "percentages": percentages
     })
+
+
+@app.route("/api/admin/high-risk-queue", methods=["GET"])
+@staff_required
+def admin_high_risk_queue():
+    try:
+        limit = int(request.args.get("limit", 20))
+    except ValueError:
+        limit = 20
+    limit = max(1, min(limit, 100))
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            _sync_high_risk_alerts(cur)
+
+            cur.execute("SELECT COUNT(*) as total_count FROM clinical_alerts")
+            total_count = (cur.fetchone() or {}).get("total_count") or 0
+
+            cur.execute("SELECT COUNT(*) as open_count FROM clinical_alerts WHERE status <> 'RESOLVED'")
+            open_count = (cur.fetchone() or {}).get("open_count") or 0
+
+            cur.execute(
+                """
+                SELECT
+                    ca.analysis_id,
+                    ca.user_email,
+                    ca.stress_level,
+                    ca.score,
+                    ca.status,
+                    ca.notes,
+                    ca.assigned_to,
+                    ca.last_action_by,
+                    ca.acknowledged_at,
+                    ca.call_done_at,
+                    ca.follow_up_at,
+                    ca.resolved_at,
+                    ca.updated_at,
+                    a.date,
+                    a.time,
+                    a.audio_file,
+                    a.created_at as analysis_created_at
+                FROM clinical_alerts ca
+                LEFT JOIN analysis_history a ON a.id = ca.analysis_id
+                ORDER BY
+                    CASE WHEN ca.status = 'RESOLVED' THEN 1 ELSE 0 END,
+                    CASE ca.status
+                        WHEN 'NEW' THEN 0
+                        WHEN 'ACKNOWLEDGED' THEN 1
+                        WHEN 'CALLED' THEN 2
+                        WHEN 'FOLLOW_UP' THEN 3
+                        ELSE 4
+                    END,
+                    COALESCE(ca.updated_at, a.created_at) DESC,
+                    ca.analysis_id DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+            queue = cur.fetchall()
+
+        db.commit()
+    finally:
+        db.close()
+
+    base_url = request.host_url.rstrip('/')
+    for row in queue:
+        if row.get("audio_file"):
+            filename = os.path.basename(row["audio_file"])
+            row["audio_file"] = f"{base_url}/uploads/{urllib.parse.quote(filename)}"
+
+    return jsonify(
+        {
+            "status": "success",
+            "summary": {
+                "total_count": total_count,
+                "open_count": open_count,
+                "resolved_count": max(total_count - open_count, 0),
+            },
+            "queue": queue,
+        }
+    )
+
+
+@app.route("/api/admin/high-risk-queue/<int:analysis_id>/action", methods=["POST"])
+@staff_required
+def admin_high_risk_action(analysis_id):
+    data = request.get_json(silent=True) or {}
+    action = str(data.get("action") or "").strip().lower()
+    notes = data.get("notes")
+    notes = notes.strip() if isinstance(notes, str) else None
+
+    config = ALERT_ACTIONS.get(action)
+    if not config:
+        return jsonify(
+            {
+                "status": "error",
+                "message": "Invalid action. Use one of: acknowledge, call_done, follow_up, resolved",
+            }
+        ), 400
+
+    staff_email = _get_staff_email_from_request()
+    ts_column = config["timestamp_column"]
+    status_value = config["status"]
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            _sync_high_risk_alerts(cur)
+
+            cur.execute("SELECT analysis_id FROM clinical_alerts WHERE analysis_id=%s", (analysis_id,))
+            existing = cur.fetchone()
+            if not existing:
+                return jsonify({"status": "error", "message": "High-risk alert not found"}), 404
+
+            if notes:
+                cur.execute(
+                    f"""
+                    UPDATE clinical_alerts
+                    SET status=%s, assigned_to=%s, last_action_by=%s, notes=%s, {ts_column}=NOW(), updated_at=NOW()
+                    WHERE analysis_id=%s
+                    """,
+                    (status_value, staff_email, staff_email, notes, analysis_id),
+                )
+            else:
+                cur.execute(
+                    f"""
+                    UPDATE clinical_alerts
+                    SET status=%s, assigned_to=%s, last_action_by=%s, {ts_column}=NOW(), updated_at=NOW()
+                    WHERE analysis_id=%s
+                    """,
+                    (status_value, staff_email, staff_email, analysis_id),
+                )
+
+        db.commit()
+    finally:
+        db.close()
+
+    return jsonify(
+        {
+            "status": "success",
+            "message": f"Alert #{analysis_id} updated: {config['label']}",
+            "analysis_id": analysis_id,
+            "new_status": status_value,
+            "updated_by": staff_email,
+        }
+    )
 
 @app.route("/api/admin/users", methods=["GET"])
 @staff_required

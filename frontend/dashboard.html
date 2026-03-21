@@ -41,6 +41,10 @@
         .fa-robot::before { content: "\1F916"; }
         .fa-times::before { content: "\2715"; }
         .fa-paper-plane::before { content: "\27A4"; }
+        .fa-heart::before { content: "\2665"; }
+        .fa-wind::before { content: "\2248"; }
+        .fa-moon::before { content: "\263D"; }
+        .fa-bullseye::before { content: "\25CE"; }
 
         /* --- SIDEBAR --- */
         .sidebar {
@@ -109,6 +113,159 @@
             background: rgba(255, 255, 255, 0.08);
             color: #e2e8f0; cursor: pointer;
             display: inline-flex; align-items: center; justify-content: center;
+        }
+
+        .notes-card {
+            background: linear-gradient(155deg, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.9));
+            border-color: rgba(16, 185, 129, 0.45);
+        }
+        .stress-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            background: rgba(2, 6, 23, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            margin-bottom: 14px;
+        }
+        .notes-intro {
+            font-size: 0.86rem;
+            color: #e2e8f0;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .notes-list {
+            margin: 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 8px;
+        }
+        .notes-list li {
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+        .notes-footer {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #bae6fd;
+            opacity: 0.9;
+        }
+
+        .sleep-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .sleep-input {
+            width: 90px;
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 8px 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .sleep-select {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 8px 10px;
+        }
+        .sleep-note {
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+        }
+
+        .goal-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+            font-weight: 700;
+        }
+        .goal-list {
+            display: grid;
+            gap: 8px;
+        }
+        .goal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .goal-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .goal-pill.pending {
+            background: rgba(148, 163, 184, 0.2);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        .goal-pill.done {
+            background: rgba(16, 185, 129, 0.2);
+            color: #86efac;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .breath-state {
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+        .breath-time {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #38bdf8;
+        }
+        .breath-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .breathe-btn {
+            flex: 1;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .breathe-btn.primary {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.95), rgba(99, 102, 241, 0.95));
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+        .breath-meta {
+            font-size: 0.74rem;
+            color: #94a3b8;
+            margin-top: 10px;
         }
         
         /* --- CHATBOT UI (PRO) --- */
@@ -252,6 +409,49 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="v-card">
+                    <div class="section-title"><i class="fas fa-moon"></i> Sleep Tracker</div>
+                    <div class="water-progress"><div class="water-fill" id="sleep-bar"></div></div>
+                    <div class="sleep-controls">
+                        <button class="btn-sm" onclick="adjustSleep(-0.5)">-0.5h</button>
+                        <input id="sleep-hours" class="sleep-input" type="number" min="0" max="12" step="0.5" onchange="saveSleepHours(this.value)">
+                        <button class="btn-sm" onclick="adjustSleep(0.5)">+0.5h</button>
+                    </div>
+                    <div class="sleep-controls">
+                        <span style="font-size:0.8rem; color: var(--text-muted); font-weight:700;">Quality</span>
+                        <select id="sleep-quality" class="sleep-select" onchange="saveSleepQuality(this.value)">
+                            <option value="poor">Poor</option>
+                            <option value="fair">Fair</option>
+                            <option value="good">Good</option>
+                            <option value="great">Great</option>
+                        </select>
+                    </div>
+                    <p class="sleep-note" id="sleep-note">Aim for 7-9 hours of restful sleep.</p>
+                </div>
+
+                <div class="v-card">
+                    <div class="section-title"><i class="fas fa-bullseye"></i> Goals & Streaks</div>
+                    <div class="goal-summary">
+                        <span id="goal-progress-text">0/3 goals completed today</span>
+                        <span class="stress-badge" id="goal-streak-badge" style="margin-bottom: 0;">Streak: 0 days</span>
+                    </div>
+                    <div class="goal-list">
+                        <div class="goal-row">
+                            <span>Hydration goal (3L)</span>
+                            <span id="goal-water" class="goal-pill pending">Pending</span>
+                        </div>
+                        <div class="goal-row">
+                            <span>Breathing session</span>
+                            <span id="goal-breathing" class="goal-pill pending">Pending</span>
+                        </div>
+                        <div class="goal-row">
+                            <span>Sleep 7+ hours</span>
+                            <span id="goal-sleep" class="goal-pill pending">Pending</span>
+                        </div>
+                    </div>
+                    <p class="notes-footer">Complete all goals each day to build your streak.</p>
+                </div>
             </div>
 
             <div class="col-right">
@@ -270,6 +470,31 @@
                 <div class="v-card" style="text-align:center;">
                     <div class="section-title" style="justify-content:center;"><i class="fas fa-wave-square"></i> Quick Scan</div>
                     <button class="btn-sm" style="width:100%; background:var(--primary); padding:15px; font-weight:700;" onclick="window.location.href='record.html?mode=quick'">START NEW SCAN</button>
+                </div>
+
+                <div class="v-card">
+                    <div class="section-title"><i class="fas fa-wind"></i> Breathing Exercise</div>
+                    <p class="breath-state" id="breath-state">Ready to begin. Start a 1-minute guided cycle.</p>
+                    <div class="breath-time" id="breath-time">01:00</div>
+                    <div class="water-progress"><div class="water-fill" id="breath-bar"></div></div>
+                    <div class="breath-controls">
+                        <button class="breathe-btn primary" id="breath-toggle-btn" onclick="toggleBreathing()">Start 1 min</button>
+                        <button class="breathe-btn" onclick="resetBreathing()">Reset</button>
+                    </div>
+                    <p class="breath-meta" id="breath-meta">Cycle: Inhale 4s | Hold 4s | Exhale 6s</p>
+                    <p class="breath-meta" id="breath-session-count">Sessions today: 0</p>
+                </div>
+
+                <div class="v-card notes-card">
+                    <div class="section-title" style="color: #34d399;"><i class="fas fa-heart"></i> Stress Relief Notes</div>
+                    <div class="stress-badge" id="stress-note-level">General calm support</div>
+                    <p class="notes-intro" id="stress-note-intro">Try a short reset: inhale for 4 seconds, hold for 4, and exhale for 6.</p>
+                    <ul class="notes-list">
+                        <li id="stress-note-1">Relax your jaw and shoulders before your next task.</li>
+                        <li id="stress-note-2">Drink water and avoid caffeine for the next 30 minutes.</li>
+                        <li id="stress-note-3">Take a 5-minute walk or stretch break away from your screen.</li>
+                    </ul>
+                    <p class="notes-footer">If symptoms feel intense, use the SOS button or contact your clinician.</p>
                 </div>
             </div>
         </div>
@@ -299,6 +524,249 @@
     <script src="faq-data.js"></script>
     <script>
         const API_BASE = window.location.origin;
+        const GOAL_LOG_KEY = 'dashboardGoalLog';
+        const DAILY_SLEEP_KEY = 'dailySleepState';
+        const DAILY_BREATH_KEY = 'dailyBreathingSessions';
+        const BREATH_PATTERN = [
+            { label: 'Inhale', seconds: 4 },
+            { label: 'Hold', seconds: 4 },
+            { label: 'Exhale', seconds: 6 }
+        ];
+
+        let breathTimer = null;
+        let breathElapsed = 0;
+        let breathTarget = 60;
+        let breathPhaseIndex = 0;
+        let breathPhaseRemaining = BREATH_PATTERN[0].seconds;
+        let breathingSessions = Number(getDailyState(DAILY_BREATH_KEY, 0)) || 0;
+
+        let sleepState = getDailyState(DAILY_SLEEP_KEY, { hours: 7, quality: 'fair' });
+        let sleepHours = Number(sleepState.hours || 7);
+        let sleepQuality = String(sleepState.quality || 'fair');
+
+        function formatDateKey(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getDailyState(key, fallback) {
+            const raw = localStorage.getItem(key);
+            if (!raw) return fallback;
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.date === formatDateKey() && Object.prototype.hasOwnProperty.call(parsed, 'value')) {
+                    return parsed.value;
+                }
+            } catch (err) {
+                console.warn(`Could not parse ${key}:`, err);
+            }
+            return fallback;
+        }
+
+        function setDailyState(key, value) {
+            localStorage.setItem(key, JSON.stringify({ date: formatDateKey(), value }));
+        }
+
+        function readGoalLog() {
+            const raw = localStorage.getItem(GOAL_LOG_KEY);
+            if (!raw) return {};
+            try {
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (err) {
+                console.warn('Could not parse goal log:', err);
+                return {};
+            }
+        }
+
+        function writeGoalLog(log) {
+            localStorage.setItem(GOAL_LOG_KEY, JSON.stringify(log));
+        }
+
+        function updateGoalState(goalName, isDone) {
+            const today = formatDateKey();
+            const log = readGoalLog();
+            const current = log[today] || { water: false, breathing: false, sleep: false };
+            current[goalName] = Boolean(isDone);
+            log[today] = current;
+            writeGoalLog(log);
+            renderGoalSummary();
+        }
+
+        function getConsecutiveStreak(log) {
+            let streak = 0;
+            const cursor = new Date();
+            for (let i = 0; i < 365; i++) {
+                const key = formatDateKey(cursor);
+                const state = log[key];
+                if (state && state.water && state.breathing && state.sleep) {
+                    streak += 1;
+                    cursor.setDate(cursor.getDate() - 1);
+                    continue;
+                }
+                break;
+            }
+            return streak;
+        }
+
+        function setGoalBadge(id, complete) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = `goal-pill ${complete ? 'done' : 'pending'}`;
+            el.innerText = complete ? 'Done' : 'Pending';
+        }
+
+        function renderGoalSummary() {
+            const log = readGoalLog();
+            const today = formatDateKey();
+            const state = log[today] || { water: false, breathing: false, sleep: false };
+            const completed = [state.water, state.breathing, state.sleep].filter(Boolean).length;
+            const streak = getConsecutiveStreak(log);
+
+            const progress = document.getElementById('goal-progress-text');
+            const streakBadge = document.getElementById('goal-streak-badge');
+            if (progress) progress.innerText = `${completed}/3 goals completed today`;
+            if (streakBadge) streakBadge.innerText = `Streak: ${streak} day${streak === 1 ? '' : 's'}`;
+
+            setGoalBadge('goal-water', state.water);
+            setGoalBadge('goal-breathing', state.breathing);
+            setGoalBadge('goal-sleep', state.sleep);
+        }
+
+        function getSleepInsight(hours, quality) {
+            if (hours < 6) return 'Low sleep can increase stress reactivity. Try sleeping 30-60 minutes earlier tonight.';
+            if (hours >= 7 && (quality === 'good' || quality === 'great')) return 'Recovery looks strong. Keep this sleep routine consistent.';
+            if (quality === 'poor') return 'You slept enough but quality feels low. Reduce caffeine late evening and dim screens before bed.';
+            return 'You are close to target. Aim for 7-9 hours and a fixed sleep schedule.';
+        }
+
+        function updateSleepUI() {
+            sleepHours = Math.max(0, Math.min(12, Math.round(Number(sleepHours || 0) * 2) / 2));
+            if (!['poor', 'fair', 'good', 'great'].includes(sleepQuality)) sleepQuality = 'fair';
+
+            const sleepInput = document.getElementById('sleep-hours');
+            const sleepSelect = document.getElementById('sleep-quality');
+            const sleepBar = document.getElementById('sleep-bar');
+            const sleepNote = document.getElementById('sleep-note');
+
+            if (sleepInput) sleepInput.value = sleepHours.toFixed(1);
+            if (sleepSelect) sleepSelect.value = sleepQuality;
+            if (sleepBar) sleepBar.style.width = `${Math.min((sleepHours / 8) * 100, 100)}%`;
+            if (sleepNote) sleepNote.innerText = getSleepInsight(sleepHours, sleepQuality);
+
+            setDailyState(DAILY_SLEEP_KEY, { hours: sleepHours, quality: sleepQuality });
+            updateGoalState('sleep', sleepHours >= 7);
+        }
+
+        function adjustSleep(delta) {
+            sleepHours = Number(sleepHours) + Number(delta);
+            updateSleepUI();
+        }
+
+        function saveSleepHours(value) {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed)) return;
+            sleepHours = parsed;
+            updateSleepUI();
+        }
+
+        function saveSleepQuality(value) {
+            sleepQuality = value;
+            updateSleepUI();
+        }
+
+        function formatCountdown(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateBreathingUI() {
+            const remaining = Math.max(breathTarget - breathElapsed, 0);
+            const breathingActive = Boolean(breathTimer);
+
+            const timeEl = document.getElementById('breath-time');
+            const stateEl = document.getElementById('breath-state');
+            const barEl = document.getElementById('breath-bar');
+            const toggleEl = document.getElementById('breath-toggle-btn');
+            const countEl = document.getElementById('breath-session-count');
+
+            if (timeEl) timeEl.innerText = formatCountdown(remaining);
+            if (barEl) barEl.style.width = `${Math.min((breathElapsed / breathTarget) * 100, 100)}%`;
+            if (countEl) countEl.innerText = `Sessions today: ${breathingSessions}`;
+
+            if (stateEl) {
+                if (breathElapsed >= breathTarget) {
+                    stateEl.innerText = 'Session complete. Stay still for a few seconds and notice your breath.';
+                } else if (breathingActive) {
+                    stateEl.innerText = `${BREATH_PATTERN[breathPhaseIndex].label} | ${breathPhaseRemaining}s`;
+                } else {
+                    stateEl.innerText = 'Ready to begin. Start a 1-minute guided cycle.';
+                }
+            }
+
+            if (toggleEl) {
+                if (breathElapsed >= breathTarget && !breathingActive) toggleEl.innerText = 'Start again';
+                else toggleEl.innerText = breathingActive ? 'Pause' : 'Start 1 min';
+            }
+
+        }
+
+        function completeBreathingSession() {
+            breathingSessions += 1;
+            setDailyState(DAILY_BREATH_KEY, breathingSessions);
+            updateGoalState('breathing', true);
+            updateBreathingUI();
+        }
+
+        function breathingTick() {
+            breathElapsed += 1;
+            breathPhaseRemaining -= 1;
+
+            if (breathPhaseRemaining <= 0) {
+                breathPhaseIndex = (breathPhaseIndex + 1) % BREATH_PATTERN.length;
+                breathPhaseRemaining = BREATH_PATTERN[breathPhaseIndex].seconds;
+            }
+
+            if (breathElapsed >= breathTarget) {
+                clearInterval(breathTimer);
+                breathTimer = null;
+                completeBreathingSession();
+                return;
+            }
+
+            updateBreathingUI();
+        }
+
+        function toggleBreathing() {
+            if (breathElapsed >= breathTarget && !breathTimer) {
+                resetBreathing();
+            }
+
+            if (breathTimer) {
+                clearInterval(breathTimer);
+                breathTimer = null;
+                updateBreathingUI();
+                return;
+            }
+
+            breathTimer = setInterval(breathingTick, 1000);
+            updateBreathingUI();
+        }
+
+        function resetBreathing() {
+            if (breathTimer) {
+                clearInterval(breathTimer);
+                breathTimer = null;
+            }
+            breathElapsed = 0;
+            breathPhaseIndex = 0;
+            breathPhaseRemaining = BREATH_PATTERN[0].seconds;
+            updateBreathingUI();
+        }
+
         // --- 1. CORE UI ---
         function toggleSidebar(event) {
             if (event) event.preventDefault();
@@ -320,10 +788,17 @@
 
         // --- 2. HYDRATION ---
         let totalWater = parseFloat(localStorage.getItem('dailyWater')) || 0;
+        if (localStorage.getItem('dailyWaterDate') !== formatDateKey()) {
+            totalWater = 0;
+            localStorage.setItem('dailyWaterDate', formatDateKey());
+            localStorage.setItem('dailyWater', '0');
+        }
         function updateWaterUI() {
             document.getElementById('water-bar').style.width = Math.min((totalWater / 3) * 100, 100) + '%';
             document.getElementById('current-water').innerText = totalWater.toFixed(1);
             localStorage.setItem('dailyWater', totalWater);
+            localStorage.setItem('dailyWaterDate', formatDateKey());
+            updateGoalState('water', totalWater >= 3);
         }
         function addWater(amt) { totalWater += amt; updateWaterUI(); }
         function resetWater() { if(confirm("Reset today's goal?")) { totalWater = 0; updateWaterUI(); } }
@@ -347,6 +822,69 @@
             return null;
         }
 
+        function updateStressReliefNotes(level) {
+            const badgeEl = document.getElementById('stress-note-level');
+            const introEl = document.getElementById('stress-note-intro');
+            const note1El = document.getElementById('stress-note-1');
+            const note2El = document.getElementById('stress-note-2');
+            const note3El = document.getElementById('stress-note-3');
+            if (!badgeEl || !introEl || !note1El || !note2El || !note3El) return;
+
+            const lower = String(level || '').toLowerCase();
+            let notePack = {
+                badge: 'General calm support',
+                color: 'var(--success)',
+                intro: 'Try a short reset: inhale for 4 seconds, hold for 4, and exhale for 6.',
+                tips: [
+                    'Relax your jaw and shoulders before your next task.',
+                    'Drink water and avoid caffeine for the next 30 minutes.',
+                    'Take a 5-minute walk or stretch break away from your screen.'
+                ]
+            };
+
+            if (lower.includes('high')) {
+                notePack = {
+                    badge: 'High stress support',
+                    color: 'var(--danger)',
+                    intro: 'Your latest reading suggests high stress. Pause and calm your body first.',
+                    tips: [
+                        'Do 5 rounds of breathing: inhale 4 seconds, hold 4, exhale 6.',
+                        'Use grounding: name 5 things you see, 4 you touch, and 3 you hear.',
+                        'Reach out to a trusted contact or clinician if distress keeps rising.'
+                    ]
+                };
+            } else if (lower.includes('mod')) {
+                notePack = {
+                    badge: 'Moderate stress care',
+                    color: 'var(--warning)',
+                    intro: 'Your stress appears moderate. A short reset now can prevent escalation.',
+                    tips: [
+                        'Set a 10-minute timer and focus on one small achievable task.',
+                        'Loosen neck and shoulder tension with gentle stretches.',
+                        'Play one Soundscapes track for at least 5 minutes.'
+                    ]
+                };
+            } else if (lower.includes('low')) {
+                notePack = {
+                    badge: 'Low stress maintenance',
+                    color: 'var(--success)',
+                    intro: 'You are in a lower stress range. Keep the rhythm that is working.',
+                    tips: [
+                        'Keep hydration and meal times steady through the day.',
+                        'Take short outdoor or sunlight breaks to maintain calm.',
+                        'Write one gratitude note or positive reflection tonight.'
+                    ]
+                };
+            }
+
+            badgeEl.innerText = notePack.badge;
+            badgeEl.style.color = notePack.color;
+            introEl.innerText = notePack.intro;
+            note1El.innerText = notePack.tips[0];
+            note2El.innerText = notePack.tips[1];
+            note3El.innerText = notePack.tips[2];
+        }
+
         function setLatestStress(level) {
             const el = document.getElementById('latest-stress');
             const text = (level || 'No Data').trim();
@@ -355,17 +893,14 @@
 
             if (lower.includes('high')) {
                 el.style.color = 'var(--danger)';
-                return;
-            }
-            if (lower.includes('mod')) {
+            } else if (lower.includes('mod')) {
                 el.style.color = 'var(--warning)';
-                return;
-            }
-            if (lower.includes('low')) {
+            } else if (lower.includes('low')) {
                 el.style.color = 'var(--success)';
-                return;
+            } else {
+                el.style.color = 'var(--text-muted)';
             }
-            el.style.color = 'var(--text-muted)';
+            updateStressReliefNotes(text);
         }
 
         function toPercent(count, total) {
@@ -509,6 +1044,10 @@
 
         window.onload = async () => {
             updateWaterUI();
+            updateSleepUI();
+            updateGoalState('breathing', breathingSessions > 0);
+            updateBreathingUI();
+            renderGoalSummary();
             updateGraph(0, 0, 0);
 
             const activeEmail = getActiveEmail();

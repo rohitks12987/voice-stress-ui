@@ -141,6 +141,33 @@ def create_db():
                 """
             )
 
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS clinical_alerts (
+                    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                    analysis_id BIGINT UNSIGNED NOT NULL,
+                    user_email VARCHAR(255) NULL,
+                    stress_level VARCHAR(32) NOT NULL DEFAULT 'High',
+                    score DECIMAL(6,2) NULL,
+                    status VARCHAR(32) NOT NULL DEFAULT 'NEW',
+                    notes TEXT NULL,
+                    assigned_to VARCHAR(255) NULL,
+                    last_action_by VARCHAR(255) NULL,
+                    acknowledged_at DATETIME NULL,
+                    call_done_at DATETIME NULL,
+                    follow_up_at DATETIME NULL,
+                    resolved_at DATETIME NULL,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    UNIQUE KEY uq_clinical_alert_analysis (analysis_id),
+                    INDEX idx_clinical_alert_status (status),
+                    INDEX idx_clinical_alert_user (user_email),
+                    INDEX idx_clinical_alert_updated (updated_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """
+            )
+
         conn.commit()
         print(f"MySQL database '{db_name}' and tables are ready.")
     finally:
