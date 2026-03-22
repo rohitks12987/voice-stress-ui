@@ -125,6 +125,10 @@ def extract_audio_features(y: np.ndarray, sr: int, n_mfcc: int = 13) -> dict | N
         mel_energies = np.maximum(power_spec @ fbank.T, eps)
         log_mel = np.log(mel_energies)
         mfcc_matrix = dct(log_mel, type=2, axis=1, norm="ortho")[:, :n_mfcc]
+        if mfcc_matrix.shape[0] > 1:
+            mfcc_delta = np.diff(mfcc_matrix, axis=0)
+        else:
+            mfcc_delta = np.zeros_like(mfcc_matrix)
 
         # Core spectral and temporal features
         frame_rms = np.sqrt(np.mean(frames * frames, axis=1))
@@ -138,6 +142,30 @@ def extract_audio_features(y: np.ndarray, sr: int, n_mfcc: int = 13) -> dict | N
         bandwidth_frames = np.sqrt(
             np.sum(((freqs[None, :] - centroid_frames[:, None]) ** 2) * power_spec, axis=1) / power_sum
         )
+
+        # Spectral rolloff (85% cumulative energy).
+        cumulative_energy = np.cumsum(power_spec, axis=1)
+        rolloff_target = 0.85 * power_sum[:, None]
+        rolloff_idx = np.argmax(cumulative_energy >= rolloff_target, axis=1)
+        rolloff_hz = freqs[np.clip(rolloff_idx, 0, len(freqs) - 1)]
+
+        # Spectral flatness and flux.
+        geometric_mean = np.exp(np.mean(np.log(power_spec + eps), axis=1))
+        arithmetic_mean = np.mean(power_spec + eps, axis=1)
+        flatness = geometric_mean / arithmetic_mean
+
+        norm_spec = power_spec / (power_sum[:, None] + eps)
+        if norm_spec.shape[0] > 1:
+            flux = np.sqrt(np.sum(np.diff(norm_spec, axis=0) ** 2, axis=1))
+        else:
+            flux = np.array([0.0], dtype=np.float32)
+
+        # Low/high frequency energy ratio.
+        split_bin = int(np.searchsorted(freqs, 1000.0))
+        split_bin = min(max(split_bin, 1), power_spec.shape[1] - 1)
+        low_energy = np.sum(power_spec[:, :split_bin], axis=1)
+        high_energy = np.sum(power_spec[:, split_bin:], axis=1) + eps
+        low_high_ratio = low_energy / high_energy
 
         # Compact chroma scalar from pitch-class energy distribution.
         valid_bins = np.where(freqs > 0)[0]
@@ -153,14 +181,27 @@ def extract_audio_features(y: np.ndarray, sr: int, n_mfcc: int = 13) -> dict | N
 
         pitch_vals = _estimate_pitch_autocorr(frames, sr)
 
-        features = {f"mfcc_{i}": float(np.mean(mfcc_matrix[:, i])) for i in range(n_mfcc)}
+        features = {}
+        for i in range(n_mfcc):
+            features[f"mfcc_{i}"] = float(np.mean(mfcc_matrix[:, i]))
+            features[f"mfcc_{i}_std"] = float(np.std(mfcc_matrix[:, i]))
+            features[f"mfcc_delta_{i}"] = float(np.mean(np.abs(mfcc_delta[:, i])))
+
         features.update(
             {
                 "pitch_mean": float(np.mean(pitch_vals)) if pitch_vals.size else 0.0,
                 "pitch_std": float(np.std(pitch_vals)) if pitch_vals.size else 0.0,
+                "pitch_p10": float(np.percentile(pitch_vals, 10)) if pitch_vals.size else 0.0,
+                "pitch_p90": float(np.percentile(pitch_vals, 90)) if pitch_vals.size else 0.0,
                 "rms": float(np.mean(frame_rms)),
+                "rms_std": float(np.std(frame_rms)),
+                "rms_p90": float(np.percentile(frame_rms, 90)),
                 "spectral_centroid": float(np.mean(centroid_frames)),
                 "spectral_bandwidth": float(np.mean(bandwidth_frames)),
+                "spectral_rolloff": float(np.mean(rolloff_hz)),
+                "spectral_flatness": float(np.mean(flatness)),
+                "spectral_flux": float(np.mean(flux)),
+                "low_high_energy_ratio": float(np.mean(low_high_ratio)),
                 "chroma": chroma_scalar,
                 "zero_crossing_rate": float(zcr),
             }

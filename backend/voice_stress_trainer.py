@@ -223,23 +223,10 @@ class VoiceStressTrainer:
     def _candidate_models(self):
         return [
             (
-                "extra_trees_large",
-                ExtraTreesClassifier(
-                    n_estimators=900,
-                    max_depth=None,
-                    min_samples_split=2,
-                    min_samples_leaf=1,
-                    max_features="sqrt",
-                    class_weight="balanced_subsample",
-                    random_state=self.random_state,
-                    n_jobs=1,
-                ),
-            ),
-            (
                 "extra_trees_regularized",
                 ExtraTreesClassifier(
-                    n_estimators=1200,
-                    max_depth=36,
+                    n_estimators=1000,
+                    max_depth=30,
                     min_samples_split=4,
                     min_samples_leaf=2,
                     max_features="sqrt",
@@ -247,11 +234,40 @@ class VoiceStressTrainer:
                     random_state=self.random_state,
                     n_jobs=1,
                 ),
+                False,
             ),
             (
-                "random_forest",
+                "extra_trees_generalized",
+                ExtraTreesClassifier(
+                    n_estimators=900,
+                    max_depth=22,
+                    min_samples_split=8,
+                    min_samples_leaf=4,
+                    max_features=0.6,
+                    class_weight="balanced_subsample",
+                    random_state=self.random_state,
+                    n_jobs=1,
+                ),
+                False,
+            ),
+            (
+                "random_forest_generalized",
                 RandomForestClassifier(
                     n_estimators=900,
+                    max_depth=24,
+                    min_samples_split=8,
+                    min_samples_leaf=4,
+                    max_features=0.6,
+                    class_weight="balanced_subsample",
+                    random_state=self.random_state,
+                    n_jobs=1,
+                ),
+                False,
+            ),
+            (
+                "extra_trees_large_reference",
+                ExtraTreesClassifier(
+                    n_estimators=800,
                     max_depth=None,
                     min_samples_split=2,
                     min_samples_leaf=1,
@@ -260,20 +276,32 @@ class VoiceStressTrainer:
                     random_state=self.random_state,
                     n_jobs=1,
                 ),
+                False,
             ),
         ]
 
-    def _fit_model(self, model, X_data, y_data):
+    def _fit_model(self, model, X_data, y_data, sample_weight=None):
+        fit_kwargs = {}
+        if sample_weight is not None:
+            fit_kwargs["sample_weight"] = sample_weight
+
         try:
-            model.fit(X_data, y_data)
+            model.fit(X_data, y_data, **fit_kwargs)
             return model
         except PermissionError:
             if hasattr(model, "set_params") and hasattr(model, "n_jobs"):
                 print("Model parallelism blocked by environment. Retrying with n_jobs=1.")
                 model = model.set_params(n_jobs=1)
-                model.fit(X_data, y_data)
+                model.fit(X_data, y_data, **fit_kwargs)
                 return model
             raise
+
+    def _compute_sample_weights(self, y_data):
+        counts = pd.Series(y_data).value_counts()
+        total = float(len(y_data))
+        n_classes = float(len(counts))
+        class_weights = {label: total / (n_classes * count) for label, count in counts.items()}
+        return np.asarray([class_weights[label] for label in y_data], dtype=np.float32)
 
     def _fit_best_model(self, X_train, y_train):
         X_search, X_val, y_search, y_val = train_test_split(
@@ -291,23 +319,42 @@ class VoiceStressTrainer:
         best_name = None
         best_model = None
         best_score = -1.0
-        for name, model in self._candidate_models():
+        best_uses_weights = False
+        sample_weights = self._compute_sample_weights(y_search)
+
+        for name, model, uses_weights in self._candidate_models():
             print(f"Training candidate model: {name}")
-            model = self._fit_model(model, X_search_scaled, y_search)
+            model = self._fit_model(
+                model,
+                X_search_scaled,
+                y_search,
+                sample_weight=sample_weights if uses_weights else None,
+            )
+
             val_pred = model.predict(X_val_scaled)
+            train_pred = model.predict(X_search_scaled)
             macro_f1 = f1_score(y_val, val_pred, average="macro")
+            train_macro_f1 = f1_score(y_search, train_pred, average="macro")
             val_acc = accuracy_score(y_val, val_pred)
-            print(f"  Validation -> macro_f1={macro_f1:.4f}, accuracy={val_acc:.4f}")
-            if macro_f1 > best_score:
-                best_score = macro_f1
+            overfit_gap = max(0.0, train_macro_f1 - macro_f1)
+            generalization_score = macro_f1 - 0.20 * overfit_gap
+            print(
+                "  Validation -> macro_f1={:.4f}, accuracy={:.4f}, train_macro_f1={:.4f}, gen_score={:.4f}".format(
+                    macro_f1, val_acc, train_macro_f1, generalization_score
+                )
+            )
+            if generalization_score > best_score:
+                best_score = generalization_score
                 best_name = name
                 best_model = model
+                best_uses_weights = uses_weights
 
         # Refit scaler + selected model on full training split.
         self.scaler = StandardScaler()
         X_train_scaled = self.scaler.fit_transform(X_train)
-        best_model = self._fit_model(best_model, X_train_scaled, y_train)
-        return best_name, best_model
+        final_weights = self._compute_sample_weights(y_train) if best_uses_weights else None
+        best_model = self._fit_model(best_model, X_train_scaled, y_train, sample_weight=final_weights)
+        return best_name, best_model, best_uses_weights
 
     def _calc_metrics(self, y_true, y_pred):
         return {
@@ -359,7 +406,7 @@ class VoiceStressTrainer:
             print("Balanced train distribution:", class_map)
 
         print(f"Training on {len(X_train)} samples...")
-        best_model_name, model = self._fit_best_model(X_train, y_train)
+        best_model_name, model, best_model_uses_weights = self._fit_best_model(X_train, y_train)
         print(f"Selected model: {best_model_name}")
 
         X_train_scaled = self.scaler.transform(X_train)
@@ -380,7 +427,8 @@ class VoiceStressTrainer:
             final_model = clone(model)
             self.scaler = StandardScaler()
             X_full_scaled = self.scaler.fit_transform(X)
-            final_model = self._fit_model(final_model, X_full_scaled, y)
+            full_weights = self._compute_sample_weights(y) if best_model_uses_weights else None
+            final_model = self._fit_model(final_model, X_full_scaled, y, sample_weight=full_weights)
             model = final_model
             final_fit_samples = int(len(X))
 
