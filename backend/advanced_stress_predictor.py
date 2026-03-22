@@ -6,6 +6,8 @@ import joblib
 import librosa
 import numpy as np
 import pandas as pd
+import soundfile as sf
+from scipy import signal
 
 from audio_features import extract_audio_features
 
@@ -34,6 +36,8 @@ class AdvancedStressPredictor:
             self.scaler = bundle.get("scaler")
             self.label_encoder = bundle.get("label_encoder")
             self.feature_names = bundle.get("feature_names") or []
+            if bundle.get("n_mfcc") is not None:
+                self.n_mfcc = int(bundle["n_mfcc"])
         else:
             self.model = bundle
             
@@ -42,7 +46,8 @@ class AdvancedStressPredictor:
             self.model.n_jobs = 1
 
     def extract_features_from_audio(self, y: np.ndarray, sr: int) -> Dict[str, float]:
-        if y.ndim > 1: y = librosa.to_mono(y)
+        if y.ndim > 1:
+            y = np.mean(y, axis=1)
         # Use the shared feature extraction function.
         # The input 'y' to this function is expected to be pre-processed by `_prepare_audio`.
         return extract_audio_features(y, sr, n_mfcc=self.n_mfcc)
@@ -80,12 +85,26 @@ class AdvancedStressPredictor:
             raw = raw.reshape(-1, channels).mean(axis=1)
 
         if sr != self.sample_rate:
-            raw = librosa.resample(raw, orig_sr=sr, target_sr=self.sample_rate)
+            raw = signal.resample_poly(raw, self.sample_rate, sr).astype(np.float32)
             sr = self.sample_rate
 
         return raw.astype(np.float32), sr
 
+    def _load_audio_soundfile(self, audio_path: str) -> Tuple[np.ndarray, int]:
+        y, sr = sf.read(audio_path, dtype="float32")
+        if y.ndim > 1:
+            y = np.mean(y, axis=1)
+        if sr != self.sample_rate:
+            y = signal.resample_poly(y, self.sample_rate, sr).astype(np.float32)
+            sr = self.sample_rate
+        return y.astype(np.float32), int(sr)
+
     def _load_audio(self, audio_path: str) -> Tuple[np.ndarray, int]:
+        try:
+            return self._load_audio_soundfile(audio_path)
+        except Exception:
+            pass
+
         try:
             return librosa.load(audio_path, sr=self.sample_rate)
         except Exception:
@@ -98,12 +117,15 @@ class AdvancedStressPredictor:
 
     def _prepare_audio(self, y: np.ndarray, sr: int) -> np.ndarray:
         if y.ndim > 1:
-            y = librosa.to_mono(y)
+            y = np.mean(y, axis=1)
 
-        # Remove leading/trailing silence; browser recordings often include long quiet sections.
-        y_trimmed, _ = librosa.effects.trim(y, top_db=25)
-        if y_trimmed.size > 0:
-            y = y_trimmed
+        # Remove leading/trailing silence using an amplitude threshold.
+        peak = float(np.max(np.abs(y))) if y.size else 0.0
+        if peak > 0:
+            threshold = peak * (10 ** (-25 / 20.0))
+            idx = np.where(np.abs(y) >= threshold)[0]
+            if idx.size > 0:
+                y = y[int(idx[0]) : int(idx[-1]) + 1]
 
         peak = float(np.max(np.abs(y))) if y.size else 0.0
         if peak > 0:
@@ -114,9 +136,8 @@ class AdvancedStressPredictor:
     def predict_long_audio(self, audio_path: str) -> Dict:
         """Processes audio of any length; defaults to full-track analysis."""
         y, sr = self._load_audio(audio_path)
-        raw_duration = librosa.get_duration(y=y, sr=sr)
         y = self._prepare_audio(y, sr)
-        duration = librosa.get_duration(y=y, sr=sr)
+        duration = float(len(y)) / float(sr) if sr else 0.0
 
         if duration < 0.4:
             raise ValueError("Speech is too short after silence removal. Please record a longer, clearer sample.")
