@@ -362,13 +362,17 @@ class VoiceStressTrainer:
             "macro_f1": float(f1_score(y_true, y_pred, average="macro")),
         }
 
-    def train(self, archive_root="archive", max_files_per_dataset=None):
+    def train(self, archive_root="archive", max_files_per_dataset=None, datasets=None):
         root = Path(archive_root)
         print(f"Loading datasets from: {root.absolute()}")
 
-        ravdess = self._load_ravdess(root)
-        crema = self._load_crema(root)
-        tess = self._load_tess(root)
+        requested = datasets or ["ravdess", "crema", "tess"]
+        requested = [str(name).strip().lower() for name in requested if str(name).strip()]
+        selected = set(requested or ["ravdess", "crema", "tess"])
+
+        ravdess = self._load_ravdess(root) if "ravdess" in selected else []
+        crema = self._load_crema(root) if "crema" in selected else []
+        tess = self._load_tess(root) if "tess" in selected else []
 
         if max_files_per_dataset:
             cap = int(max_files_per_dataset)
@@ -456,6 +460,7 @@ class VoiceStressTrainer:
             },
             "test_size": 0.2,
             "fit_on_all_data": self.fit_on_all_data,
+            "datasets_used": sorted(selected),
             "train_samples": int(len(X_train)),
             "test_samples": int(len(X_test)),
             "final_fit_samples": final_fit_samples,
@@ -471,6 +476,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train the voice stress classifier.")
     parser.add_argument("--archive-root", type=str, default=str(archive_dir))
     parser.add_argument("--max-files-per-dataset", type=int, default=None)
+    parser.add_argument(
+        "--datasets",
+        type=str,
+        default="ravdess,crema,tess",
+        help="Comma-separated dataset keys to use: ravdess, crema, tess",
+    )
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     parser.add_argument("--n-mfcc", type=int, default=13)
     parser.add_argument(
@@ -491,4 +502,9 @@ if __name__ == "__main__":
         balance_train=args.balance_train,
         fit_on_all_data=args.fit_on_all_data,
     )
-    trainer.train(archive_root=args.archive_root, max_files_per_dataset=args.max_files_per_dataset)
+    datasets = [s.strip() for s in (args.datasets or "").split(",") if s.strip()]
+    trainer.train(
+        archive_root=args.archive_root,
+        max_files_per_dataset=args.max_files_per_dataset,
+        datasets=datasets,
+    )
