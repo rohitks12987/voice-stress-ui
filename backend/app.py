@@ -47,6 +47,7 @@ STRESS_BASE_SCORES = {"low": 30.0, "moderate": 60.0, "high": 85.0}
 STRESS_TO_EMOTION = {"low": "Calm", "moderate": "Tense", "high": "Anxious"}
 _predictor = None
 _active_model_path = None
+_active_model_metrics = {}
 ALLOWED_UPLOAD_EXTENSIONS = {".wav", ".mp3", ".m4a", ".webm", ".ogg", ".flac"}
 REMOTE_AI_ENABLED = os.getenv("REMOTE_AI_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 REMOTE_AI_PROVIDER = os.getenv("REMOTE_AI_PROVIDER", "huggingface").strip().lower()
@@ -95,7 +96,7 @@ def _env_int(name, default):
 
 
 def _load_trainer():
-    global _predictor, _active_model_path
+    global _predictor, _active_model_path, _active_model_metrics
     if _predictor is not None:
         return True
     available = [p for p in MODEL_PATH_CANDIDATES if p.exists()]
@@ -109,11 +110,34 @@ def _load_trainer():
         try:
             _predictor = AdvancedStressPredictor(model_path=str(model_path), window_size=5)
             _active_model_path = str(model_path)
+            if hasattr(_predictor, "get_bundle_metrics"):
+                _active_model_metrics = _predictor.get_bundle_metrics()
+            else:
+                _active_model_metrics = {}
             app.logger.info("Loaded stress model from %s", _active_model_path)
             return True
         except Exception:
             continue
     return False
+
+
+def _get_model_accuracy_percent():
+    """Return model accuracy percentage from bundle metrics if available."""
+    metrics = _active_model_metrics if isinstance(_active_model_metrics, dict) else {}
+    candidates = (
+        metrics.get("test_accuracy"),
+        metrics.get("accuracy"),
+    )
+    for value in candidates:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            continue
+        if numeric <= 1.0:
+            return round(numeric * 100.0, 1), "model_test_accuracy"
+        if numeric <= 100.0:
+            return round(numeric, 1), "model_test_accuracy"
+    return None, "avg_analysis_score_fallback"
 
 
 def _build_stress_score(stress_level, confidence):
@@ -568,12 +592,22 @@ def admin_overview():
         "high": round((dist["high"] / total_analyses) * 100) if total_analyses > 0 else 0,
     }
 
+    model_accuracy = None
+    accuracy_source = "avg_analysis_score_fallback"
+    if _load_trainer():
+        model_accuracy, accuracy_source = _get_model_accuracy_percent()
+    if model_accuracy is None:
+        model_accuracy = round(a_count['avg_score'] or 0, 1)
+    avg_analysis_score = round(a_count['avg_score'] or 0, 1)
+
     return jsonify({
         "status": "success",
         "counts": {
             "total_users": u_count['total_users'],
             "total_analyses": total_analyses,
-            "average_score": round(a_count['avg_score'] or 0, 1),
+            "average_score": model_accuracy,
+            "average_score_source": accuracy_source,
+            "avg_analysis_score": avg_analysis_score,
             "high_stress_count": dist["high"]
         },
         "distribution": dist,

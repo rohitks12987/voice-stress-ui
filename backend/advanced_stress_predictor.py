@@ -27,6 +27,8 @@ class AdvancedStressPredictor:
         self.scaler = None
         self.label_encoder = None
         self.feature_names = []
+        self.model_name = ""
+        self.bundle_metrics = {}
         self._load_model_bundle()
 
     def _load_model_bundle(self) -> None:
@@ -36,6 +38,9 @@ class AdvancedStressPredictor:
             self.scaler = bundle.get("scaler")
             self.label_encoder = bundle.get("label_encoder")
             self.feature_names = bundle.get("feature_names") or []
+            self.model_name = str(bundle.get("model_name") or "")
+            metrics = bundle.get("metrics")
+            self.bundle_metrics = metrics if isinstance(metrics, dict) else {}
             if bundle.get("n_mfcc") is not None:
                 self.n_mfcc = int(bundle["n_mfcc"])
         else:
@@ -44,6 +49,15 @@ class AdvancedStressPredictor:
         # FIX: Force single-threaded prediction to prevent Flask/Windows hard crashes
         if hasattr(self.model, 'n_jobs'):
             self.model.n_jobs = 1
+
+    def get_bundle_metrics(self) -> Dict[str, float]:
+        out = {}
+        for key, value in (self.bundle_metrics or {}).items():
+            try:
+                out[str(key)] = float(value)
+            except (TypeError, ValueError):
+                continue
+        return out
 
     def extract_features_from_audio(self, y: np.ndarray, sr: int) -> Dict[str, float]:
         if y.ndim > 1:

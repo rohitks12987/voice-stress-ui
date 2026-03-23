@@ -368,7 +368,7 @@
         <div id="overview" class="vitals-grid section-anchor">
             <div class="vital-card"><p>Total Subjects</p><h2 id="stat-users">--</h2></div>
             <div class="vital-card"><p>Live Analyses</p><h2 id="stat-scans">--</h2></div>
-            <div class="vital-card"><p>Global Accuracy</p><h2 id="stat-avg">--</h2></div>
+            <div class="vital-card"><p>Global Accuracy (Model Test)</p><h2 id="stat-avg">--</h2></div>
         </div>
 
         <div id="trend" class="visual-grid section-anchor">
@@ -678,7 +678,9 @@
 
                 document.getElementById('stat-users').innerText = data.counts.total_users;
                 document.getElementById('stat-scans').innerText = data.counts.total_analyses;
-                document.getElementById('stat-avg').innerText = data.counts.average_score + '%';
+                const counts = (data && data.counts) ? data.counts : {};
+                const globalAccuracy = Number(counts.average_score || 0);
+                document.getElementById('stat-avg').innerText = `${globalAccuracy.toFixed(1)}%`;
                 document.getElementById('admin-name').innerText = "Personnel: " + localStorage.getItem('adminEmail');
 
                 const table = document.getElementById('patient-table');
