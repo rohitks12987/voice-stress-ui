@@ -1,4 +1,5 @@
 import os
+import random
 import traceback
 import mimetypes
 import time
@@ -69,15 +70,18 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
-# --- SMTP CONFIG (FOR STAFF ALERTS) ---
-SMTP_SERVER = os.getenv("SMTP_SERVER")
+# --- SMTP CONFIG ---
+SMTP_SERVER = (os.getenv("SMTP_SERVER") or "").strip()
 try:
     SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 except ValueError:
     SMTP_PORT = 587
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-SMTP_SENDER_EMAIL = os.getenv("SMTP_SENDER_EMAIL")
+SMTP_USER = (os.getenv("SMTP_USER") or "").strip()
+SMTP_PASSWORD = (os.getenv("SMTP_PASSWORD") or "").strip()
+SMTP_SENDER_EMAIL = (os.getenv("SMTP_SENDER_EMAIL") or "").strip()
+
+# Temporary dictionary to store OTPs during registration
+otp_storage = {}
 
 def _env_flag(name, default=False):
     raw = os.getenv(name)
@@ -93,6 +97,82 @@ def _env_int(name, default):
         return int(raw.strip())
     except (TypeError, ValueError):
         return default
+
+
+def _smtp_missing_fields():
+    missing = []
+    if not SMTP_SERVER:
+        missing.append("SMTP_SERVER")
+    if not (SMTP_SENDER_EMAIL or SMTP_USER):
+        missing.append("SMTP_SENDER_EMAIL (or SMTP_USER)")
+
+    has_user = bool(SMTP_USER)
+    has_password = bool(SMTP_PASSWORD)
+    auth_required = _env_flag("SMTP_AUTH_REQUIRED", has_user or has_password)
+
+    if has_user != has_password:
+        missing.append("SMTP_USER and SMTP_PASSWORD must be set together")
+    elif auth_required and not (has_user and has_password):
+        missing.append("SMTP_USER")
+        missing.append("SMTP_PASSWORD")
+    return missing
+
+
+def _smtp_sender_email():
+    return SMTP_SENDER_EMAIL or SMTP_USER
+
+
+def _smtp_runtime_options():
+    use_ssl = _env_flag("SMTP_USE_SSL", SMTP_PORT == 465)
+    use_tls = _env_flag("SMTP_USE_TLS", not use_ssl)
+    auth_required = _env_flag("SMTP_AUTH_REQUIRED", bool(SMTP_USER or SMTP_PASSWORD))
+
+    timeout_raw = (os.getenv("SMTP_TIMEOUT_SEC") or "").strip()
+    timeout_sec = 20.0
+    if timeout_raw:
+        try:
+            timeout_sec = max(float(timeout_raw), 1.0)
+        except ValueError:
+            timeout_sec = 20.0
+
+    return {
+        "use_ssl": use_ssl,
+        "use_tls": use_tls,
+        "auth_required": auth_required,
+        "timeout_sec": timeout_sec,
+    }
+
+
+def _smtp_error_message(exc=None):
+    missing = _smtp_missing_fields()
+    if missing:
+        return f"Email service is not configured. Missing: {', '.join(missing)}."
+    if exc is None:
+        return "Failed to send email. Check backend SMTP configuration."
+    return "Failed to send email. Verify SMTP server/port, TLS/SSL mode, and credentials."
+
+
+def _send_email(recipient_email, subject, body, body_type="plain", sender_name="VocalVibe Assistant"):
+    missing = _smtp_missing_fields()
+    if missing:
+        raise RuntimeError(f"SMTP settings missing: {', '.join(missing)}")
+
+    options = _smtp_runtime_options()
+    msg = MIMEMultipart()
+    msg["From"] = f"{sender_name} <{_smtp_sender_email()}>"
+    msg["To"] = recipient_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, body_type))
+
+    smtp_class = smtplib.SMTP_SSL if options["use_ssl"] else smtplib.SMTP
+    with smtp_class(SMTP_SERVER, SMTP_PORT, timeout=options["timeout_sec"]) as server:
+        if options["use_tls"] and not options["use_ssl"]:
+            server.starttls()
+        if SMTP_USER and SMTP_PASSWORD:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+        elif options["auth_required"]:
+            raise RuntimeError("SMTP authentication is required but credentials are missing")
+        server.send_message(msg)
 
 
 def _load_trainer():
@@ -406,8 +486,8 @@ def _chat_with_provider(message):
 
 def _send_email_alert_to_staff(user_name, user_email, location):
     """Sends an email alert to the clinical staff."""
-    if not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_SENDER_EMAIL, ADMIN_EMAIL]):
-        print("⚠️ [SOS WARNING] SMTP settings not configured. Skipping email to clinical staff. Please set SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_SENDER_EMAIL in .env")
+    if not ADMIN_EMAIL:
+        print("[SOS WARNING] ADMIN_EMAIL is not configured. Skipping staff email alert.")
         return False
 
     subject = f"CRITICAL SOS ALERT: Patient {user_name}"
@@ -423,22 +503,18 @@ def _send_email_alert_to_staff(user_name, user_email, location):
     <p>This is an automated notification. Please check the system dashboard for more details and attempt to contact the user or their emergency contacts.</p>
     """
 
-    msg = MIMEMultipart()
-    msg['From'] = f"VocalVibe Alert System <{SMTP_SENDER_EMAIL}>"
-    msg['To'] = ADMIN_EMAIL
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'html'))
-
     try:
-        # Using 'with' ensures the connection is closed
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()  # Secure the connection
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
-            print(f"✅ [SOS SUCCESS] Email alert sent to clinical staff at {ADMIN_EMAIL}")
-            return True
+        _send_email(
+            recipient_email=ADMIN_EMAIL,
+            subject=subject,
+            body=body,
+            body_type="html",
+            sender_name="VocalVibe Alert System",
+        )
+        print(f"[SOS SUCCESS] Email alert sent to clinical staff at {ADMIN_EMAIL}")
+        return True
     except Exception as e:
-        print(f"❌ [SOS FAILED] Could not send email to clinical staff. Error: {e}")
+        print(f"[SOS FAILED] Could not send email to clinical staff. Error: {e}. {_smtp_error_message(e)}")
         return False
 
 def _send_sos_notification(contact, user_name, location):
@@ -847,8 +923,65 @@ def admin_manage_user(user_id):
     finally:
         db.close()
 
-@app.route("/api/patient/register", methods=["POST"])
-def patient_register():
+
+# ---- 3-STEP OTP REGISTRATION FLOW ----
+
+@app.route("/api/send_signup_otp", methods=["POST"])
+def send_signup_otp():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+            if cur.fetchone():
+                return jsonify({"status": "error", "message": "Email is already registered"}), 409
+    finally:
+        db.close()
+
+    # Generate a random 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+    otp_storage[email] = otp
+
+    if _smtp_missing_fields():
+        print(f"\n⚠️ [DEV MODE] SMTP not configured. OTP for {email} is: {otp}\n")
+        return jsonify({"status": "success", "message": "Development mode: OTP printed to server console."})
+
+    # Send the OTP via Email
+    subject = "VocalVibe Pro: Verification Code"
+    body = f"Hello,\n\nYour registration verification code is: {otp}\n\nDo not share this code with anyone.\n\nBest,\nVocalVibe Pro Team"
+
+    try:
+        _send_email(
+            recipient_email=email,
+            subject=subject,
+            body=body,
+            body_type="plain",
+            sender_name="VocalVibe Registration",
+        )
+        return jsonify({"status": "success", "message": "Verification code sent to email."})
+    except Exception as e:
+        otp_storage.pop(email, None)
+        print(f"SMTP Error sending OTP: {e}")
+        return jsonify({"status": "error", "message": _smtp_error_message(e)}), 500
+
+@app.route("/api/verify_otp", methods=["POST"])
+def verify_otp():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    user_otp = (data.get("otp") or "").strip()
+
+    if email in otp_storage and otp_storage[email] == user_otp:
+        return jsonify({"status": "success", "message": "OTP verified successfully"})
+    else:
+        return jsonify({"status": "error", "message": "Invalid or expired verification code."}), 400
+
+@app.route("/api/register_final", methods=["POST"])
+def register_final():
     data = request.get_json(silent=True) or {}
     full_name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip().lower()
@@ -864,9 +997,9 @@ def patient_register():
     try:
         with db.cursor() as cur:
             cur.execute("SELECT id FROM users WHERE email=%s", (email,))
-            existing = cur.fetchone()
-            if existing:
+            if cur.fetchone():
                 return jsonify({"status": "error", "message": "Email already registered"}), 409
+            
             cur.execute(
                 "INSERT INTO users (full_name, email, password_hash) VALUES (%s, %s, %s)",
                 (full_name, email, password_hash),
@@ -875,7 +1008,55 @@ def patient_register():
     finally:
         db.close()
 
+    # Clear OTP from memory so it can't be reused
+    if email in otp_storage:
+        del otp_storage[email]
+
     return jsonify({"status": "success", "message": "Registration completed", "user_email": email})
+
+
+# ---- DASHBOARD ACTION EMAIL SYSTEM ----
+
+@app.route('/api/send_action_email', methods=['POST'])
+def send_action_email():
+    data = request.get_json(silent=True) or {}
+    user_email = data.get('email')
+    action = data.get('action')
+    score = data.get('score')
+    date = data.get('date')
+
+    if not user_email:
+        return jsonify({"status": "error", "message": "User email is missing."}), 400
+
+    if action == 'Breathing Exercise':
+        subject = "VocalVibe Pro: Recommended Breathing Exercises"
+        body = f"Hello,\n\nYour recent voice scan on {date} indicated a Moderate stress level (Score: {score}).\nTo help you relax, we recommend the 4-7-8 breathing technique:\n1. Inhale through your nose for 4 seconds.\n2. Hold your breath for 7 seconds.\n3. Exhale completely through your mouth for 8 seconds.\n\nStay calm and take care,\nThe VocalVibe Pro Team"
+    elif action == 'Contact Doctor':
+        subject = "VocalVibe Pro: High Stress Alert"
+        body = f"Hello,\n\nYour recent voice scan on {date} resulted in a High stress score ({score}).\nWe strongly recommend sharing these results with your healthcare provider or scheduling a clinical consultation.\n\nTake care,\nThe VocalVibe Pro Team"
+    else:
+        subject = "VocalVibe Pro: Your Voice Scan Report"
+        body = f"Hello,\n\nHere is your requested Voice Tone Analysis report for the scan on {date}. Your stress score was {score}.\n\nBest,\nVocalVibe Pro Team"
+
+    if _smtp_missing_fields():
+        print(f"\n⚠️ [DEV MODE] Action email to {user_email} skipped (SMTP not configured). Subject: {subject}\n")
+        return jsonify({"status": "success", "message": "Development mode: Email skipped."})
+
+    try:
+        _send_email(
+            recipient_email=user_email,
+            subject=subject,
+            body=body,
+            body_type="plain",
+            sender_name="VocalVibe Assistant",
+        )
+        return jsonify({"status": "success", "message": "Email sent successfully!"})
+    except Exception as e:
+        print(f"Action Email Error: {e}")
+        return jsonify({"status": "error", "message": _smtp_error_message(e)}), 500
+
+
+# ---- PATIENT LOGIN & APP ROUTES ----
 
 @app.route("/api/patient/login", methods=["POST"])
 def patient_login():
@@ -932,10 +1113,16 @@ def chat_assistant():
 
 @app.route("/api/health", methods=["GET"])
 def health():
+    smtp_missing = _smtp_missing_fields()
+    smtp_options = _smtp_runtime_options()
     return jsonify({
         "status": "ok",
         "service": "voice-stress-ui",
         "timestamp_utc": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "smtp_ready": len(smtp_missing) == 0,
+        "smtp_missing": smtp_missing,
+        "smtp_security": "ssl" if smtp_options["use_ssl"] else ("starttls" if smtp_options["use_tls"] else "none"),
+        "smtp_auth_required": smtp_options["auth_required"],
     })
 
 @app.route("/api/upload", methods=["POST"])
@@ -1221,4 +1408,3 @@ if __name__ == "__main__":
         f"(bind={host}, debug={debug}, reloader={use_reloader})"
     )
     app.run(host=host, port=port, debug=debug, use_reloader=use_reloader)
-    

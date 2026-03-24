@@ -108,3 +108,25 @@ Admin features:
 - view/edit/delete user data
 - view user reports and history
 - stream uploaded audio recordings
+
+## 7) SMTP setup for OTP and alerts
+
+Email features (`/api/send_signup_otp`, dashboard action emails, SOS staff alerts) require SMTP values in `.env`:
+
+```env
+SMTP_SERVER=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_SENDER_EMAIL=
+SMTP_USE_TLS=true
+SMTP_USE_SSL=false
+SMTP_AUTH_REQUIRED=true
+```
+
+Use one transport mode:
+- STARTTLS: port `587`, `SMTP_USE_TLS=true`, `SMTP_USE_SSL=false`
+- SSL/TLS: port `465`, `SMTP_USE_TLS=false`, `SMTP_USE_SSL=true`
+
+Quick verification:
+- `GET /api/health` now returns `smtp_ready`, `smtp_missing`, `smtp_security`, and `smtp_auth_required`.

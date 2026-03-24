@@ -22,6 +22,7 @@
         .fa-user-circle::before { content: "\1F464"; }
         .fa-envelope::before { content: "\2709"; }
         .fa-lock::before { content: "\1F512"; }
+        .fa-key::before { content: "\1F5DD"; }
 
         body {
             background-color: var(--bg);
@@ -92,6 +93,7 @@
             border: 1px solid transparent;
         }
         .msg.success { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.2); }
+        .msg.error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); }
 
         .input-group { margin-bottom: 1rem; }
         .input-group label {
@@ -134,6 +136,7 @@
         }
 
         .btn-auth:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3); }
+        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .toggle-text { text-align: center; margin-top: 1.5rem; color: #94a3b8; font-size: 0.9rem; }
         .toggle-text span { color: var(--primary); font-weight: 700; cursor: pointer; }
@@ -166,33 +169,75 @@
 
     <div id="msg-box" class="msg"></div>
 
-    <form id="auth-form" onsubmit="handleAuth(event)">
-        <div class="input-group" id="name-group" style="display: none;">
-            <label>Full Patient Name</label>
-            <div class="input-wrapper">
-                <i class="fas fa-user-circle"></i>
-                <input type="text" id="patientName" placeholder="Enter full name">
-            </div>
-        </div>
-
+    <form id="login-form" onsubmit="handleLogin(event)">
         <div class="input-group">
             <label>Registered Email</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope"></i>
-                <input type="email" id="patientEmail" placeholder="name@hospital.com" required>
+                <input type="email" id="loginEmail" placeholder="name@hospital.com" required>
             </div>
         </div>
-
         <div class="input-group">
             <label>Security Password</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="patientPassword" placeholder="********" required>
+                <input type="password" id="loginPassword" placeholder="********" required>
             </div>
         </div>
-
-        <button type="submit" class="btn-auth" id="auth-btn">Authorize Entry</button>
+        <button type="submit" class="btn-auth">Authorize Entry</button>
     </form>
+
+    <div id="register-flow" style="display: none;">
+        
+        <form id="reg-step-1" onsubmit="sendOTP(event)">
+            <div class="input-group">
+                <label>Full Patient Name</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user-circle"></i>
+                    <input type="text" id="regName" placeholder="Enter full name" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="regEmail" placeholder="name@hospital.com" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-auth" id="btn-step-1">Send Verification Code</button>
+        </form>
+
+        <form id="reg-step-2" onsubmit="verifyOTP(event)" style="display: none;">
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px; text-align: center;">We sent a 6-digit code to your email.</p>
+            <div class="input-group">
+                <label>6-Digit Code</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key"></i>
+                    <input type="text" id="regOTP" placeholder="123456" required autocomplete="off">
+                </div>
+            </div>
+            <button type="submit" class="btn-auth" id="btn-step-2">Verify Code</button>
+        </form>
+
+        <form id="reg-step-3" onsubmit="completeRegistration(event)" style="display: none;">
+            <div class="input-group">
+                <label>Create Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPass" placeholder="********" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPassConfirm" placeholder="********" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-auth" id="btn-step-3">Complete Registration</button>
+        </form>
+
+    </div>
 
     <div class="toggle-text">
         <p id="toggle-p">New patient? <span onclick="toggleMode()">Create Digital Record</span></p>
@@ -201,54 +246,165 @@
 
 <script>
     let isLoginMode = true;
+    
+    // Variables to hold registration data between steps
+    let tempRegName = "";
+    let tempRegEmail = "";
+
+    function showMessage(text, isError = false) {
+        const msgBox = document.getElementById('msg-box');
+        msgBox.innerText = text;
+        msgBox.className = isError ? "msg error" : "msg success";
+        msgBox.style.display = "block";
+    }
 
     function toggleMode() {
         isLoginMode = !isLoginMode;
         document.getElementById('auth-title').innerText = isLoginMode ? 'Patient Login' : 'Register Record';
         document.getElementById('auth-desc').innerText = isLoginMode ? 'Secure access to clinical diagnostics' : 'Create your patient record securely';
-        document.getElementById('name-group').style.display = isLoginMode ? 'none' : 'block';
-        document.getElementById('auth-btn').innerText = isLoginMode ? 'Authorize Entry' : 'Create Record';
+        
+        // Toggle the forms
+        document.getElementById('login-form').style.display = isLoginMode ? 'block' : 'none';
+        document.getElementById('register-flow').style.display = isLoginMode ? 'none' : 'block';
+        
+        // Reset registration flow if switching modes
+        document.getElementById('reg-step-1').style.display = 'block';
+        document.getElementById('reg-step-2').style.display = 'none';
+        document.getElementById('reg-step-3').style.display = 'none';
+
         document.getElementById('toggle-p').innerHTML = isLoginMode
             ? 'New patient? <span onclick="toggleMode()">Create Digital Record</span>'
             : 'Already registered? <span onclick="toggleMode()">Authorize Login</span>';
+        
         document.getElementById('msg-box').style.display = 'none';
     }
 
-    // --- REPAIRED LOGIN LOGIC ---
-    function handleAuth(e) {
+    // --- 1. LOGIN LOGIC ---
+    function handleLogin(e) {
         e.preventDefault(); 
+        const email = document.getElementById('loginEmail').value;
         
-        const email = document.getElementById('patientEmail').value;
-        const nameInput = document.getElementById('patientName').value;
-        
-        // If name is empty, use the part of email before '@' as the name
-        const name = nameInput ? nameInput : email.split('@')[0]; 
+        showMessage("Identity Verified. Accessing Dashboard...", false);
 
-        // 1. Give visual feedback
-        const msgBox = document.getElementById('msg-box');
-        msgBox.innerText = "Identity Verified. Accessing Dashboard...";
-        msgBox.className = "msg success";
-        msgBox.style.display = "block";
-
-        // 2. Save session data (This ensures dashboard.html displays your profile)
+        // Standard Login Mockup (Update this with a fetch() to your backend later if needed)
         sessionStorage.setItem('activeUser', email);
-        sessionStorage.setItem('userName', name);
+        sessionStorage.setItem('userName', email.split('@')[0]);
 
-        // 3. REDIRECT IMMEDIATELY ON CLICK
-        console.log("Redirecting to your profile...");
         setTimeout(() => {
             window.location.href = 'dashboard.html';
-        }, 500);
+        }, 800);
     }
 
-    window.onload = () => {
-        // We only clear the session if the user manually reloads this page
-        // so that they are forced to see the login form.
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('mode') === 'register' && isLoginMode) {
-            toggleMode();
+    // --- 2. REGISTRATION FLOW: STEP 1 (Send OTP) ---
+    async function sendOTP(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-step-1');
+        tempRegName = document.getElementById('regName').value;
+        tempRegEmail = document.getElementById('regEmail').value;
+
+        btn.innerText = "Sending...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/send_signup_otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: tempRegEmail })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                document.getElementById('reg-step-1').style.display = 'none';
+                document.getElementById('reg-step-2').style.display = 'block';
+                document.getElementById('msg-box').style.display = 'none';
+            } else {
+                showMessage(data.message || "Failed to send OTP.", true);
+            }
+        } catch (error) {
+            console.error(error);
+            showMessage("Server error. Ensure backend is running.", true);
+        } finally {
+            btn.innerText = "Send Verification Code";
+            btn.disabled = false;
         }
-    };
+    }
+
+    // --- 3. REGISTRATION FLOW: STEP 2 (Verify OTP) ---
+    async function verifyOTP(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-step-2');
+        const otp = document.getElementById('regOTP').value;
+
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/verify_otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: tempRegEmail, otp: otp })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                document.getElementById('reg-step-2').style.display = 'none';
+                document.getElementById('reg-step-3').style.display = 'block';
+                document.getElementById('msg-box').style.display = 'none';
+            } else {
+                showMessage("Invalid Verification Code.", true);
+            }
+        } catch (error) {
+            console.error(error);
+            showMessage("Server error during verification.", true);
+        } finally {
+            btn.innerText = "Verify Code";
+            btn.disabled = false;
+        }
+    }
+
+    // --- 4. REGISTRATION FLOW: STEP 3 (Complete Registration) ---
+    async function completeRegistration(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-step-3');
+        const pass = document.getElementById('regPass').value;
+        const confirmPass = document.getElementById('regPassConfirm').value;
+
+        if (pass !== confirmPass) {
+            showMessage("Passwords do not match!", true);
+            return;
+        }
+
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/register_final', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name: tempRegName, 
+                    email: tempRegEmail, 
+                    password: pass 
+                })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                showMessage("Account created! Redirecting to login...", false);
+                setTimeout(() => {
+                    window.location.reload(); // Reloads to show clean login screen
+                }, 1500);
+            } else {
+                showMessage(data.message || "Failed to create account.", true);
+            }
+        } catch (error) {
+            console.error(error);
+            showMessage("Server error during registration.", true);
+        } finally {
+            btn.innerText = "Complete Registration";
+            btn.disabled = false;
+        }
+    }
 </script>
 </body>
 </html>
