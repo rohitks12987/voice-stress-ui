@@ -953,7 +953,7 @@ def send_signup_otp():
 
     # Send the OTP via Email
     subject = "VocalVibe Pro: Verification Code"
-    body = f"Hello,\n\nYour registration verification code is: {otp}\n\nDo not share this code with anyone.\n\nBest,\nVocalVibe Pro Team"
+    body = f"Congratulations! 🎉\nWelcome to VocalVibe Pro. 🙏\n\nYour registration verification code is: {otp}\n\nDo not share this code with anyone.\n\nBest,\nVocalVibe Pro Team"
 
     try:
         _send_email(
