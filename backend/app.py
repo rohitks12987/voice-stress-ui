@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import HTTPException
 
 try:
     from twilio.base.exceptions import TwilioRestException
@@ -608,6 +609,19 @@ try:
 except Exception as e:
     print(f"[ERROR] Database Error: {e}")
 
+# --- GLOBAL ERROR HANDLERS ---
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Ensures all unhandled errors return JSON instead of HTML pages."""
+    if isinstance(e, HTTPException):
+        return jsonify({"status": "error", "message": e.description}), e.code
+
+    app.logger.error(f"Unhandled Server Error: {str(e)}\n{traceback.format_exc()}")
+    return jsonify({
+        "status": "error",
+        "message": f"Internal Server Error (e.g., Database offline): {str(e)}"
+    }), 500
+
 # --- API ROUTES ---
 
 @app.route("/api/admin/login", methods=["POST"])
@@ -616,14 +630,17 @@ def admin_login():
     email = (data.get("email") or "").strip().lower()
     if email == ADMIN_EMAIL.lower() and data.get("password") == ADMIN_PASS:
         # LOG THE SUCCESSFUL ACCESS
-        db = get_db()
         try:
-            with db.cursor() as cur:
-                cur.execute("INSERT INTO access_logs (staff_email, action, ip_address) VALUES (%s, %s, %s)", 
-                           (ADMIN_EMAIL, "Authorized Gateway Access", request.remote_addr))
-            db.commit()
-        finally:
-            db.close()
+            db = get_db()
+            try:
+                with db.cursor() as cur:
+                    cur.execute("INSERT INTO access_logs (staff_email, action, ip_address) VALUES (%s, %s, %s)", 
+                               (ADMIN_EMAIL, "Authorized Gateway Access", request.remote_addr))
+                db.commit()
+            finally:
+                db.close()
+        except Exception as e:
+            return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
         token = generate_token(ADMIN_EMAIL)
         return jsonify({"status": "success", "token": token})
     return jsonify({"status": "error", "message": "Biometric Credentials Mismatch"}), 401
@@ -890,16 +907,13 @@ def admin_manage_user(user_id):
                 data = request.get_json(silent=True) or {}
                 full_name = data.get("full_name")
                 email = data.get("email")
-                age = data.get("age")
-                phone = data.get("phone")
-                address = data.get("address")
 
                 if not full_name or not email:
                     return jsonify({"status": "error", "message": "Full name and email are required"}), 400
 
                 cur.execute(
-                    "UPDATE users SET full_name=%s, email=%s, age=%s, phone=%s, address=%s WHERE id=%s",
-                    (full_name, email, age, phone, address, user_id)
+                    "UPDATE users SET full_name=%s, email=%s WHERE id=%s",
+                    (full_name, email, user_id)
                 )
                 if cur.rowcount == 0:
                     return jsonify({"status": "error", "message": "User not found or no changes made"}), 404
@@ -1065,13 +1079,16 @@ def patient_login():
     if not email or not password:
         return jsonify({"status": "error", "message": "Email and password are required"}), 400
 
-    db = get_db()
     try:
-        with db.cursor() as cur:
-            cur.execute("SELECT full_name, email, password FROM users WHERE email=%s", (email,))
-            user = cur.fetchone()
-    finally:
-        db.close()
+        db = get_db()
+        try:
+            with db.cursor() as cur:
+                cur.execute("SELECT full_name, email, password FROM users WHERE email=%s", (email,))
+                user = cur.fetchone()
+        finally:
+            db.close()
+    except Exception as e:
+        return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
 
     if not user or not user.get("password"):
         return jsonify({"status": "error", "message": "Invalid credentials"}), 401
