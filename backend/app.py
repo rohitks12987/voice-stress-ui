@@ -15,7 +15,6 @@ import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
-from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 try:
@@ -992,7 +991,6 @@ def register_final():
     if len(password) < 6:
         return jsonify({"status": "error", "message": "Password must be at least 6 characters"}), 400
 
-    password_hash = generate_password_hash(password)
     db = get_db()
     try:
         with db.cursor() as cur:
@@ -1001,8 +999,8 @@ def register_final():
                 return jsonify({"status": "error", "message": "Email already registered"}), 409
             
             cur.execute(
-                "INSERT INTO users (full_name, email, password_hash) VALUES (%s, %s, %s)",
-                (full_name, email, password_hash),
+                "INSERT INTO users (full_name, email, password) VALUES (%s, %s, %s)",
+                (full_name, email, password),
             )
         db.commit()
     finally:
@@ -1070,14 +1068,14 @@ def patient_login():
     db = get_db()
     try:
         with db.cursor() as cur:
-            cur.execute("SELECT full_name, email, password_hash FROM users WHERE email=%s", (email,))
+            cur.execute("SELECT full_name, email, password FROM users WHERE email=%s", (email,))
             user = cur.fetchone()
     finally:
         db.close()
 
-    if not user or not user.get("password_hash"):
+    if not user or not user.get("password"):
         return jsonify({"status": "error", "message": "Invalid credentials"}), 401
-    if not check_password_hash(user["password_hash"], password):
+    if user["password"] != password:
         return jsonify({"status": "error", "message": "Invalid credentials"}), 401
 
     return jsonify({

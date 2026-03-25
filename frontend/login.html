@@ -280,19 +280,40 @@
     }
 
     // --- 1. LOGIN LOGIC ---
-    function handleLogin(e) {
-        e.preventDefault(); 
+    async function handleLogin(e) {
+        e.preventDefault();
         const email = document.getElementById('loginEmail').value;
-        
-        showMessage("Identity Verified. Accessing Dashboard...", false);
+        const password = document.getElementById('loginPassword').value;
+        const btn = e.target.querySelector('.btn-auth');
 
-        // Standard Login Mockup (Update this with a fetch() to your backend later if needed)
-        sessionStorage.setItem('activeUser', email);
-        sessionStorage.setItem('userName', email.split('@')[0]);
+        btn.disabled = true;
+        btn.innerText = 'AUTHORIZING...';
 
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 800);
+        try {
+            const response = await fetch('/api/patient/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                showMessage("Identity Verified. Accessing Dashboard...", false);
+                sessionStorage.setItem('activeUser', data.user.email);
+                sessionStorage.setItem('userName', data.user.name);
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+            } else {
+                showMessage(data.message || "Login failed.", true);
+            }
+        } catch (error) {
+            console.error(error);
+            showMessage("Server error. Ensure backend is running.", true);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Authorize Entry';
+        }
     }
 
     // --- 2. REGISTRATION FLOW: STEP 1 (Send OTP) ---

@@ -5,16 +5,13 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import pymysql
-from werkzeug.security import generate_password_hash
 from init_db import db_config
 
 def create_user():
     email = "testuser@vocalvibe.pro"
     password = "password123"
     name = "Test Patient"
-    
-    hashed_pw = generate_password_hash(password)
-    
+        
     db = pymysql.connect(**db_config(True))
     try:
         with db.cursor() as cur:
@@ -24,8 +21,8 @@ def create_user():
                 return
             
             cur.execute(
-                "INSERT INTO users (full_name, email, password_hash) VALUES (%s, %s, %s)",
-                (name, email, hashed_pw)
+                "INSERT INTO users (full_name, email, password) VALUES (%s, %s, %s)",
+                (name, email, password)
             )
         db.commit()
         print(f"✅ Successfully created user: {email} with password: {password}")
