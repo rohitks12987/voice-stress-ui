@@ -523,7 +523,7 @@ def _send_sos_notification(contact, user_name, location):
     Falls back to console logging if Twilio is not configured.
     """
     message_body = (
-        f"URGENT! {user_name} has triggered an SOS alert from the VocalVibe app. "
+        f"URGENT! Your relative {user_name} is in high stress and has triggered an SOS alert. "
         f"Last known location: {location or 'Not available'}. Please contact them immediately."
     )
     
