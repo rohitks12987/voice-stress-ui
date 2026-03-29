@@ -519,41 +519,48 @@ def _send_email_alert_to_staff(user_name, user_email, location):
 
 def _send_sos_notification(contact, user_name, location):
     """
-    Sends a real SOS SMS/Alert using Twilio.
-    Falls back to console logging if Twilio is not configured.
+    Sends an SOS Alert via EMAIL to the emergency contact.
+    Uses the configured SMTP server.
     """
-    message_body = (
-        f"URGENT! Your relative {user_name} is in high stress and has triggered an SOS alert. "
-        f"Last known location: {location or 'Not available'}. Please contact them immediately."
-    )
+    contact_email = contact.get('email')
+    if not contact_email:
+        print(f"⚠️ [SOS WARNING] No email for contact {contact['name']}. Cannot send email alert.")
+        return False
     
-    # Log to console regardless
-    print(f"🚨 [SOS ALERT] Preparing to notify {contact['name']} ({contact['phone']}): {message_body}")
-
-    if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER]):
-        print("⚠️ [SOS WARNING] Twilio credentials not set. Skipping real SMS. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in your .env file.")
-        return True # Simulate success for logging
-        
-    if Client is None:
-        print("⚠️ [SOS WARNING] Twilio module not installed. Run 'pip install twilio'. Skipping SMS...")
-        return True
-
+    subject = f"URGENT SOS ALERT - {user_name} needs help!"
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; padding: 20px;">
+        <div style="background-color: #fee2e2; padding: 20px; border-radius: 10px; border: 2px solid #ef4444;">
+            <h2 style="color: #dc2626; margin: 0;">🚨 URGENT SOS ALERT</h2>
+        </div>
+        <p style="font-size: 16px;">Dear {contact['name']},</p>
+        <p style="font-size: 16px;"><b>{user_name}</b> is in a very stressful situation right now.</p>
+        <p style="font-size: 16px;"><b>Please come and help give them some relief.</b></p>
+        <hr>
+        <h3>Location Information:</h3>
+        <p style="font-size: 14px;">{location or 'Not available'}</p>
+        <hr>
+        <p style="font-size: 12px; color: #666;">This is an automated SOS alert from VocalVibe. Please respond immediately.</p>
+        <p style="font-size: 12px; color: #666;">Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+    </body>
+    </html>
+    """
+    
+    print(f"🚨 [SOS ALERT] Preparing to email {contact['name']} ({contact_email})")
+    
     try:
-        # Ensure the contact phone number is in E.164 format (e.g., +919876543210)
-        to_phone = contact['phone']
-        if not to_phone.startswith('+'):
-            print(f"⚠️ [SOS WARNING] Phone number for {contact['name']} ({to_phone}) may not be in E.164 format. SMS might fail.")
-
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        message = client.messages.create(
-            body=message_body,
-            from_=TWILIO_PHONE_NUMBER,
-            to=to_phone
+        _send_email(
+            recipient_email=contact_email,
+            subject=subject,
+            body=body,
+            body_type="html",
+            sender_name="VocalVibe SOS Alert"
         )
-        print(f"✅ [SOS SUCCESS] SMS sent to {contact['phone']} (SID: {message.sid})")
+        print(f"✅ [SOS SUCCESS] Email alert sent to {contact['name']} at {contact_email}")
         return True
-    except TwilioRestException as e:
-        print(f"❌ [SOS FAILED] Could not send SMS to {contact['phone']}. Error: {e}")
+    except Exception as e:
+        print(f"❌ [SOS FAILED] Could not send email to {contact_email}. Error: {e}")
         return False
 
 # --- DATABASE & SECURITY CONFIG ---
@@ -1311,10 +1318,14 @@ def manage_contacts():
         email = data.get("user_email")
         name = data.get("name")
         phone = data.get("phone")
+        contact_email = data.get("email")
         relation = data.get("relationship", "Other")
         
-        if not email or not name or not phone:
+        if not email or not name:
             return jsonify({"status": "error", "message": "Missing fields"}), 400
+        
+        if not phone and not contact_email:
+            return jsonify({"status": "error", "message": "Please provide either phone or email"}), 400
         
         with db.cursor() as cur:
             cur.execute("SELECT COUNT(*) as count FROM emergency_contacts WHERE user_email=%s", (email,))
@@ -1323,8 +1334,8 @@ def manage_contacts():
                 return jsonify({"status": "error", "message": "Max 5 contacts allowed"}), 400
             
             cur.execute(
-                "INSERT INTO emergency_contacts (user_email, name, phone, relationship) VALUES (%s, %s, %s, %s)",
-                (email, name, phone, relation)
+                "INSERT INTO emergency_contacts (user_email, name, phone, email, relationship) VALUES (%s, %s, %s, %s, %s)",
+                (email, name, phone, contact_email, relation)
             )
         db.commit()
         db.close()

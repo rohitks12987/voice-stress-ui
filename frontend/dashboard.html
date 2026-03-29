@@ -358,7 +358,7 @@
                 <h3 style="color: #fca5a5;">Emergency Support</h3>
                 <p style="font-size: 0.85rem; color: #f8fafc; opacity: 0.8;">Notify clinical staff and saved contacts instantly.</p>
             </div>
-            <button class="btn-sos" onclick="alert('SOS Alert Sent to Clinical Team!')">ACTIVATE SOS</button>
+            <button class="btn-sos" id="sos-btn" onclick="activateSOS()">ACTIVATE SOS</button>
         </div>
 
         <div class="dashboard-grid">
@@ -524,6 +524,7 @@
 
     <!-- Import FAQ Data for instant offline responses -->
     <script src="faq-data.js"></script>
+    <script src="sos_manager.js"></script>
     <script>
         const API_BASE = window.location.origin;
         const GOAL_LOG_KEY = 'dashboardGoalLog';

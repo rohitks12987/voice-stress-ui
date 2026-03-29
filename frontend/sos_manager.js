@@ -7,7 +7,9 @@ function getUserEmail() {
     if (profile) {
         return JSON.parse(profile).email;
     }
-    return localStorage.getItem('user_email');
+    const userEmail = localStorage.getItem('user_email');
+    if (userEmail) return userEmail;
+    return sessionStorage.getItem('activeUser');
 }
 
 async function activateSOS() {
@@ -116,23 +118,30 @@ function initSOSSystem() {
 document.addEventListener("DOMContentLoaded", initSOSSystem);
 initSOSSystem();
 
-// NEW FEATURE: Allow Patient to add an Emergency Number
+// NEW FEATURE: Allow Patient to add an Emergency Email Contact
 async function promptAddEmergencyContact() {
     const email = getUserEmail();
-    if (!email) return alert("Please log in first to add a contact.");
+    console.log("User email detected:", email);
+    if (!email) {
+        alert("Please log in first to add a contact. Debug: " + email);
+        return;
+    }
 
     const name = prompt("Enter Emergency Contact Name (e.g., Brother, Doctor):");
     if (!name) return;
     
-    const phone = prompt("Enter Phone Number with country code (e.g., +919876543210):");
-    if (!phone) return;
+    const contactEmail = prompt("Enter Emergency Contact Email (e.g., john@gmail.com):");
+    if (!contactEmail) return;
+    
+    console.log("Sending:", { user_email: email, name: name, email: contactEmail });
     
     const response = await fetch(CONTACTS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_email: email, name: name, phone: phone, relationship: "Emergency" })
+        body: JSON.stringify({ user_email: email, name: name, email: contactEmail, relationship: "Emergency" })
     });
     const result = await response.json();
+    console.log("Response:", result);
     alert(response.ok ? "✅ Emergency Contact Saved Successfully!" : "⚠️ Error: " + result.message);
 }
 

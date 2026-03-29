@@ -27,6 +27,19 @@ def fix_database():
             except Exception as e:
                 print(f"⚠️ Columns drop skip hue (shayad pehle hi delete ho chuke hain): {e}")
                 
+            # 3. Fix emergency_contacts table to support email and optional phone
+            try:
+                cur.execute("ALTER TABLE emergency_contacts ADD COLUMN email VARCHAR(255) NULL AFTER phone")
+                print("✅ Added 'email' column to emergency_contacts table.")
+            except Exception as e:
+                print(f"⚠️ Column 'email' add skip (might already exist): {e}")
+
+            try:
+                cur.execute("ALTER TABLE emergency_contacts MODIFY COLUMN phone VARCHAR(64) NULL")
+                print("✅ Modified 'phone' column in emergency_contacts to be nullable.")
+            except Exception as e:
+                print(f"⚠️ Column 'phone' modify skip: {e}")
+
         db.commit()
         print("🎉 Database successfully fixed!")
     except Exception as e:
