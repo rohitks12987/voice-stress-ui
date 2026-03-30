@@ -18,13 +18,6 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import HTTPException
 
-try:
-    from twilio.base.exceptions import TwilioRestException
-    from twilio.rest import Client
-except ImportError:
-    TwilioRestException = Exception
-    Client = None
-
 # --- PATH CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
@@ -64,11 +57,6 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
 
 # --- ADMIN/STAFF CONFIG ---
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@stress-tone.local")
-
-# --- TWILIO CONFIG (FOR SOS) ---
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
 # --- SMTP CONFIG ---
 SMTP_SERVER = (os.getenv("SMTP_SERVER") or "").strip()
@@ -526,7 +514,7 @@ def _send_sos_notification(contact, user_name, location):
     if not contact_email:
         print(f"⚠️ [SOS WARNING] No email for contact {contact['name']}. Cannot send email alert.")
         return False
-    
+        
     subject = f"URGENT SOS ALERT - {user_name} needs help!"
     body = f"""
     <html>
