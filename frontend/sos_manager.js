@@ -1,5 +1,8 @@
-const SOS_API_URL = '/api/user/sos';
-const CONTACTS_API_URL = '/api/user/contacts';
+// TODO: Replace this with your actual deployed backend URL (e.g., from Render/Railway)
+const BACKEND_URL = 'https://your-deployed-flask-backend.onrender.com';
+
+const SOS_API_URL = `${BACKEND_URL}/api/user/sos`;
+const CONTACTS_API_URL = `${BACKEND_URL}/api/user/contacts`;
 
 // Helper to get current logged in user email
 function getUserEmail() {
