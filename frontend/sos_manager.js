@@ -1,6 +1,4 @@
-// TODO: Replace this with your actual deployed backend URL (e.g., from Render/Railway)
-const BACKEND_URL = 'https://your-deployed-flask-backend.onrender.com';
-
+// API URLs are now built using the global BACKEND_URL from api_config.js
 const SOS_API_URL = `${BACKEND_URL}/api/user/sos`;
 const CONTACTS_API_URL = `${BACKEND_URL}/api/user/contacts`;
 
