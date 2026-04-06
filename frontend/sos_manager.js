@@ -117,7 +117,6 @@ function initSOSSystem() {
 
 // Start initialization
 document.addEventListener("DOMContentLoaded", initSOSSystem);
-initSOSSystem();
 
 // NEW FEATURE: Allow Patient to add an Emergency Email Contact
 async function promptAddEmergencyContact() {
