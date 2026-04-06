@@ -18,6 +18,15 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import HTTPException
 
+try:
+    from twilio.rest import Client
+    from twilio.base.exceptions import TwilioRestException
+    TWILIO_AVAILABLE = True
+except ImportError:
+    TWILIO_AVAILABLE = False
+    Client = None
+    TwilioRestException = Exception
+
 # --- PATH CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
@@ -549,6 +558,76 @@ def _send_sos_notification(contact, user_name, location):
         return True
     except Exception as e:
         print(f"❌ [SOS FAILED] Could not send email to {contact_email}. Error: {e}")
+        return False
+
+def _send_telegram_message(chat_id, message):
+    """Sends a message via Telegram bot."""
+    import urllib.request
+    import urllib.parse
+    import json
+    
+    telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not telegram_token:
+        print("⚠️ [TELEGRAM] No bot token configured")
+        return False
+    
+    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+    data = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML"
+    }
+    
+    try:
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(data).encode('utf-8'),
+            headers={'Content-Type': 'application/json'}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            if result.get('ok'):
+                print(f"✅ [TELEGRAM] Message sent to chat {chat_id}")
+                return True
+            else:
+                print(f"❌ [TELEGRAM] Error: {result}")
+                return False
+    except Exception as e:
+        print(f"❌ [TELEGRAM] Failed to send: {e}")
+        return False
+
+def _make_emergency_call(phone_number, user_name):
+    """Makes an emergency call using Twilio."""
+    if not TWILIO_AVAILABLE:
+        print("⚠️ [CALL] Twilio not installed. Install with: pip install twilio")
+        return False
+    
+    TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+    TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+    
+    if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER]):
+        print("⚠️ [CALL] Twilio credentials not configured in .env")
+        return False
+    
+    try:
+        to_phone = phone_number
+        if not to_phone.startswith('+'):
+            to_phone = '+' + to_phone
+        
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        
+        twiml_message = f"URGENT: {user_name} has triggered an SOS alert and needs immediate assistance. Please respond to this emergency call."
+        
+        call = client.calls.create(
+            twiml=f"<Response><Say voice='alice'>{twiml_message}</Say></Response>",
+            to=to_phone,
+            from_=TWILIO_PHONE_NUMBER
+        )
+        print(f"✅ [CALL] Emergency call initiated to {to_phone} (SID: {call.sid})")
+        return True
+    except Exception as e:
+        print(f"❌ [CALL] Failed to make call: {e}")
         return False
 
 # --- DATABASE & SECURITY CONFIG ---
@@ -1307,13 +1386,14 @@ def manage_contacts():
         name = data.get("name")
         phone = data.get("phone")
         contact_email = data.get("email")
+        telegram_chat_id = data.get("telegram_chat_id")
         relation = data.get("relationship", "Other")
         
         if not email or not name:
             return jsonify({"status": "error", "message": "Missing fields"}), 400
         
-        if not phone and not contact_email:
-            return jsonify({"status": "error", "message": "Please provide either phone or email"}), 400
+        if not phone and not contact_email and not telegram_chat_id:
+            return jsonify({"status": "error", "message": "Please provide phone, email, or Telegram Chat ID"}), 400
         
         with db.cursor() as cur:
             cur.execute("SELECT COUNT(*) as count FROM emergency_contacts WHERE user_email=%s", (email,))
@@ -1322,8 +1402,8 @@ def manage_contacts():
                 return jsonify({"status": "error", "message": "Max 5 contacts allowed"}), 400
             
             cur.execute(
-                "INSERT INTO emergency_contacts (user_email, name, phone, email, relationship) VALUES (%s, %s, %s, %s, %s)",
-                (email, name, phone, contact_email, relation)
+                "INSERT INTO emergency_contacts (user_email, name, phone, email, telegram_chat_id, relationship) VALUES (%s, %s, %s, %s, %s, %s)",
+                (email, name, phone, contact_email, telegram_chat_id, relation)
             )
         db.commit()
         db.close()
@@ -1363,14 +1443,25 @@ def trigger_sos():
     
     if not contacts:
         return jsonify({"status": "error", "message": "No emergency contacts found. Please add contacts in Settings."}), 404
-        
+    
     # Notify clinical staff via email
     staff_notified = _send_email_alert_to_staff(user_name, email, location)
-        
+    
     sent_count = 0
     for contact in contacts:
-        if _send_sos_notification(contact, user_name, location):
-            sent_count += 1
+        # Send email if available
+        if contact.get('email'):
+            if _send_sos_notification(contact, user_name, location):
+                sent_count += 1
+        # Send Telegram if available
+        if contact.get('telegram_chat_id'):
+            telegram_msg = f"🚨 URGENT SOS ALERT!\n\n{user_name} says: \"I am in very much stress. Please help me!\"\n\n📍 Location: {location or 'Not available'}\n\nPlease respond immediately!"
+            if _send_telegram_message(contact['telegram_chat_id'], telegram_msg):
+                sent_count += 1
+        # Make phone call if available
+        if contact.get('phone'):
+            if _make_emergency_call(contact['phone'], user_name):
+                sent_count += 1
             
     message = f"SOS Alert sent to {sent_count} contacts."
     if staff_notified:

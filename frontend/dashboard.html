@@ -358,7 +358,11 @@
                 <h3 style="color: #fca5a5;">Emergency Support</h3>
                 <p style="font-size: 0.85rem; color: #f8fafc; opacity: 0.8;">Notify clinical staff and saved contacts instantly.</p>
             </div>
-            <button class="btn-sos" id="sos-btn" onclick="activateSOS()">ACTIVATE SOS</button>
+            <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                <button class="btn-sos" id="sos-btn" onclick="activateSOS()">ACTIVATE SOS</button>
+                <button id="add-contact-btn" style="padding: 8px 16px; background-color: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">➕ Add Emergency Contact</button>
+                <button id="view-contacts-btn" onclick="viewEmergencyContacts()" style="padding: 8px 16px; background-color: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">👁️ View Contacts</button>
+            </div>
         </div>
 
         <div class="dashboard-grid">

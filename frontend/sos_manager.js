@@ -1,4 +1,5 @@
-// API URLs are now built using the global BACKEND_URL from api_config.js
+// API URLs - use relative paths since same origin
+const BACKEND_URL = window.location.origin || '';
 const SOS_API_URL = `${BACKEND_URL}/api/user/sos`;
 const CONTACTS_API_URL = `${BACKEND_URL}/api/user/contacts`;
 
@@ -82,35 +83,15 @@ async function activateSOS() {
 
 let initRetries = 0;
 
-// Initialize SOS and inject the Add Contact button reliably
+// Initialize SOS system
 function initSOSSystem() {
-    const sosBtn = document.querySelector('.sos-btn') || document.getElementById('sos-btn');
+    const sosBtn = document.querySelector('.btn-sos') || document.getElementById('sos-btn');
+    const addContactBtn = document.getElementById('add-contact-btn');
     
     if (sosBtn) {
         sosBtn.onclick = activateSOS;
-
-        // AUTO-INJECT: Automatically add the "Add Contact" button to the dashboard
-        if (!document.getElementById('add-contact-btn')) {
-            const addBtn = document.createElement('button');
-            addBtn.id = 'add-contact-btn';
-            addBtn.innerHTML = '➕ Add Emergency Contact';
-            addBtn.style.cssText = 'margin-top: 10px; padding: 10px; background-color: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; text-align: center;';
-            addBtn.onclick = promptAddEmergencyContact;
-            
-            // Place it right below the SOS button
-            if (sosBtn.parentNode) {
-                sosBtn.parentNode.insertBefore(addBtn, sosBtn.nextSibling);
-            }
-        }
-    } else if (initRetries < 20) {
-        // If the dashboard is loading dynamically, wait 500ms and try again
-        initRetries++;
-        setTimeout(initSOSSystem, 500);
     }
-
-    // Attach listener if you already have a button with id="add-contact-btn" hardcoded
-    const addContactBtn = document.getElementById('add-contact-btn');
-    if (addContactBtn && !addContactBtn.onclick) {
+    if (addContactBtn) {
         addContactBtn.onclick = promptAddEmergencyContact;
     }
 }
@@ -118,7 +99,7 @@ function initSOSSystem() {
 // Start initialization
 document.addEventListener("DOMContentLoaded", initSOSSystem);
 
-// NEW FEATURE: Allow Patient to add an Emergency Email Contact
+// NEW FEATURE: Allow Patient to add an Emergency Contact (Telegram, Email, or Phone)
 async function promptAddEmergencyContact() {
     const email = getUserEmail();
     console.log("User email detected:", email);
@@ -130,19 +111,90 @@ async function promptAddEmergencyContact() {
     const name = prompt("Enter Emergency Contact Name (e.g., Brother, Doctor):");
     if (!name) return;
     
-    const contactEmail = prompt("Enter Emergency Contact Email (e.g., john@gmail.com):");
-    if (!contactEmail) return;
+    const contactMethod = prompt("Enter contact method:\n'T' for Telegram\n'E' for Email\n'P' for Phone");
+    if (!contactMethod) return;
     
-    console.log("Sending:", { user_email: email, name: name, email: contactEmail });
+    let contactValue;
+    if (contactMethod.toUpperCase() === 'T') {
+        contactValue = prompt("Enter Telegram Chat ID (e.g., 123456789):");
+    } else if (contactMethod.toUpperCase() === 'P') {
+        contactValue = prompt("Enter Phone Number with country code (e.g., +919876543210):");
+    } else {
+        contactValue = prompt("Enter Emergency Contact Email (e.g., john@gmail.com):");
+    }
+    if (!contactValue) return;
+    
+    const payload = {
+        user_email: email,
+        name: name,
+        relationship: "Emergency"
+    };
+    
+    if (contactMethod.toUpperCase() === 'T') {
+        payload.telegram_chat_id = contactValue;
+    } else if (contactMethod.toUpperCase() === 'P') {
+        payload.phone = contactValue;
+    } else {
+        payload.email = contactValue;
+    }
+    
+    console.log("Sending:", payload);
     
     const response = await fetch(CONTACTS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_email: email, name: name, email: contactEmail, relationship: "Emergency" })
+        body: JSON.stringify(payload)
     });
     const result = await response.json();
     console.log("Response:", result);
     alert(response.ok ? "✅ Emergency Contact Saved Successfully!" : "⚠️ Error: " + result.message);
+}
+
+// View contacts
+async function viewEmergencyContacts() {
+    const email = getUserEmail();
+    if (!email) {
+        alert("Please log in first.");
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${CONTACTS_API_URL}?user_email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        
+        if (data.contacts && data.contacts.length > 0) {
+            let msg = "Your Emergency Contacts:\n\n";
+            data.contacts.forEach((c, i) => {
+                let contactInfo = "";
+                if (c.email) contactInfo = `📧 ${c.email}`;
+                else if (c.telegram_chat_id) contactInfo = `📱 Telegram: ${c.telegram_chat_id}`;
+                else if (c.phone) contactInfo = `📞 ${c.phone}`;
+                msg += `${i+1}. ${c.name} - ${contactInfo}\n`;
+            });
+            alert(msg);
+        } else {
+            alert("No emergency contacts added yet.");
+        }
+    } catch (e) {
+        alert("Error fetching contacts: " + e.message);
+    }
+}
+
+// Initialize
+function initSOSSystem() {
+    const sosBtn = document.querySelector('.btn-sos') || document.getElementById('sos-btn');
+    const addContactBtn = document.getElementById('add-contact-btn');
+    const viewContactBtn = document.getElementById('view-contacts-btn');
+    
+    if (sosBtn) {
+        sosBtn.onclick = activateSOS;
+    }
+    if (addContactBtn) {
+        addContactBtn.onclick = promptAddEmergencyContact;
+    }
+    if (viewContactBtn) {
+        viewContactBtn.onclick = viewEmergencyContacts;
+    }
 }
 
 // Make it globally available so you can use it anywhere in your UI
