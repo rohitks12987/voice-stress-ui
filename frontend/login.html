@@ -244,6 +244,7 @@
     </div>
 </div>
 
+<script src="api_config.js"></script>
 <script>
     let isLoginMode = true;
     
@@ -290,12 +291,15 @@
         btn.innerText = 'AUTHORIZING...';
 
         try {
-            const response = await fetch('/api/patient/login', {
+            const response = await fetch(`${BACKEND_URL}/api/patient/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-            const data = await response.json();
+            
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch { throw new Error("Invalid server response (Not JSON)"); }
 
             if (data.status === 'success') {
                 showMessage("Identity Verified. Accessing Dashboard...", false);
@@ -327,12 +331,15 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch('/api/send_signup_otp', {
+            const response = await fetch(`${BACKEND_URL}/api/send_signup_otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: tempRegEmail })
             });
-            const data = await response.json();
+            
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch { throw new Error("Invalid server response (Not JSON)"); }
 
             if (data.status === 'success') {
                 document.getElementById('reg-step-1').style.display = 'none';
@@ -360,12 +367,15 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch('/api/verify_otp', {
+            const response = await fetch(`${BACKEND_URL}/api/verify_otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: tempRegEmail, otp: otp })
             });
-            const data = await response.json();
+            
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch { throw new Error("Invalid server response (Not JSON)"); }
 
             if (data.status === 'success') {
                 document.getElementById('reg-step-2').style.display = 'none';
@@ -399,7 +409,7 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch('/api/register_final', {
+            const response = await fetch(`${BACKEND_URL}/api/register_final`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -408,7 +418,10 @@
                     password: pass 
                 })
             });
-            const data = await response.json();
+            
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch { throw new Error("Invalid server response (Not JSON)"); }
 
             if (data.status === 'success') {
                 showMessage("Account created! Redirecting to login...", false);
